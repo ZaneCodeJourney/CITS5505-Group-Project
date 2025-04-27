@@ -13,3 +13,6 @@ __pycache__/
 
 # Database files
 *.db
+
+# Create database files
+create_db.py
