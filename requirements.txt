@@ -1,0 +1,9 @@
+# Project dependencies
+flask==2.3.3
+flask-sqlalchemy==3.1.1
+flask-migrate==4.0.5
+flask-login==0.6.3
+python-dotenv==1.0.0
+werkzeug==2.3.7
+email-validator==2.1.0
+Flask-WTF==1.2.1 
