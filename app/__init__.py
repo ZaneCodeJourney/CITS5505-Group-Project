@@ -27,10 +27,13 @@ def create_app(config_class=Config):
     from app.errors import bp as errors_bp
     app.register_blueprint(errors_bp)
 
-    @app.route('/test')
-    def test_page():
-        return 'App is working!'
+    @app.cli.command("init-db")
+    def init_db():
+        """Create all database tables."""
+        db.create_all()
+        print("Database tables created.")
 
     return app
 
+# Import models here to avoid circular imports
 from app import models 
