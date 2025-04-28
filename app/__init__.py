@@ -27,6 +27,17 @@ def create_app(config_class=Config):
     from app.errors import bp as errors_bp
     app.register_blueprint(errors_bp)
 
+# DivesLogs/DiveSites/SharingFunctionality
+
+    from app.dives import dives_bp
+    app.register_blueprint(dives_bp)
+
+    from app.sites.routes import sites_bp
+    app.register_blueprint(sites_bp)
+    
+    from app.shared.routes import shared_bp
+    app.register_blueprint(shared_bp)
+
     @app.cli.command("init-db")
     def init_db():
         """Create all database tables."""
