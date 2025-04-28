@@ -42,7 +42,7 @@ class User(db.Model, UserMixin):
 
 class Dive(db.Model):
     __tablename__ = 'dives'
-    
+
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     dive_number = db.Column(db.Integer)
@@ -58,12 +58,31 @@ class Dive(db.Model):
     media = db.Column(db.String(255))
     location_thumbnail = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
     # Relationships
     shares = db.relationship('Share', backref='dive', lazy='dynamic')
     
     def __repr__(self):
         return f"<Dive #{self.dive_number} by User {self.user_id}>"
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'dive_number': self.dive_number,
+            'start_time': self.start_time.isoformat() if self.start_time else None,
+            'end_time': self.end_time.isoformat() if self.end_time else None,
+            'max_depth': self.max_depth,
+            'weight_belt': self.weight_belt,
+            'visibility': self.visibility,
+            'weather': self.weather,
+            'location': self.location,
+            'dive_partner': self.dive_partner,
+            'notes': self.notes,
+            'media': self.media,
+            'location_thumbnail': self.location_thumbnail,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
 
 
 class Site(db.Model):
