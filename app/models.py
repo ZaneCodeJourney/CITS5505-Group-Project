@@ -29,6 +29,7 @@ class User(db.Model, UserMixin):
     reviews = db.relationship('Review', backref='reviewer', lazy='dynamic')
     shared_dives = db.relationship('Share', backref='creator', 
                                   foreign_keys='Share.creator_user_id', lazy='dynamic')
+    shark_warnings = db.relationship('SharkWarning', backref='reporter', lazy='dynamic')
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -104,6 +105,7 @@ class Site(db.Model):
     
     # Relationships
     reviews = db.relationship('Review', backref='site', lazy='dynamic')
+    shark_warnings = db.relationship('SharkWarning', backref='dive_site', lazy='dynamic')
     
     def __repr__(self):
         return f"<Site {self.name}>"
@@ -135,4 +137,40 @@ class Share(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def __repr__(self):
-        return f"<Share {self.id} of Dive {self.dive_id} by User {self.creator_user_id}>" 
+        return f"<Share {self.id} of Dive {self.dive_id} by User {self.creator_user_id}>"
+
+
+class SharkWarning(db.Model):
+    __tablename__ = 'shark_warnings'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    site_id = db.Column(db.Integer, db.ForeignKey('sites.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    species = db.Column(db.String(100))
+    size_estimate = db.Column(db.String(50))
+    description = db.Column(db.Text)
+    sighting_time = db.Column(db.DateTime, default=datetime.utcnow)
+    severity = db.Column(db.String(20), default='medium')  # low, medium, high
+    status = db.Column(db.String(20), default='active')  # active, resolved, expired
+    photo = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __repr__(self):
+        return f"<SharkWarning {self.id} at Site {self.site_id}>"
+        
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'site_id': self.site_id,
+            'user_id': self.user_id,
+            'species': self.species,
+            'size_estimate': self.size_estimate,
+            'description': self.description,
+            'sighting_time': self.sighting_time.isoformat() if self.sighting_time else None,
+            'severity': self.severity,
+            'status': self.status,
+            'photo': self.photo,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        } 
