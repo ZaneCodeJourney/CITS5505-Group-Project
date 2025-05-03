@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from app import db
 from app.api import bp
 from app.models import User, Dive
-from datetime import datetime
+from datetime import datetime, timedelta, date
 from functools import wraps
 from sqlalchemy import func, extract
 import calendar
@@ -97,6 +97,30 @@ def get_depth_time_chart(user_id):
         traceback.print_exc()
         return jsonify({"error": "Internal server error", "details": str(e)}), 500
 
+# Helper function to get week number and start/end dates
+def get_week_bounds(year, week_number):
+    """
+    Get the start and end dates for a given week number in a year
+    Using ISO week definition (weeks start on Monday)
+    """
+    # Find the first day of the year
+    first_day = date(year, 1, 1)
+    
+    # Find the first Monday of the year or the Monday of the first complete week
+    if first_day.weekday() != 0:  # If Jan 1st is not Monday
+        # Calculate days until the next Monday
+        days_until_monday = 7 - first_day.weekday()
+        first_monday = first_day + timedelta(days=days_until_monday)
+    else:
+        first_monday = first_day
+    
+    # Calculate the start date of the requested week
+    start_date = first_monday + timedelta(weeks=week_number-1)
+    # End date is 6 days later (inclusive of Sunday)
+    end_date = start_date + timedelta(days=6)
+    
+    return start_date, end_date
+
 # Frequency chart data endpoint
 @bp.route('/users/<int:user_id>/frequency-chart', methods=['GET'])
 def get_frequency_chart(user_id):
@@ -150,8 +174,48 @@ def get_frequency_chart(user_id):
                 "data": formatted_result
             }), 200
         
-        # Weekly or daily frequency would be implemented similarly
-        # For now, return a placeholder for these options
+        # Weekly frequency
+        elif period == 'weekly':
+            # Query database to get all dives in the specified year
+            dives = Dive.query.filter(
+                Dive.user_id == user_id,
+                extract('year', Dive.start_time) == year
+            ).all()
+            
+            # Count dives by ISO week number
+            weekly_counts = {}
+            for dive in dives:
+                # isocalendar() returns (year, week_number, weekday)
+                week_number = dive.start_time.isocalendar()[1]
+                if week_number not in weekly_counts:
+                    weekly_counts[week_number] = 0
+                weekly_counts[week_number] += 1
+            
+            # Determine max week number for the year
+            # A year can have 52 or 53 ISO weeks
+            max_week = 53 if date(year, 12, 31).isocalendar()[1] == 53 else 52
+            
+            # Initialize all weeks with zero counts and add date ranges
+            result = []
+            for week in range(1, max_week + 1):
+                # Get start and end dates for the week
+                start_date, end_date = get_week_bounds(year, week)
+                
+                date_range = f"{start_date.strftime('%b %d')} - {end_date.strftime('%b %d')}"
+                
+                result.append({
+                    "week": week,
+                    "date_range": date_range,
+                    "count": weekly_counts.get(week, 0)
+                })
+            
+            return jsonify({
+                "period": "weekly",
+                "year": year,
+                "data": result
+            }), 200
+        
+        # Daily frequency not yet implemented
         return jsonify({
             "period": period,
             "year": year,
