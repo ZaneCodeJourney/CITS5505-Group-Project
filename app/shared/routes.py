@@ -3,14 +3,14 @@ from app.models import Dive, Share
 from app import db
 from datetime import datetime, timedelta
 import secrets
+from app.shared import shared_bp
 
-shared_bp = Blueprint('shared', __name__, url_prefix='/api/shared')
-
-# Generate dive link
+# Create a share link for a dive
 @shared_bp.route('/dives/<int:dive_id>/share', methods=['POST'])
 def create_share_link(dive_id):
     dive = Dive.query.get_or_404(dive_id)
     token = secrets.token_urlsafe(32)
+
     share = Share(
         dive_id=dive.id,
         creator_user_id=dive.user_id,
@@ -18,17 +18,23 @@ def create_share_link(dive_id):
         visibility='public',
         expiration_time=datetime.utcnow() + timedelta(days=7)
     )
+
     db.session.add(share)
     db.session.commit()
+
     return jsonify({"share_link": f"http://127.0.0.1:5000/api/shared/dives/{share.token}"}), 201
 
-# Access shared dive record
+
+# Access a shared dive record
 @shared_bp.route('/dives/<string:token>', methods=['GET'])
 def get_shared_dive(token):
     share = Share.query.filter_by(token=token).first_or_404()
+
     if share.expiration_time and datetime.utcnow() > share.expiration_time:
         return jsonify({"error": "Share link expired."}), 410
+
     dive = Dive.query.get_or_404(share.dive_id)
+
     return jsonify({
         'id': dive.id,
         'dive_number': dive.dive_number,
@@ -38,14 +44,17 @@ def get_shared_dive(token):
         'location': dive.location
     }), 200
 
-# Update dive record visibility
+
+# Update share visibility for a dive
 @shared_bp.route('/dives/<int:dive_id>/visibility', methods=['PUT'])
 def update_dive_visibility(dive_id):
     dive = Dive.query.get_or_404(dive_id)
     data = request.get_json()
+
     share = Share.query.filter_by(dive_id=dive.id).first()
     if share:
         share.visibility = data.get('visibility', share.visibility)
         db.session.commit()
         return jsonify({'visibility': share.visibility}), 200
+
     return jsonify({'error': 'No share record found.'}), 404
