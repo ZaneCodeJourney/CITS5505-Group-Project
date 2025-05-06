@@ -1,10 +1,10 @@
-from flask import Blueprint, request, jsonify
+# routes.py for Dive Sites
+from flask import request, jsonify
 from app.models import Site, Review
 from app import db
+from app.sites import sites_bp
 
-sites_bp = Blueprint('sites', __name__, url_prefix='/api/sites')
-
-# Obtain all dive sites
+# GET all dive sites
 @sites_bp.route('/', methods=['GET'])
 def get_sites():
     page = request.args.get('page', 1, type=int)
@@ -16,22 +16,9 @@ def get_sites():
         query = query.filter(Site.name.ilike(f'%{search}%'))
 
     sites = query.paginate(page=page, per_page=limit, error_out=False).items
-    return jsonify([{
-        'id': site.id,
-        'name': site.name,
-        'description': site.description,
-        'lat': site.lat,
-        'lng': site.lng,
-        'country': site.country,
-        'region': site.region,
-        'avg_visibility': site.avg_visibility,
-        'avg_depth': site.avg_depth,
-        'difficulty': site.difficulty,
-        'best_season': site.best_season,
-        'thumbnail_url': site.thumbnail_url,
-    } for site in sites]), 200
+    return jsonify([site.to_dict() for site in sites]), 200
 
-# Create dive site
+# POST a new dive site
 @sites_bp.route('/', methods=['POST'])
 def create_site():
     data = request.get_json()
@@ -52,26 +39,13 @@ def create_site():
     db.session.commit()
     return jsonify({'id': site.id}), 201
 
-# Obtain special dive site
+# GET one specific dive site
 @sites_bp.route('/<int:site_id>', methods=['GET'])
 def get_site(site_id):
     site = Site.query.get_or_404(site_id)
-    return jsonify({
-        'id': site.id,
-        'name': site.name,
-        'description': site.description,
-        'lat': site.lat,
-        'lng': site.lng,
-        'country': site.country,
-        'region': site.region,
-        'avg_visibility': site.avg_visibility,
-        'avg_depth': site.avg_depth,
-        'difficulty': site.difficulty,
-        'best_season': site.best_season,
-        'thumbnail_url': site.thumbnail_url,
-    }), 200
+    return jsonify(site.to_dict()), 200
 
-# Update dive site
+# PUT (update) dive site
 @sites_bp.route('/<int:site_id>', methods=['PUT'])
 def update_site(site_id):
     site = Site.query.get_or_404(site_id)
@@ -92,7 +66,7 @@ def update_site(site_id):
     db.session.commit()
     return jsonify({'id': site.id}), 200
 
-# Delete dive site
+# DELETE dive site
 @sites_bp.route('/<int:site_id>', methods=['DELETE'])
 def delete_site(site_id):
     site = Site.query.get_or_404(site_id)
@@ -100,21 +74,15 @@ def delete_site(site_id):
     db.session.commit()
     return '', 204
 
-# Obtain comment list
+# GET reviews for a dive site
 @sites_bp.route('/<int:site_id>/reviews', methods=['GET'])
 def get_reviews(site_id):
     page = request.args.get('page', 1, type=int)
     limit = request.args.get('limit', 20, type=int)
     reviews = Review.query.filter_by(site_id=site_id).paginate(page=page, per_page=limit, error_out=False).items
-    return jsonify([{
-        'id': review.id,
-        'rating': review.rating,
-        'comment': review.comment,
-        'user_id': review.user_id,
-        'created_at': review.created_at
-    } for review in reviews]), 200
+    return jsonify([review.to_dict() for review in reviews]), 200
 
-# Submit comment
+# POST a review for a dive site
 @sites_bp.route('/<int:site_id>/reviews', methods=['POST'])
 def create_review(site_id):
     data = request.get_json()
@@ -128,7 +96,7 @@ def create_review(site_id):
     db.session.commit()
     return jsonify({'id': review.id}), 201
 
-# Update comment
+# PUT (update) review for a site
 @sites_bp.route('/<int:site_id>/reviews/<int:review_id>', methods=['PUT'])
 def update_review(site_id, review_id):
     review = Review.query.filter_by(id=review_id, site_id=site_id).first_or_404()
@@ -138,7 +106,7 @@ def update_review(site_id, review_id):
     db.session.commit()
     return jsonify({'id': review.id}), 200
 
-# Delete comment
+# DELETE a review from a site
 @sites_bp.route('/<int:site_id>/reviews/<int:review_id>', methods=['DELETE'])
 def delete_review(site_id, review_id):
     review = Review.query.filter_by(id=review_id, site_id=site_id).first_or_404()

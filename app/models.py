@@ -109,6 +109,23 @@ class Site(db.Model):
     
     def __repr__(self):
         return f"<Site {self.name}>"
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'lat': self.lat,
+            'lng': self.lng,
+            'country': self.country,
+            'region': self.region,
+            'avg_visibility': self.avg_visibility,
+            'avg_depth': self.avg_depth,
+            'difficulty': self.difficulty,
+            'best_season': self.best_season,
+            'thumbnail_url': self.thumbnail_url,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
 
 
 class Review(db.Model):
@@ -123,7 +140,16 @@ class Review(db.Model):
     
     def __repr__(self):
         return f"<Review {self.id} by User {self.user_id} for Site {self.site_id}>"
-
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'site_id': self.site_id,
+            'user_id': self.user_id,
+            'rating': self.rating,
+            'comment': self.comment,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
 
 class Share(db.Model):
     __tablename__ = 'shares'
