@@ -1,0 +1,654 @@
+/*
+* Dive.site - 主样式表
+* 作者：开发团队
+* 版本：1.0.0
+* 最后更新：2025-04-27
+*/
+
+/* 全局变量 */
+:root {
+    --primary-color: #2c3e50;    /* 主要颜色 */
+    --accent-color: #3498db;     /* 强调颜色 */
+    --accent-light: #5dade2;     /* 强调颜色（亮） */
+    --text-color: #333;          /* 文本颜色 */
+    --light-text: #7f8c8d;       /* 浅色文本 */
+    --bg-color: #f9f9f9;         /* 背景颜色 */
+    --card-bg: #ffffff;          /* 卡片背景 */
+    --danger-color: #e74c3c;     /* 危险/警告颜色 - 红色 */
+    --warning-color: #f39c12;    /* 警告颜色 - 黄色 */
+    --success-color: #2ecc71;    /* 成功颜色 - 绿色 */
+    --rating-color: #f39c12;     /* 评分星星颜色 */
+}
+
+/* 基础样式 */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+a {
+    text-decoration: none;
+    color: var(--accent-color);
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: var(--accent-light);
+    text-decoration: none;
+}
+
+/* 导航栏样式 */
+.navbar {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 15px 0;
+    border: none;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    color: white;
+    font-weight: 500;
+    padding: 0 15px;
+    font-size: 14px;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+    color: var(--accent-light);
+}
+
+.profile-img {
+    width: 30px;
+    height: 30px;
+    object-fit: cover;
+    border: 2px solid white;
+}
+
+/* 地图背景样式 */
+.map-container {
+    background-image: url('../images/map-background.jpg');
+    background-size: cover;
+    background-position: center;
+    min-height: calc(100vh - 70px);
+    position: relative;
+    padding-bottom: 30px;
+}
+
+/* 搜索栏样式 */
+.search-container {
+    padding: 50px 0;
+}
+
+.search-bar {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.search-bar input {
+    height: 50px;
+    border-radius: 25px;
+    padding-left: 20px;
+    padding-right: 60px;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.search-btn {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    background-color: #ff6600;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+}
+
+.search-btn:hover {
+    background-color: #e65c00;
+    color: white;
+}
+
+/* 统计信息样式 */
+.statistics-container {
+    margin-bottom: 30px;
+}
+
+.statistics-wrapper {
+    background-color: var(--card-bg);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-icon {
+    margin-right: 15px;
+    color: var(--accent-color);
+    font-size: 2rem;
+}
+
+.stat-icon img {
+    width: 40px;
+    height: 40px;
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+
+.stat-icon .bi-exclamation-triangle-fill {
+    color: var(--danger-color);
+    animation: blink 2s infinite;
+}
+
+.stat-icon .bi-person-fill {
+    color: var(--accent-color);
+}
+
+.stat-icon .bi-geo-alt {
+    color: var(--accent-color);
+}
+
+.stat-icon .bi-water {
+    color: var(--accent-color);
+}
+
+.stat-number {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+    color: var(--accent-color);
+}
+
+.stat-label {
+    margin: 0;
+    font-size: 12px;
+    color: var(--light-text);
+    font-weight: 500;
+}
+
+/* 加载中动画 */
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: var(--light-text);
+}
+
+.loading i {
+    font-size: 30px;
+    animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 错误信息样式 */
+.error-message {
+    padding: 10px;
+    color: var(--danger-color);
+    text-align: center;
+    border: 1px solid rgba(231, 76, 60, 0.2);
+    border-radius: 5px;
+    margin: 10px 0;
+    background-color: rgba(231, 76, 60, 0.05);
+}
+
+/* 无数据提示样式 */
+.no-data {
+    text-align: center;
+    padding: 20px;
+    color: var(--light-text);
+    font-style: italic;
+}
+
+/* 响应式调整 */
+@media (max-width: 992px) {
+    .statistics-container {
+        padding: 0 15px;
+    }
+
+    .content-container {
+        padding: 0 15px;
+    }
+
+    .stat-item {
+        margin-bottom: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .search-bar {
+        width: 90%;
+    }
+
+    .diver-card .diver-avatar img {
+        width: 50px;
+        height: 50px;
+    }
+}
+
+/* 工具提示样式 */
+.tooltip-inner {
+    background-color: var(--primary-color);
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+.tooltip.bs-tooltip-top .arrow::before {
+    border-top-color: var(--primary-color);
+}
+
+/* 样式覆盖 */
+.btn:focus, .form-control:focus {
+    box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* 警告图标闪烁效果 - 用于高危警告 */
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.shark-warning.high i {
+    animation: blink 2s infinite;
+}
+
+/* 内容区域样式 */
+.content-container {
+    margin-top: 20px;
+}
+
+.content-section {
+    background-color: var(--card-bg);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    height: 100%;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+/* 潜水点卡片样式 */
+.dive-site-card {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.site-image img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.site-rating {
+    margin-bottom: 5px;
+}
+
+.star {
+    color: #ddd;
+    font-size: 14px;
+}
+
+.star:before {
+    content: "★";
+}
+
+.star.filled {
+    color: var(--rating-color);
+}
+
+.site-name {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 5px 0;
+}
+
+.site-location {
+    font-size: 12px;
+    color: var(--light-text);
+    margin-bottom: 10px;
+}
+
+.site-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--light-text);
+    align-items: center;
+}
+
+/* 鲨鱼警告图标样式 */
+.shark-warning {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+}
+
+.shark-warning.high i {
+    color: var(--danger-color);
+}
+
+.shark-warning.medium i {
+    color: var(--warning-color);
+}
+
+.shark-warning.low i {
+    color: var(--success-color);
+}
+
+/* 潜水日志卡片样式 */
+.dive-log-card {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+.log-date {
+    font-size: 12px;
+    color: var(--light-text);
+    margin-bottom: 10px;
+}
+
+.diver-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.diver-avatar img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+    border: 2px solid #eee;
+}
+
+.diver-name {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.dive-location {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 5px 0;
+}
+
+.dive-site-location {
+    font-size: 12px;
+    color: var(--light-text);
+}
+
+/* 鲨鱼警告卡片样式 */
+.shark-alert-card {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    position: relative;
+    cursor: pointer;
+}
+
+.shark-icon {
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 2rem;
+    color: var(--primary-color);
+}
+
+.shark-species {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 5px 0;
+    text-align: center;
+}
+
+.alert-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--light-text);
+    margin: 10px 0;
+}
+
+.alert-level {
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 10px;
+    display: inline-block;
+    margin: 0 auto;
+    text-align: center;
+    width: fit-content;
+    display: block;
+}
+
+.alert-level.high {
+    background-color: rgba(231, 76, 60, 0.1);
+    color: var(--danger-color);
+}
+
+.alert-level.medium {
+    background-color: rgba(243, 156, 18, 0.1);
+    color: var(--warning-color);
+}
+
+.alert-level.low {
+    background-color: rgba(46, 204, 113, 0.1);
+    color: var(--success-color);
+}
+
+.alert-date {
+    font-size: 12px;
+    color: var(--light-text);
+    text-align: center;
+    margin-top: 5px;
+}
+
+/* 潜水员卡片样式 */
+.diver-card {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+.diver-card .diver-avatar img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 15px;
+    border: 3px solid #eee;
+    cursor: pointer;
+}
+
+.diver-card .diver-avatar img:hover {
+    border-color: var(--accent-color);
+}
+
+.diver-card .diver-info {
+    display: block;
+    flex: 1;
+}
+
+.last-dive-date {
+    font-size: 11px;
+    color: var(--light-text);
+    margin-bottom: 5px;
+}
+
+.diver-card .diver-name {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0 0 5px 0;
+}
+
+.diver-card .dive-count {
+    font-size: 14px;
+    color: var(--accent-color);
+    font-weight: 500;
+}
+
+/*
+ * Authentication related styles
+ * 认证相关样式
+ */
+
+/* Profile navigation item - used to hide/show based on auth status */
+/* 个人资料导航项 - 根据认证状态隐藏/显示 */
+.auth-item, #profile-nav-item {
+    transition: opacity 0.3s ease;
+}
+
+/* Active nav link */
+/* 活动导航链接 */
+.navbar-dark .navbar-nav .nav-link.active {
+    color: var(--accent-light);
+    font-weight: bold;
+}
+
+/* Login and profile page specific styles */
+/* 登录和个人资料页面特定样式 */
+
+/* Tab navigation active indicator */
+/* 标签导航活动指示器 */
+.nav-tabs .nav-item .nav-link {
+    position: relative;
+    color: var(--text-color);
+    background: transparent;
+    border: none;
+    padding: 10px 15px;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-item .nav-link.active {
+    color: var(--accent-color);
+    background: transparent;
+    border: none;
+}
+
+.nav-tabs .nav-item .nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--accent-color);
+    border-radius: 3px 3px 0 0;
+}
+
+/* Button styles */
+/* 按钮样式 */
+.btn-primary {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-light);
+    border-color: var(--accent-light);
+}
+
+.btn-outline-primary {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+/* 编辑表单行样式 */
+.edit-form-row {
+    padding: 15px;
+    background-color: #f5f5f5;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+/* 头像上传样式 */
+#avatar-upload {
+    display: none;
+}
+
+.avatar-upload-btn {
+    display: block;
+    margin: 10px auto;
+    background-color: transparent;
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    border-radius: 20px;
+    padding: 5px 15px;
+    font-size: 14px;
+}
+
+.avatar-upload-btn:hover {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+/* 编辑表单行样式，可能需要补充 */
+.edit-form-row {
+    padding: 15px;
+    background-color: #f5f5f5;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+/* 头像上传按钮样式，已有但可能需要确认 */
+.avatar-upload-btn {
+    display: block;
+    margin: 10px auto;
+    background-color: transparent;
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    border-radius: 20px;
+    padding: 5px 15px;
+    font-size: 14px;
+}
+
+.avatar-upload-btn:hover {
+    background-color: var(--accent-color);
+    color: white;
+}
