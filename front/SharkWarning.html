@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鲨鱼警告 | Dive Logger</title>
+    <link rel="stylesheet" href="css/SharkWarning.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+<!-- 导航栏 -->
+<div id="navigation-placeholder"></div>
+
+<!-- 主内容区 -->
+<main class="main-container">
+    <!-- 头部区域 -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <i class="fas fa-exclamation-triangle warning-icon"></i>
+                鲨鱼警告
+                <span class="subtitle">Shark Warnings</span>
+            </h1>
+            <p class="hero-description">
+                实时掌握潜水地点的鲨鱼活动信息，确保您的潜水安全。
+                <span class="subtitle">Real-time shark activity information for safer diving.</span>
+            </p>
+            <a href="report-shark.html" class="cta-button">
+                <i class="fas fa-plus"></i>
+                报告鲨鱼目击
+                <span class="subtitle">Report Shark Sighting</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- 筛选器区域 -->
+    <section class="filter-section">
+        <div class="filter-container">
+            <div class="filter-group">
+                <label for="status-filter">状态 Status:</label>
+                <select id="status-filter" class="filter-select">
+                    <option value="active" selected>活跃 Active</option>
+                    <option value="resolved">已解决 Resolved</option>
+                    <option value="expired">已过期 Expired</option>
+                    <option value="">全部 All</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="site-filter">潜水地点 Dive Site:</label>
+                <select id="site-filter" class="filter-select">
+                    <option value="">全部地点 All Sites</option>
+                    <!-- 将由JavaScript动态填充 -->
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- 警告提示区域 -->
+    <div id="alert-container" class="alert-container"></div>
+
+    <!-- 鲨鱼警告地图区域 -->
+    <section class="map-section">
+        <h2 class="section-title">鲨鱼活动地图 <span class="subtitle">Shark Activity Map</span></h2>
+        <div id="shark-map" class="shark-map">
+            <!-- 地图将由JavaScript加载 -->
+            <div class="map-placeholder">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>正在加载地图... Loading map...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 鲨鱼警告列表区域 -->
+    <section class="warnings-section">
+        <h2 class="section-title">
+            当前警告 <span class="subtitle">Current Warnings</span>
+            <span id="warnings-count" class="count-badge">0</span>
+        </h2>
+
+        <!-- 加载指示器 -->
+        <div id="loading-spinner" class="loading-spinner">
+            <div class="spinner"></div>
+            <p>加载中... Loading...</p>
+        </div>
+
+        <!-- 警告卡片容器 -->
+        <div id="warnings-grid" class="warnings-grid">
+            <!-- 警告卡片将由JavaScript动态生成 -->
+        </div>
+
+        <!-- 无数据提示 -->
+        <div id="empty-state" class="empty-state hidden">
+            <i class="fas fa-search empty-icon"></i>
+            <p>没有找到鲨鱼警告 <span class="subtitle">No shark warnings found</span></p>
+        </div>
+
+        <!-- 加载更多按钮 -->
+        <div class="load-more-container">
+            <button id="load-more" class="load-more-button hidden">
+                加载更多 <span class="subtitle">Load More</span>
+            </button>
+        </div>
+    </section>
+</main>
+
+<!-- 警告详情模态窗口 -->
+<div id="warning-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-title">鲨鱼警告详情 <span class="subtitle">Shark Warning Details</span></h2>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div id="modal-body" class="modal-body">
+            <!-- 详情内容将由JavaScript动态填充 -->
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>加载中... Loading...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 页脚 -->
+<footer class="site-footer">
+    <div class="footer-content">
+        <p>&copy; 2025 Dive Logger. 保留所有权利。All rights reserved.</p>
+    </div>
+</footer>
+
+<!-- JavaScript文件 -->
+<script src="js/navigation.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="js/shark-warnings.js"></script>
+</body>
+</html>
