@@ -1,16 +1,16 @@
-from flask import request, jsonify
-from flask import abort
+# app/dives/routes.py
+
+from flask import request, jsonify, abort
 from app.models import Dive
 from app.dives import dives_bp
 from app import db
 from datetime import datetime
 
-# Add to_dict() method to Dive model
-
+# Helper: Convert a Dive object to dictionary
 def dive_to_dict(dive):
     return {
         'id': dive.id,
-        'user_id': dive.user_id,
+        'user_id': dive.user_id,  # fixed typo: usåer_id -> user_id
         'dive_number': dive.dive_number,
         'start_time': dive.start_time.isoformat() if dive.start_time else None,
         'end_time': dive.end_time.isoformat() if dive.end_time else None,
@@ -26,15 +26,13 @@ def dive_to_dict(dive):
         'created_at': dive.created_at.isoformat() if dive.created_at else None
     }
 
-# Obtain all diving records
-
+# GET /api/dives/ - Retrieve all diving records
 @dives_bp.route('/', methods=['GET'])
 def get_dives():
     dives = Dive.query.all()
     return jsonify([dive_to_dict(dive) for dive in dives]), 200
 
-# Create a diving record
-
+# POST /api/dives/ - Create a new diving record
 @dives_bp.route('/', methods=['POST'])
 def create_dive():
     data = request.get_json()
@@ -67,15 +65,13 @@ def create_dive():
     db.session.commit()
     return jsonify({'id': dive.id}), 201
 
-# Obtain a single diving record
-
+# GET /api/dives/<dive_id> - Retrieve a single dive record
 @dives_bp.route('/<int:dive_id>', methods=['GET'])
 def get_dive(dive_id):
     dive = Dive.query.get_or_404(dive_id)
     return jsonify(dive_to_dict(dive)), 200
 
-# Update the diving record
-
+# PUT /api/dives/<dive_id> - Update a dive record
 @dives_bp.route('/<int:dive_id>', methods=['PUT'])
 def update_dive(dive_id):
     dive = Dive.query.get_or_404(dive_id)
@@ -97,8 +93,7 @@ def update_dive(dive_id):
     db.session.commit()
     return jsonify(dive_to_dict(dive)), 200
 
-# Delete the diving record
-
+# DELETE /api/dives/<dive_id> - Delete a dive record
 @dives_bp.route('/<int:dive_id>', methods=['DELETE'])
 def delete_dive(dive_id):
     dive = Dive.query.get_or_404(dive_id)

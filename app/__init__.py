@@ -18,6 +18,8 @@ def create_app(config_class=Config):
     migrate.init_app(app, db)
     login_manager.init_app(app)
 
+# Core Blueprints
+
     from app.main import bp as main_bp
     app.register_blueprint(main_bp)
 
@@ -30,16 +32,19 @@ def create_app(config_class=Config):
     from app.api import bp as api_bp
     app.register_blueprint(api_bp)
 
-# DivesLogs/DiveSites/SharingFunctionality
+# Feature Blueprints
 
     from app.dives import dives_bp
     app.register_blueprint(dives_bp)
 
-    from app.sites.routes import sites_bp
+    from app.sites import sites_bp
     app.register_blueprint(sites_bp)
     
-    from app.shared.routes import shared_bp
+    from app.shared import shared_bp
     app.register_blueprint(shared_bp)
+
+    from app.shark import shark_bp
+    app.register_blueprint(shark_bp)
 
     @app.cli.command("init-db")
     def init_db():
