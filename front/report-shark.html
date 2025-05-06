@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>报告鲨鱼目击 | Dive Logger</title>
+  <link rel="stylesheet" href="css/SharkWarning.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+<!-- 导航栏 -->
+<div id="navigation-placeholder"></div>
+
+<!-- 主内容区 -->
+<main class="main-container">
+  <!-- 返回链接 -->
+  <div class="back-link">
+    <a href="/CITS5505/SharkWarning.html" class="text-link">
+      <i class="fas fa-arrow-left"></i>
+      返回鲨鱼警告
+      <span class="subtitle">Back to Shark Warnings</span>
+    </a>
+  </div>
+
+  <!-- 页面标题 -->
+  <header class="page-header">
+    <h1 class="hero-title" style="font-size: 36px;">
+      <i class="fas fa-exclamation-triangle warning-icon"></i>
+      报告鲨鱼目击
+      <span class="subtitle">Report Shark Sighting</span>
+    </h1>
+    <p class="hero-description" style="font-size: 18px;">
+      您的报告能帮助其他潜水者提高安全意识。所有标记*的字段为必填项。
+      <span class="subtitle">Your report can help other divers stay safe. All fields marked with * are required.</span>
+    </p>
+  </header>
+
+  <!-- 警告消息区域 -->
+  <div id="alert-container" class="alert-container"></div>
+
+  <!-- 报告表单 -->
+  <div class="form-container">
+    <form id="report-form" class="report-form">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="site-id">潜水地点 Dive Site*</label>
+          <select id="site-id" name="site_id" required>
+            <option value="">选择潜水地点 Select dive site</option>
+            <!-- 将由JavaScript动态填充 Will be populated by JavaScript -->
+          </select>
+          <span class="form-hint">选择您目击鲨鱼的潜水地点 Select the dive site where you spotted the shark</span>
+        </div>
+
+        <div class="form-group">
+          <label for="species">鲨鱼种类 Shark Species</label>
+          <input type="text" id="species" name="species" placeholder="如果已知，请填写鲨鱼种类 If known, enter shark species">
+          <span class="form-hint">如果不确定，可以填写"未知" If uncertain, you can enter "Unknown"</span>
+        </div>
+
+        <div class="form-group">
+          <label for="size-estimate">大小估计 Size Estimate</label>
+          <input type="text" id="size-estimate" name="size_estimate" placeholder="例如：3-4米 E.g., 3-4 meters">
+          <span class="form-hint">估计鲨鱼的长度 Estimate the shark's length</span>
+        </div>
+
+        <div class="form-group">
+          <label for="sighting-time">目击时间 Sighting Time*</label>
+          <input type="datetime-local" id="sighting-time" name="sighting_time" required>
+          <span class="form-hint">您目击鲨鱼的确切时间 The exact time when you spotted the shark</span>
+        </div>
+
+        <div class="form-group">
+          <label for="severity">严重程度 Severity*</label>
+          <select id="severity" name="severity" required>
+            <option value="low">低风险 Low Risk</option>
+            <option value="medium" selected>中风险 Medium Risk</option>
+            <option value="high">高风险 High Risk</option>
+          </select>
+          <span class="form-hint">
+                            低风险：鲨鱼距离远或行为平静。中风险：鲨鱼接近但非攻击性。高风险：鲨鱼表现出攻击性行为。<br>
+                            Low: Shark was distant or calm. Medium: Shark approached but was non-aggressive. High: Shark showed aggressive behavior.
+                        </span>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="description">详细描述 Description*</label>
+          <textarea id="description" name="description" rows="5" required placeholder="请详细描述鲨鱼的行为和位置，以及任何其他相关信息 Please describe the shark's behavior, location, and any other relevant information in detail"></textarea>
+          <span class="form-hint">提供尽可能详细的信息，包括鲨鱼的行为、方向、深度等 Provide as much detail as possible, including the shark's behavior, direction, depth, etc.</span>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="photo">照片 Photo</label>
+          <div class="file-upload">
+            <label for="photo" class="file-upload-label">
+              <i class="fas fa-cloud-upload-alt"></i>
+              选择文件 Choose File
+            </label>
+            <input type="file" id="photo" name="photo" accept="image/*" class="file-upload-input">
+            <span id="file-name" class="file-name">未选择文件 No file chosen</span>
+          </div>
+          <span class="form-hint">可选。如有照片请上传（最大5MB）Optional. Upload if available (5MB max)</span>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="submit-button">
+          <i class="fas fa-exclamation-triangle"></i>
+          提交警告 Submit Warning
+        </button>
+        <button type="reset" class="reset-button">
+          <i class="fas fa-redo"></i>
+          重置表单 Reset Form
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 提交成功模态窗口 -->
+  <div id="success-modal" class="modal">
+    <div class="modal-content success-modal-content">
+      <div class="success-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <h2>提交成功！Successfully Submitted!</h2>
+      <p>您的鲨鱼警告已成功提交。感谢您帮助提高潜水安全。</p>
+      <p class="subtitle">Your shark warning has been successfully submitted. Thank you for helping improve diving safety.</p>
+      <div class="modal-actions">
+        <a href="shark-warnings.html" class="cta-button">
+          返回警告列表 Back to Warnings
+        </a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- 页脚 -->
+<footer class="site-footer">
+  <div class="footer-content">
+    <p>&copy; 2025 Dive Logger. 保留所有权利。All rights reserved.</p>
+  </div>
+</footer>
+
+<!-- JavaScript文件 -->
+<script src="js/navigation.js"></script>
+<script src="js/report-shark.js"></script>
+</body>
+</html>

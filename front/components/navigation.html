@@ -1,0 +1,46 @@
+<!-- Navigation bar component -->
+<!-- 导航栏组件 -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <!-- Website Logo - Clickable to go to homepage -->
+        <!-- 网站Logo - 点击跳转到首页 -->
+        <a class="navbar-brand" href="/">
+            <img src="./images/logo.png" alt="dive.site" height="30">
+        </a>
+
+        <!-- Mobile toggle button -->
+        <!-- 移动端折叠按钮 -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navigation menu items -->
+        <!-- 导航菜单项 -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <!-- My Dives option - always visible -->
+                <!-- 我的潜水选项 - 始终可见 -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/dashboard">MY DIVES</a>
+                </li>
+
+                <!-- Auth buttons - only visible when not logged in -->
+                <!-- 认证按钮 - 仅在未登录时可见 -->
+                <li class="nav-item auth-item" id="register-nav-item">
+                    <a class="nav-link" href="/register">REGISTER</a>
+                </li>
+                <li class="nav-item auth-item" id="login-nav-item">
+                    <a class="nav-link" href="/login">LOGIN</a>
+                </li>
+
+                <!-- User profile - only visible when logged in -->
+                <!-- 用户资料 - 仅在登录后可见 -->
+                <li class="nav-item d-none" id="profile-nav-item">
+                    <a class="nav-link" href="/profile">
+                        <img src="./images/profile.jpg" alt="Profile" class="rounded-circle profile-img">
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
