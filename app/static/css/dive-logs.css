@@ -1,0 +1,129 @@
+/**
+ * Dive.site - Dive Logs Page Script
+ * Author: Development Team
+ * Version: 1.0.0
+ * Last Updated: 2025-04-27
+ */
+
+// Execute when document is fully loaded
+$(document).ready(function() {
+    // Load navigation component
+    $("#nav-placeholder").load("./components/navigation.html", function() {
+        // After loading navigation, update navigation state
+        updateNavigation(true);
+    });
+
+    // Initialize charts
+    initCharts();
+
+    // Load dive logs data
+    loadDiveLogs();
+
+    // Set up event listeners
+    setupEventListeners();
+});
+
+// Global variables for storing current dive logs and pagination information
+let diveLogs = [];
+let currentPage = 1;
+let totalPages = 1;
+let itemsPerPage = 10;
+
+/**
+ * Update navigation state
+ * @param {boolean} isLoggedIn - Whether the user is logged in
+ */
+function updateNavigation(isLoggedIn) {
+    if (isLoggedIn) {
+        // Hide login/register buttons, show profile button
+        $('.auth-item').addClass('d-none');
+        $('#profile-nav-item').removeClass('d-none');
+    } else {
+        // Show login/register buttons, hide profile button
+        $('.auth-item').removeClass('d-none');
+        $('#profile-nav-item').addClass('d-none');
+
+        // If not authenticated, redirect to login page
+        window.location.href = '/login';
+    }
+}
+
+/**
+ * Initialize charts
+ */
+function initCharts() {
+    // Initialize depth chart
+    const depthCtx = document.getElementById('depthChart').getContext('2d');
+    window.depthChart = new Chart(depthCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Max Depth (m)',
+                data: [],
+                borderColor: '#3498db',
+                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    reverse: true,
+                    title: {
+                        display: true,
+                        text: 'Depth (meters)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Dive Date'
+                    }
+                }
+            }
+        }
+    });
+
+    // Initialize frequency chart
+    const freqCtx = document.getElementById('frequencyChart').getContext('2d');
+    window.frequencyChart = new Chart(freqCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            datasets: [{
+                label: 'Number of Dives',
+                data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                borderColor: '#3498db',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Dives'
+                    }
+                }
+            }
+        }
+    });
+
+    // Initialize location chart
+    const locationCtx = document.getElementById('locationChart').getContext('2d');
+    window.locationChart = new Chart(locationCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [],
+            datasets: [{
+                data: [],
+                backgroundColor: [
+                    '#3498db', '#2ecc71', '#f39c12', '#e74c3c', '#9b59b6',
+                    '#

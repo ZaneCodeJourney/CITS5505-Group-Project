@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Dive.site</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- Include Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Include Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Include custom CSS -->
+    <link rel="stylesheet" href="./css/styles.css">
+    <!-- Profile page specific styles -->
+    <style>
+        .profile-container {
+            margin-top: 30px;
+            margin-bottom: 50px;
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 30px;
+        }
+
+        .breadcrumb-item a {
+            color: var(--accent-color);
+        }
+
+        .breadcrumb-item.active {
+            color: var(--light-text);
+        }
+
+        .title-wavy {
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        .title-wavy::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 80px;
+            height: 3px;
+            background-color: var(--accent-color);
+            border-radius: 3px;
+        }
+
+        .profile-tabs {
+            margin-top: 40px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .profile-tabs .nav-link {
+            color: var(--light-text);
+            font-weight: 500;
+            padding: 10px 20px;
+            border: none;
+            border-bottom: 3px solid transparent;
+        }
+
+        .profile-tabs .nav-link.active {
+            color: var(--accent-color);
+            background: transparent;
+            border-bottom: 3px solid var(--accent-color);
+        }
+
+        .tab-content {
+            padding: 30px 0;
+        }
+
+        .profile-section {
+            margin-top: 40px;
+        }
+
+        .profile-image-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .profile-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #eee;
+        }
+
+        .profile-info-box {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .profile-info-label {
+            color: var(--light-text);
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .profile-info-value {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .measurement-toggle {
+            display: inline-flex;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .measurement-toggle button {
+            padding: 8px 20px;
+            border: none;
+            background: white;
+            color: var(--light-text);
+        }
+
+        .measurement-toggle button.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .public-profile-btn {
+            background-color: #3498db;
+            color: white;
+            font-weight: 500;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+        }
+
+        .public-profile-btn:hover {
+            background-color: #2980b9;
+            color: white;
+        }
+
+        .chart-container {
+            margin-top: 40px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+<!-- Include navigation component -->
+<div id="nav-placeholder"></div>
+
+<!-- Main content -->
+<div class="container profile-container">
+    <!-- Breadcrumb navigation -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item active">Account</li>
+        </ol>
+    </nav>
+
+    <!-- Page header with title and public profile button -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="page-title title-wavy">My Account</h1>
+        <a href="edit-public-profile.html" class="btn public-profile-btn">EDIT MY PUBLIC PROFILE</a>
+    </div>
+
+    <!-- Profile tabs navigation -->
+    <ul class="nav nav-tabs profile-tabs" id="profileTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="true">MY PUBLIC PROFILE</button>
+        </li>
+
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab" aria-controls="password" aria-selected="false">CHANGE PASSWORD</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="email-tab" data-bs-toggle="tab" data-bs-target="#email" type="button" role="tab" aria-controls="email" aria-selected="false">CHANGE EMAIL</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="close-tab" data-bs-toggle="tab" data-bs-target="#close" type="button" role="tab" aria-controls="close" aria-selected="false">CLOSE ACCOUNT</button>
+        </li>
+    </ul>
+
+    <!-- Tab content -->
+    <div class="tab-content" id="profileTabsContent">
+        <!-- My Profile Tab -->
+        <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+            <h2 class="text-center mb-4">My Profile</h2>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <!-- User profile image -->
+                    <div class="profile-image-container">
+                        <img src="./images/profile.jpg" alt="User Profile" class="profile-image" id="user-profile-image">
+                    </div>
+                </div>
+
+                <div class="col-md-8">
+                    <!-- User information -->
+                    <div class="profile-info-box mb-4">
+                        <div class="profile-info-label">NAME</div>
+                        <div class="profile-info-value" id="user-name-display">Loading...</div>
+                    </div>
+
+                    <div class="profile-info-box mb-4">
+                        <div class="profile-info-label">USERNAME</div>
+                        <div class="profile-info-value" id="user-username-display">Loading...</div>
+                    </div>
+
+                    <div class="profile-info-box mb-4">
+                        <div class="profile-info-label">BIO</div>
+                        <div class="profile-info-value" id="user-bio-display">No bio yet</div>
+                    </div>
+
+                    <div class="profile-info-box mb-4">
+                        <div class="profile-info-label">PROFILE VISIBILITY</div>
+                        <div class="profile-info-value" id="profile-visibility-display">Public</div>
+                    </div>
+
+                    <div class="profile-info-box mb-4">
+                        <div class="profile-info-label">EMAIL ADDRESS</div>
+                        <div class="profile-info-value" id="user-email">Loading...</div>
+                    </div>
+
+                    <div class="profile-info-box">
+                        <div class="profile-info-label">SYSTEM OF MEASUREMENT</div>
+                        <div class="mt-2">
+                            <div class="measurement-toggle">
+                                <button class="active" id="metric-btn">Metric</button>
+                                <button id="imperial-btn">Imperial</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Visualization Section -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <h3>My Diving Statistics</h3>
+                    <p>View your diving activity and statistics over time.</p>
+                </div>
+
+                <!-- Dive Depth Chart -->
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h4 class="chart-title">Dive Depths Over Time</h4>
+                        <canvas id="depthChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Dive Frequency Chart -->
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h4 class="chart-title">Dive Frequency by Month (2025)</h4>
+                        <canvas id="frequencyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Password Tab -->
+        <div class="tab-pane fade" id="password" role="tabpanel" aria-labelledby="password-tab">
+            <h3 class="mb-4">Change Password</h3>
+            <p class="text-muted mb-4">
+                Update your account password. It's recommended to change your password regularly for security.</p>
+
+            Password change form -->
+            <form id="password-change-form" class="needs-validation" novalidate>
+                <div class="alert alert-success d-none" id="password-success-alert">
+                   Password has been successfully updated!
+                </div>
+                <div class="alert alert-danger d-none" id="password-error-alert"></div>
+
+                <div class="mb-3">
+                    <label for="current-password" class="form-label">Current Password*</label>
+                    <input type="password" class="form-control" id="current-password" required>
+                    <div class="invalid-feedback">
+                        Please enter your current password
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="new-password" class="form-label">New Password*</label>
+                    <input type="password" class="form-control" id="new-password" required>
+                    <div class="invalid-feedback">
+                        Please enter a new password
+                    </div>
+                    <div class="form-text">
+                        Password must be at least 8 characters long and include uppercase, lowercase letters, and numbers.
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="confirm-password" class="form-label">Confirm New Password*</label>
+                    <input type="password" class="form-control" id="confirm-password" required>
+                    <div class="invalid-feedback">
+                        Please confirm your new password
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Update Password
+                </button>
+            </form>
+        </div>
+
+        <!-- Email Tab -->
+        <div class="tab-pane fade" id="email" role="tabpanel" aria-labelledby="email-tab">
+            <h3 class="mb-4">Change Email</h3>
+            <p class="text-muted mb-4">Update your account email address. Make sure to provide a valid email as important account notifications will be sent there.</p>
+
+            <!-- Email change form -->
+            <form id="email-change-form" class="needs-validation" novalidate>
+                <div class="alert alert-success d-none" id="email-success-alert">
+
+                    Email address has been successfully updated! Please check your new email to complete verification.
+                </div>
+                <div class="alert alert-danger d-none" id="email-error-alert"></div>
+
+                <div class="mb-3">
+                    <label for="current-email" class="form-label">Current Email Address</label>
+                    <input type="email" class="form-control" id="current-email" disabled>
+                </div>
+
+                <div class="mb-3">
+                    <label for="new-email" class="form-label">New Email Address*</label>
+                    <input type="email" class="form-control" id="new-email" required>
+                    <div class="invalid-feedback">
+                        Please enter a valid email address
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email-password" class="form-label">Current Password*</label>
+                    <input type="password" class="form-control" id="email-password" required>
+                    <div class="invalid-feedback">
+                        Please enter your current password to confirm your identity
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Update Email
+                </button>
+            </form>
+        </div>
+
+        <!-- Close Account Tab -->
+        <div class="tab-pane fade" id="close" role="tabpanel" aria-labelledby="close-tab">
+            <h3 class="mb-4 text-danger">Close Account</h3>
+            <div class="alert alert-warning">
+                <strong>Warning!</strong>
+                Closing your account is permanent. Once closed, your profile, dive logs, and other data cannot be recovered.
+            </div>
+
+            <p class="text-muted mb-4">
+
+                If you're sure you want to close your Dive.site account, please enter your password below and choose how your data should be handled.
+            </p>
+
+            <!-- Account closure form -->
+            <form id="close-account-form" class="needs-validation" novalidate>
+                <div class="alert alert-success d-none" id="close-success-alert">
+                    Your account has been successfully closed. Thank you for using our services.
+                </div>
+                <div class="alert alert-danger d-none" id="close-error-alert"></div>
+
+                <div class="mb-4">
+                    <label class="form-label">Data Handling Options*</label>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="data_preference" id="anonymize" value="anonymize" required>
+                        <label class="form-check-label" for="anonymize">
+                            Anonymize Data-
+                            Keep your dive records but remove personal information
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="data_preference" id="delete_personal" value="delete_personal" required>
+                        <label class="form-check-label" for="delete_personal">
+                            Delete Personal Data -
+                            Completely remove all personal data and dive records
+                        </label>
+                        <div class="invalid-feedback">
+                            Please select a data handling option
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="close-password" class="form-label">Confirm with Password*</label>
+                    <input type="password" class="form-control" id="close-password" required>
+                    <div class="invalid-feedback">
+                        Please enter your password to confirm account closure
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="confirm-close" required>
+                        <label class="form-check-label" for="confirm-close">
+
+                            I confirm that I want to permanently close my account and understand this action cannot be undone
+                        </label>
+                        <div class="invalid-feedback">
+                            You must confirm this action
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-danger">
+                    Permanently Close Account
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Include JavaScript libraries -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Profile page script -->
+<script>
+    $(document).ready(function() {
+        // Load navigation component
+        $("#nav-placeholder").load("./components/navigation.html", function() {
+            // After loading the navigation, update it to show logged-in state
+            updateNavigation(true);
+        });
+
+        // Check authentication and load user data
+        checkAuth();
+
+        // Initialize measurement toggle
+        initMeasurementToggle();
+
+        // Initialize charts
+        initCharts();
+    });
+
+    /**
+     * Update navigation based on authentication status
+     * @param {boolean} isLoggedIn - Whether user is logged in
+     */
+    function updateNavigation(isLoggedIn) {
+        if (isLoggedIn) {
+            // Hide login/register buttons, show profile button
+            $('.auth-item').addClass('d-none');
+            $('#profile-nav-item').removeClass('d-none');
+        } else {
+            // Show login/register buttons, hide profile button
+            $('.auth-item').removeClass('d-none');
+            $('#profile-nav-item').addClass('d-none');
+
+            // Redirect to login if not authenticated
+            window.location.href = '/login';
+        }
+    }
+
+    /**
+     * Check authentication status and load user data
+     */
+    function checkAuth() {
+        // Get token from storage
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+
+        if (!token) {
+            // Not authenticated
+            updateNavigation(false);
+            return;
+        }
+
+        // Load user data
+        fetchUserProfile(token);
+    }
+
+    /**
+     * Fetch user profile data from API
+     * @param {string} token - Authentication token
+     */
+    function fetchUserProfile(token) {
+        $.ajax({
+            url: '/api/users/me',
+            type: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            success: function(response) {
+                if ((response.status === 'success' && response.data) || response.id) {
+                    const userData = response.data || response;
+
+                    updateProfileUI(userData);
+
+                    fetchDiveStatistics(token);
+                } else {
+                    console.error('Failed to fetch profile:', response.error);
+                    updateNavigation(false);
+                }
+            },
+            error: function(xhr) {
+                console.error('Authentication error:', xhr.responseText);
+                updateNavigation(false);
+            }
+        });
+    }
+
+    /**
+     * Update profile UI with user data
+     * @param {Object} userData - User profile data
+     */
+    function updateProfileUI(userData) {
+        $('#user-name-display').text(`${userData.firstname} ${userData.lastname}`);
+
+        $('#user-username-display').text(userData.username);
+
+        $('#user-email').text(userData.email);
+
+        if (userData.bio) {
+            $('#user-bio-display').text(userData.bio);
+        } else {
+            $('#user-bio-display').text('No bio yet');
+        }
+
+        let visibilityText = 'Public';
+        if (userData.profile_visibility === 'friends_only') {
+            visibilityText = 'Friends Only';
+        } else if (userData.profile_visibility === 'private') {
+            visibilityText = 'Private';
+        }
+        $('#profile-visibility-display').text(visibilityText);
+
+        if (userData.avatar) {
+            $('#user-profile-image').attr('src', userData.avatar);
+        }
+
+        if (userData.measurement_system === 'imperial') {
+            $('#imperial-btn').addClass('active');
+            $('#metric-btn').removeClass('active');
+        } else {
+            $('#metric-btn').addClass('active');
+            $('#imperial-btn').removeClass('active');
+        }
+    }
+
+    /**
+     * Initialize measurement toggle buttons
+     */
+    function initMeasurementToggle() {
+        $('#metric-btn').on('click', function() {
+            $(this).addClass('active');
+            $('#imperial-btn').removeClass('active');
+            updateMeasurementPreference('metric');
+        });
+
+        $('#imperial-btn').on('click', function() {
+            $(this).addClass('active');
+            $('#metric-btn').removeClass('active');
+            updateMeasurementPreference('imperial');
+        });
+    }
+
+    /**
+     * Update user's measurement preference
+     * @param {string} system - Measurement system ('metric' or 'imperial')
+     */
+    function updateMeasurementPreference(system) {
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+
+        if (!token) return;
+
+        $.ajax({
+            url: '/api/users/me',
+            type: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            contentType: 'application/json',
+            data: JSON.stringify({
+                measurement_system: system
+            }),
+            success: function(response) {
+                if (response.status === 'success') {
+                    // Refresh charts with new measurement units
+                    fetchDiveStatistics(token);
+                } else {
+                    alert('Failed to update preference: ' + (response.error?.message || 'Unknown error'));
+                }
+            },
+            error: function(xhr) {
+                alert('Failed to update preference. Please try again.');
+            }
+        });
+    }
+
+    /**
+     * Fetch dive statistics for charts
+     * @param {string} token - Authentication token
+     */
+    function fetchDiveStatistics(token) {
+        // Fetch depth-time chart data
+        $.ajax({
+            url: '/api/users/me/depth-time-chart',
+            type: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    updateDepthChart(response.data.dives);
+                }
+            }
+        });
+
+        // Fetch frequency chart data
+        $.ajax({
+            url: '/api/users/me/frequency-chart?period=monthly&year=2025',
+            type: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    updateFrequencyChart(response.data.frequency);
+                }
+            }
+        });
+    }
+
+    // Chart variables
+    let depthChart, frequencyChart;
+
+    /**
+     * Initialize charts with empty data
+     */
+    function initCharts() {
+        // Initialize Depth Chart
+        const depthCtx = document.getElementById('depthChart').getContext('2d');
+        depthChart = new Chart(depthCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Max Depth (m)',
+                    data: [],
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        reverse: true,
+                        title: {
+                            display: true,
+                            text: 'Depth (meters)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Dive Date'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Initialize Frequency Chart
+        const freqCtx = document.getElementById('frequencyChart').getContext('2d');
+        frequencyChart = new Chart(freqCtx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Number of Dives',
+                    data: [],
+                    backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                    borderColor: '#3498db',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Dives'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Update depth chart with dive data
+     * @param {Array} dives - Array of dive data
+     */
+    function updateDepthChart(dives) {
+        // Extract labels and data
+        const labels = dives.map(dive => dive.date);
+        const depths = dives.map(dive => dive.max_depth);
+
+        // Update chart data
+        depthChart.data.labels = labels;
+        depthChart.data.datasets[0].data = depths;
+
+        // Update y-axis label based on measurement system
+        const isMetic = $('#metric-btn').hasClass('active');
+        depthChart.options.scales.y.title.text = `Depth (${isMetic ? 'meters' : 'feet'})`;
+
+        // Update chart
+        depthChart.update();
+    }
+
+    /**
+     * Update frequency chart with dive frequency data
+     * @param {Array} frequency - Array of frequency data
+     */
+    function updateFrequencyChart(frequency) {
+        // Extract labels and data
+        const labels = frequency.map(item => item.label);
+        const counts
