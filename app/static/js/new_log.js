@@ -208,8 +208,9 @@ async function handleFormSubmit(e) {
             }
         }
         
-        // Redirect to the dive details page or my logs page
-        window.location.href = '/?message=dive_created';
+        // Show success message and redirect to my-logs page
+        alert('Dive log created successfully!');
+        window.location.href = '/my-logs?success=dive_created';
     } catch (error) {
         console.error('Error submitting form:', error);
         alert('Failed to save dive log. Please try again.');
