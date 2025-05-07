@@ -1,16 +1,19 @@
 # app/dives/routes.py
 
-from flask import request, jsonify, abort
+from flask import request, jsonify, abort, current_app, url_for
 from app.models import Dive
 from app.dives import dives_bp
 from app import db
 from datetime import datetime
+import os
+from werkzeug.utils import secure_filename
+import uuid
 
 # Helper: Convert a Dive object to dictionary
 def dive_to_dict(dive):
     return {
         'id': dive.id,
-        'user_id': dive.user_id,  # fixed typo: usåer_id -> user_id
+        'user_id': dive.user_id,
         'dive_number': dive.dive_number,
         'start_time': dive.start_time.isoformat() if dive.start_time else None,
         'end_time': dive.end_time.isoformat() if dive.end_time else None,
@@ -25,6 +28,11 @@ def dive_to_dict(dive):
         'location_thumbnail': dive.location_thumbnail,
         'created_at': dive.created_at.isoformat() if dive.created_at else None
     }
+
+# Get allowed file extensions
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg', 'gif'}
 
 # GET /api/dives/ - Retrieve all diving records
 @dives_bp.route('/', methods=['GET'])
@@ -100,3 +108,41 @@ def delete_dive(dive_id):
     db.session.delete(dive)
     db.session.commit()
     return '', 204
+
+# POST /api/dives/<dive_id>/upload - Upload media for a dive
+@dives_bp.route('/<int:dive_id>/upload', methods=['POST'])
+def upload_dive_media(dive_id):
+    dive = Dive.query.get_or_404(dive_id)
+    
+    if 'media' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+        
+    file = request.files['media']
+    
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+        
+    if file and allowed_file(file.filename):
+        # Generate unique filename
+        filename = secure_filename(file.filename)
+        unique_filename = f"{uuid.uuid4().hex}_{filename}"
+        
+        # Ensure upload directory exists
+        upload_dir = os.path.join(current_app.static_folder, 'uploads', 'dives')
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # Save the file
+        file_path = os.path.join(upload_dir, unique_filename)
+        file.save(file_path)
+        
+        # Update the dive record with the file path
+        relative_path = f'/static/uploads/dives/{unique_filename}'
+        dive.media = relative_path
+        db.session.commit()
+        
+        return jsonify({
+            "message": "File uploaded successfully",
+            "media_url": relative_path
+        }), 201
+    
+    return jsonify({"error": "Invalid file type"}), 400
