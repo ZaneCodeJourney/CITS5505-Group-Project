@@ -1,0 +1,19 @@
+.cursor/
+
+# Ignore virtual environment folders
+.venv/
+venv/
+ENV/
+env/
+5505venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# Database files
+*.db
+
+# Create database files
+create_db.py

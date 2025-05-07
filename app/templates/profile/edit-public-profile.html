@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile | Dive Logger{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+<style>
+    .profile-container {
+        margin-top: 30px;
+        margin-bottom: 50px;
+    }
+
+    .page-title {
+        font-size: 32px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: var(--primary-color);
+    }
+
+    .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 30px;
+    }
+
+    .breadcrumb-item a {
+        color: var(--accent-color);
+    }
+
+    .breadcrumb-item.active {
+        color: var(--light-text);
+    }
+
+    .title-wavy {
+        position: relative;
+        padding-bottom: 15px;
+    }
+
+    .title-wavy::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 80px;
+        height: 3px;
+        background-color: var(--accent-color);
+        border-radius: 3px;
+    }
+
+    .profile-image-container {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .profile-image {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #eee;
+    }
+
+    .avatar-upload-btn {
+        background-color: var(--accent-color);
+        color: white;
+        font-weight: 500;
+        border: none;
+    }
+
+    .avatar-upload-btn:hover {
+        background-color: #2980b9;
+        color: white;
+    }
+
+    .form-section {
+        margin-bottom: 30px;
+    }
+
+    .view-profile-btn {
+        background-color: #3498db;
+        color: white;
+        font-weight: 500;
+        border: none;
+    }
+
+    .view-profile-btn:hover {
+        background-color: #2980b9;
+        color: white;
+    }
+
+    #avatar-upload {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Main content -->
+<div class="container profile-container">
+    <!-- Breadcrumb navigation -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('main.profile') }}">Account</a></li>
+            <li class="breadcrumb-item active">Edit Profile</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header with Title and View Profile Button -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="page-title title-wavy">Edit My Public Profile</h1>
+        <a href="{{ url_for('main.profile') }}" class="btn view-profile-btn">View My Public Profile</a>
+    </div>
+
+    <!-- Alert Messages -->
+    <div class="alert alert-success d-none" id="save-success-alert">
+        Profile updated successfully!
+    </div>
+    <div class="alert alert-danger d-none" id="save-error-alert"></div>
+
+    <!-- Edit Form -->
+    <form id="profile-edit-form" class="needs-validation" novalidate>
+        <div class="row">
+            <div class="col-md-4">
+                <!-- User Avatar Upload -->
+                <div class="profile-image-container">
+                    <img src="{{ user.avatar or 'https://via.placeholder.com/150' }}" alt="User Avatar" class="profile-image" id="user-profile-image">
+                    <input type="file" id="avatar-upload" accept="image/*">
+                    <button type="button" class="btn avatar-upload-btn mt-2" id="change-avatar-btn">
+                        Change Avatar
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <!-- Basic Information Edit Form -->
+                <div class="form-section">
+                    <h4 class="mb-3">Basic Information</h4>
+                    <div class="mb-3">
+                        <label for="firstname" class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="firstname" name="firstname" value="{{ user.firstname }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="lastname" class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="lastname" name="lastname" value="{{ user.lastname }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+                    </div>
+                </div>
+
+                <!-- About Me -->
+                <div class="form-section">
+                    <h4 class="mb-3">About Me</h4>
+                    <div class="mb-3">
+                        <label for="bio" class="form-label">Bio</label>
+                        <textarea class="form-control" id="bio" name="bio" rows="4" placeholder="Tell other divers about yourself...">{{ user.bio or '' }}</textarea>
+                        <div class="form-text">Maximum 500 characters</div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="d-flex justify-content-end mt-4">
+                    <a href="{{ url_for('main.profile') }}" class="btn btn-secondary me-2">Cancel</a>
+                    <button type="submit" class="btn avatar-upload-btn">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/edit-profile.js') }}"></script>
+{% endblock %} 

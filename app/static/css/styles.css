@@ -1,0 +1,623 @@
+/*
+* Dive.site - Main Stylesheet
+* Author: Development Team
+* Version: 1.0.0
+* Last Updated: 2025-04-27
+*/
+
+/* Global variables */
+:root {
+    --primary-color: #2c3e50;    /* Primary color */
+    --accent-color: #3498db;     /* Accent color */
+    --accent-light: #5dade2;     /* Accent color (light) */
+    --text-color: #333;          /* Text color */
+    --light-text: #7f8c8d;       /* Light text */
+    --bg-color: #f9f9f9;         /* Background color */
+    --card-bg: #ffffff;          /* Card background */
+    --danger-color: #e74c3c;     /* Danger/warning color - red */
+    --warning-color: #f39c12;    /* Warning color - yellow */
+    --success-color: #2ecc71;    /* Success color - green */
+    --rating-color: #f39c12;     /* Rating star color */
+}
+
+/* Base styles */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+a {
+    text-decoration: none;
+    color: var(--accent-color);
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: var(--accent-light);
+    text-decoration: none;
+}
+
+/* Navigation bar styles */
+.navbar {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 15px 0;
+    border: none;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    color: white;
+    font-weight: 500;
+    padding: 0 15px;
+    font-size: 14px;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+    color: var(--accent-light);
+}
+
+.profile-img {
+    width: 30px;
+    height: 30px;
+    object-fit: cover;
+    border: 2px solid white;
+}
+
+/* Map background styles */
+.map-container {
+    background-image: url('../images/map-background.jpg');
+    background-size: cover;
+    background-position: center;
+    min-height: calc(100vh - 70px);
+    position: relative;
+    padding-bottom: 30px;
+}
+
+/* Search bar styles */
+.search-container {
+    padding: 50px 0;
+}
+
+.search-bar {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.search-bar input {
+    height: 50px;
+    border-radius: 25px;
+    padding-left: 20px;
+    padding-right: 60px;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.search-btn {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    background-color: #ff6600;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+}
+
+.search-btn:hover {
+    background-color: #e65c00;
+    color: white;
+}
+
+/* Statistics information styles */
+.statistics-container {
+    margin-bottom: 30px;
+}
+
+.statistics-wrapper {
+    background-color: var(--card-bg);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-icon {
+    margin-right: 15px;
+    color: var(--accent-color);
+    font-size: 2rem;
+}
+
+.stat-icon img {
+    width: 40px;
+    height: 40px;
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+
+.stat-icon .bi-exclamation-triangle-fill {
+    color: var(--danger-color);
+    animation: blink 2s infinite;
+}
+
+.stat-icon .bi-person-fill {
+    color: var(--accent-color);
+}
+
+.stat-icon .bi-geo-alt {
+    color: var(--accent-color);
+}
+
+.stat-icon .bi-water {
+    color: var(--accent-color);
+}
+
+.stat-number {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+    color: var(--accent-color);
+}
+
+.stat-label {
+    margin: 0;
+    font-size: 12px;
+    color: var(--light-text);
+    font-weight: 500;
+}
+
+/* Loading animation */
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: var(--light-text);
+}
+
+.loading i {
+    font-size: 30px;
+    animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Error message styles */
+.error-message {
+    padding: 10px;
+    color: var(--danger-color);
+    text-align: center;
+    border: 1px solid rgba(231, 76, 60, 0.2);
+    border-radius: 5px;
+    margin: 10px 0;
+    background-color: rgba(231, 76, 60, 0.05);
+}
+
+/* No data prompt styles */
+.no-data {
+    text-align: center;
+    padding: 20px;
+    color: var(--light-text);
+    font-style: italic;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .statistics-container {
+        padding: 0 15px;
+    }
+
+    .content-container {
+        padding: 0 15px;
+    }
+
+    .stat-item {
+        margin-bottom: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .search-bar {
+        width: 90%;
+    }
+
+    .diver-card .diver-avatar img {
+        width: 50px;
+        height: 50px;
+    }
+}
+
+/* Tooltip styles */
+.tooltip-inner {
+    background-color: var(--primary-color);
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+.tooltip.bs-tooltip-top .arrow::before {
+    border-top-color: var(--primary-color);
+}
+
+/* Style overrides */
+.btn:focus, .form-control:focus {
+    box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+}
+
+/* Animation effects */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* Warning icon blinking effect - for high risk warnings */
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.shark-warning.high i {
+    animation: blink 2s infinite;
+}
+
+/* Content area styles */
+.content-container {
+    margin-top: 20px;
+}
+
+.content-section {
+    background-color: var(--card-bg);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    height: 100%;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+/* Dive site card styles */
+.dive-site-card {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.site-image img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.site-rating {
+    margin-bottom: 5px;
+}
+
+.star {
+    color: #ddd;
+    font-size: 14px;
+}
+
+.star:before {
+    content: "★";
+}
+
+.star.filled {
+    color: var(--rating-color);
+}
+
+.site-name {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 5px 0;
+}
+
+.site-location {
+    font-size: 12px;
+    color: var(--light-text);
+    margin-bottom: 10px;
+}
+
+.site-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--light-text);
+    align-items: center;
+}
+
+/* Shark warning icon styles */
+.shark-warning {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+}
+
+.shark-warning.high i {
+    color: var(--danger-color);
+}
+
+.shark-warning.medium i {
+    color: var(--warning-color);
+}
+
+.shark-warning.low i {
+    color: var(--success-color);
+}
+
+/* Dive log card styles */
+.dive-log-card {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+.log-date {
+    font-size: 12px;
+    color: var(--light-text);
+    margin-bottom: 10px;
+}
+
+.diver-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.diver-avatar img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+    border: 2px solid #eee;
+}
+
+.diver-name {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.dive-location {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 5px 0;
+}
+
+.dive-site-location {
+    font-size: 12px;
+    color: var(--light-text);
+}
+
+/* Shark alert card styles */
+.shark-alert-card {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    position: relative;
+    cursor: pointer;
+}
+
+.shark-icon {
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 2rem;
+    color: var(--primary-color);
+}
+
+.shark-species {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 5px 0;
+    text-align: center;
+}
+
+.alert-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--light-text);
+    margin: 10px 0;
+}
+
+.alert-level {
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 10px;
+    display: inline-block;
+    margin: 0 auto;
+    text-align: center;
+    width: fit-content;
+    display: block;
+}
+
+.alert-level.high {
+    background-color: rgba(231, 76, 60, 0.1);
+    color: var(--danger-color);
+}
+
+.alert-level.medium {
+    background-color: rgba(243, 156, 18, 0.1);
+    color: var(--warning-color);
+}
+
+.alert-level.low {
+    background-color: rgba(46, 204, 113, 0.1);
+    color: var(--success-color);
+}
+
+.alert-date {
+    font-size: 12px;
+    color: var(--light-text);
+    text-align: center;
+    margin-top: 5px;
+}
+
+/* Diver card styles */
+.diver-card {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+.diver-card .diver-avatar img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 15px;
+    border: 3px solid #eee;
+    cursor: pointer;
+}
+
+.diver-card .diver-avatar img:hover {
+    border-color: var(--accent-color);
+}
+
+.diver-card .diver-info {
+    display: block;
+    flex: 1;
+}
+
+.last-dive-date {
+    font-size: 11px;
+    color: var(--light-text);
+    margin-bottom: 5px;
+}
+
+.diver-card .diver-name {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0 0 5px 0;
+}
+
+.diver-card .dive-count {
+    font-size: 14px;
+    color: var(--accent-color);
+    font-weight: 500;
+}
+
+/*
+ * Authentication related styles
+ */
+
+/* Profile navigation item - used to hide/show based on auth status */
+.auth-item, #profile-nav-item {
+    transition: opacity 0.3s ease;
+}
+
+/* Active nav link */
+.navbar-dark .navbar-nav .nav-link.active {
+    color: var(--accent-light);
+    font-weight: bold;
+}
+
+/* Login and profile page specific styles */
+
+/* Tab navigation active indicator */
+.nav-tabs .nav-item .nav-link {
+    position: relative;
+    color: var(--text-color);
+    background: transparent;
+    border: none;
+    padding: 10px 15px;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-item .nav-link.active {
+    color: var(--accent-color);
+    background: transparent;
+    border: none;
+}
+
+.nav-tabs .nav-item .nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--accent-color);
+    border-radius: 3px 3px 0 0;
+}
+
+/* Button styles */
+.btn-primary {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-light);
+    border-color: var(--accent-light);
+}
+
+.btn-outline-primary {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+/* Edit form row styles */
+.edit-form-row {
+    padding: 15px;
+    background-color: #f5f5f5;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+/* Avatar upload styles */
+#avatar-upload {
+    display: none;
+}
+
+.avatar-upload-btn {
+    display: block;
+    margin: 10px auto;
+    background-color: transparent;
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    border-radius: 20px;
+    padding: 5px 15px;
+    font-size: 14px;
+}
+
+.avatar-upload-btn:hover {
+    background-color: var(--accent-color);
+    color: white;
+}

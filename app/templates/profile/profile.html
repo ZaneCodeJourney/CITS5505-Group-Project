@@ -1,0 +1,402 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - Dive.site{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+<style>
+    .profile-container {
+        margin-top: 30px;
+        margin-bottom: 50px;
+    }
+
+    .page-title {
+        font-size: 32px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: var(--primary-color);
+    }
+
+    .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 30px;
+    }
+
+    .breadcrumb-item a {
+        color: var(--accent-color);
+    }
+
+    .breadcrumb-item.active {
+        color: var(--light-text);
+    }
+
+    .title-wavy {
+        position: relative;
+        padding-bottom: 15px;
+    }
+
+    .title-wavy::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 80px;
+        height: 3px;
+        background-color: var(--accent-color);
+        border-radius: 3px;
+    }
+
+    .profile-tabs {
+        margin-top: 40px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .profile-tabs .nav-link {
+        color: var(--light-text);
+        font-weight: 500;
+        padding: 10px 20px;
+        border: none;
+        border-bottom: 3px solid transparent;
+    }
+
+    .profile-tabs .nav-link.active {
+        color: var(--accent-color);
+        background: transparent;
+        border-bottom: 3px solid var(--accent-color);
+    }
+
+    .tab-content {
+        padding: 30px 0;
+    }
+
+    .profile-section {
+        margin-top: 40px;
+    }
+
+    .profile-image-container {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .profile-image {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #eee;
+    }
+
+    .profile-info-box {
+        background: #f9f9f9;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .profile-info-label {
+        color: var(--light-text);
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 5px;
+    }
+
+    .profile-info-value {
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--text-color);
+    }
+
+    .measurement-toggle {
+        display: inline-flex;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .measurement-toggle button {
+        padding: 8px 20px;
+        border: none;
+        background: white;
+        color: var(--light-text);
+    }
+
+    .measurement-toggle button.active {
+        background-color: var(--accent-color);
+        color: white;
+    }
+
+    .public-profile-btn {
+        background-color: #3498db;
+        color: white;
+        font-weight: 500;
+        border: none;
+        border-radius: 4px;
+        padding: 8px 16px;
+    }
+
+    .public-profile-btn:hover {
+        background-color: #2980b9;
+        color: white;
+    }
+
+    .chart-container {
+        margin-top: 40px;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .chart-title {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: var(--primary-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Main content -->
+<div class="container profile-container">
+    <!-- Breadcrumb navigation -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+            <li class="breadcrumb-item active">Account</li>
+        </ol>
+    </nav>
+
+    <!-- Page header with title and public profile button -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="page-title title-wavy">My Account</h1>
+        <a href="{{ url_for('main.edit_profile') }}" class="btn public-profile-btn">EDIT MY PUBLIC PROFILE</a>
+    </div>
+
+    <!-- Profile tabs navigation -->
+    <ul class="nav nav-tabs profile-tabs" id="profileTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="true">MY PUBLIC PROFILE</button>
+        </li>
+
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab" aria-controls="password" aria-selected="false">CHANGE PASSWORD</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="email-tab" data-bs-toggle="tab" data-bs-target="#email" type="button" role="tab" aria-controls="email" aria-selected="false">CHANGE EMAIL</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="notification-tab" data-bs-toggle="tab" data-bs-target="#notification" type="button" role="tab" aria-controls="notification" aria-selected="false">NOTIFICATIONS</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="delete-tab" data-bs-toggle="tab" data-bs-target="#delete" type="button" role="tab" aria-controls="delete" aria-selected="false">DELETE ACCOUNT</button>
+        </li>
+    </ul>
+
+    <!-- Tab content -->
+    <div class="tab-content" id="profileTabsContent">
+        <!-- Profile tab content -->
+        <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+            <div class="row">
+                <!-- Profile image and info -->
+                <div class="col-md-4">
+                    <div class="profile-section">
+                        <div class="profile-image-container">
+                            <img src="{{ user.avatar or 'https://via.placeholder.com/150' }}" alt="Profile Picture" class="profile-image">
+                        </div>
+
+                        <div class="profile-info-box">
+                            <div class="mb-3">
+                                <div class="profile-info-label">NAME</div>
+                                <div class="profile-info-value">{{ user.firstname }} {{ user.lastname }}</div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="profile-info-label">USERNAME</div>
+                                <div class="profile-info-value">{{ user.username }}</div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="profile-info-label">MEMBER SINCE</div>
+                                <div class="profile-info-value">{{ user.created_at.strftime('%B %d, %Y') }}</div>
+                            </div>
+                            <div>
+                                <div class="profile-info-label">DIVES LOGGED</div>
+                                <div class="profile-info-value">{{ dives|length }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dive statistics and charts -->
+                <div class="col-md-8">
+                    <div class="profile-section">
+                        <h2 class="chart-title">Diving Statistics</h2>
+
+                        <!-- Measurement toggle buttons -->
+                        <div class="d-flex justify-content-end mb-3">
+                            <div class="measurement-toggle">
+                                <button class="active" id="metric-toggle">METRIC</button>
+                                <button id="imperial-toggle">IMPERIAL</button>
+                            </div>
+                        </div>
+
+                        <!-- Statistics overview -->
+                        <div class="row">
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="profile-info-box text-center">
+                                    <div class="profile-info-label">DIVES</div>
+                                    <div class="profile-info-value">{{ dives|length }}</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="profile-info-box text-center">
+                                    <div class="profile-info-label">MAX DEPTH</div>
+                                    <div class="profile-info-value"><span id="max-depth-value">30</span> <span class="unit">m</span></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="profile-info-box text-center">
+                                    <div class="profile-info-label">TOTAL TIME</div>
+                                    <div class="profile-info-value">50h 30m</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="profile-info-box text-center">
+                                    <div class="profile-info-label">AVG DEPTH</div>
+                                    <div class="profile-info-value"><span id="avg-depth-value">15</span> <span class="unit">m</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Depth chart container -->
+                        <div class="chart-container">
+                            <h3 class="chart-title">Depth History</h3>
+                            <canvas id="depthChart"></canvas>
+                        </div>
+
+                        <!-- Locations chart container -->
+                        <div class="chart-container">
+                            <h3 class="chart-title">Dive Locations</h3>
+                            <canvas id="locationsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Password change tab content -->
+        <div class="tab-pane fade" id="password" role="tabpanel" aria-labelledby="password-tab">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="profile-info-box">
+                        <h3 class="mb-4">Change Password</h3>
+                        <form id="password-form">
+                            <div class="mb-3">
+                                <label for="current-password" class="form-label">Current Password</label>
+                                <input type="password" class="form-control" id="current-password" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="new-password" class="form-label">New Password</label>
+                                <input type="password" class="form-control" id="new-password" required>
+                                <div class="form-text">Use 8+ characters with a mix of letters, numbers & symbols</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirm-password" class="form-label">Confirm New Password</label>
+                                <input type="password" class="form-control" id="confirm-password" required>
+                            </div>
+                            <button type="submit" class="btn public-profile-btn">CHANGE PASSWORD</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email change tab content -->
+        <div class="tab-pane fade" id="email" role="tabpanel" aria-labelledby="email-tab">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="profile-info-box">
+                        <h3 class="mb-4">Change Email Address</h3>
+                        <form id="email-form">
+                            <div class="mb-3">
+                                <label for="current-email" class="form-label">Current Email</label>
+                                <input type="email" class="form-control" id="current-email" value="{{ user.email }}" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="new-email" class="form-label">New Email</label>
+                                <input type="email" class="form-control" id="new-email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password-email" class="form-label">Current Password</label>
+                                <input type="password" class="form-control" id="password-email" required>
+                            </div>
+                            <button type="submit" class="btn public-profile-btn">CHANGE EMAIL</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications tab content -->
+        <div class="tab-pane fade" id="notification" role="tabpanel" aria-labelledby="notification-tab">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="profile-info-box">
+                        <h3 class="mb-4">Notification Settings</h3>
+                        <form id="notification-form">
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="notification-email" checked>
+                                <label class="form-check-label" for="notification-email">Receive email notifications</label>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="notification-dive" checked>
+                                <label class="form-check-label" for="notification-dive">Dive log comments</label>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="notification-marketing">
+                                <label class="form-check-label" for="notification-marketing">Marketing emails</label>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="notification-site" checked>
+                                <label class="form-check-label" for="notification-site">Site updates and new features</label>
+                            </div>
+                            <button type="submit" class="btn public-profile-btn">SAVE PREFERENCES</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete account tab content -->
+        <div class="tab-pane fade" id="delete" role="tabpanel" aria-labelledby="delete-tab">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="profile-info-box">
+                        <h3 class="mb-4">Delete Account</h3>
+                        <div class="alert alert-danger">
+                            <strong>Warning:</strong> This action cannot be undone. All your data will be permanently deleted.
+                        </div>
+                        <form id="delete-form">
+                            <div class="mb-3">
+                                <label for="delete-password" class="form-label">Enter your password to confirm</label>
+                                <input type="password" class="form-control" id="delete-password" required>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="delete-confirm" required>
+                                <label class="form-check-label" for="delete-confirm">I understand that this action is permanent and cannot be reversed</label>
+                            </div>
+                            <button type="submit" class="btn btn-danger">DELETE MY ACCOUNT</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Include Chart.js for data visualization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+{% endblock %} 

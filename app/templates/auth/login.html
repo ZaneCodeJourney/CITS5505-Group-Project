@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Dive.site{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+<style>
+    .login-container {
+        max-width: 500px;
+        margin: 80px auto;
+        padding: 30px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .login-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: var(--primary-color);
+        position: relative;
+    }
+
+    .login-title::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: -10px;
+        width: 50px;
+        height: 3px;
+        background-color: var(--accent-color);
+        border-radius: 3px;
+    }
+
+    .login-form .form-control {
+        height: 48px;
+        margin-bottom: 20px;
+        border: none;
+        border-bottom: 1px solid #ddd;
+        border-radius: 0;
+        padding-left: 0;
+    }
+
+    .login-form .form-control:focus {
+        box-shadow: none;
+        border-color: var(--accent-color);
+    }
+
+    .login-btn {
+        background-color: #ff6600;
+        border: none;
+        height: 48px;
+        border-radius: 4px;
+        font-weight: 500;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .login-btn:hover {
+        background-color: #e65c00;
+    }
+
+    .form-check-label {
+        color: var(--light-text);
+    }
+
+    .forgot-password {
+        color: var(--accent-color);
+        text-decoration: none;
+        float: right;
+    }
+
+    .forgot-password:hover {
+        text-decoration: underline;
+    }
+
+    .register-link {
+        margin-top: 20px;
+        text-align: left;
+        color: var(--light-text);
+    }
+
+    .register-link a {
+        color: var(--accent-color);
+        text-decoration: none;
+    }
+
+    .register-link a:hover {
+        text-decoration: underline;
+    }
+
+    .divider {
+        text-align: center;
+        margin: 30px 0;
+        position: relative;
+    }
+
+    .divider::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background-color: #eee;
+    }
+
+    .divider span {
+        position: relative;
+        background-color: #fff;
+        padding: 0 15px;
+        color: var(--light-text);
+    }
+
+    .social-login {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+    .social-btn {
+        flex: 1;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        border-radius: 4px;
+        color: white;
+        font-weight: 500;
+    }
+
+    .facebook-btn {
+        background-color: #3b5998;
+    }
+
+    .google-btn {
+        background-color: #dd4b39;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Main content -->
+<div class="container">
+    <div class="login-container">
+        <h2 class="login-title">Login</h2>
+
+        <!-- Login form -->
+        <form id="login-form" class="login-form" method="POST" action="{{ url_for('auth.login') }}">
+            {{ form.hidden_tag() }}
+            <!-- Email input -->
+            <div class="mb-3">
+                {{ form.email(class="form-control", id="email", placeholder="Your Email Address") }}
+            </div>
+
+            <!-- Password input -->
+            <div class="mb-3">
+                {{ form.password(class="form-control", id="password", placeholder="Your Password") }}
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <!-- Remember me checkbox -->
+                <div class="form-check">
+                    {{ form.remember_me(class="form-check-input", id="remember-me") }}
+                    <label class="form-check-label" for="remember-me">REMEMBER ME</label>
+                </div>
+
+                <!-- Forgot password link -->
+                <a href="{{ url_for('auth.reset_password_request') }}" class="forgot-password">Forgot password?</a>
+            </div>
+
+            <!-- Login button -->
+            {{ form.submit(class="btn btn-primary login-btn") }}
+
+            <!-- Register link -->
+            <div class="register-link">
+                Don't have an account yet? <a href="{{ url_for('auth.register') }}">Register now</a>
+            </div>
+        </form>
+
+        <!-- Social login options -->
+        <div class="divider">
+            <span>OR CONTINUE WITH</span>
+        </div>
+
+        <div class="social-login">
+            <!-- Facebook login button -->
+            <button class="social-btn facebook-btn">Facebook</button>
+
+            <!-- Google login button -->
+            <button class="social-btn google-btn">Google</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+{% endblock %} 

@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Dive.site{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+<style>
+  .register-container {
+      max-width: 600px;
+      margin: 60px auto;
+      padding: 30px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .register-title {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+      position: relative;
+  }
+
+  .register-title::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -10px;
+      width: 50px;
+      height: 3px;
+      background-color: var(--accent-color);
+      border-radius: 3px;
+  }
+
+  .register-form .form-control {
+      height: 48px;
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding-left: 12px;
+  }
+
+  .register-form .form-control:focus {
+      box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+      border-color: var(--accent-color);
+  }
+
+  .register-btn {
+      background-color: #ff6600;
+      border: none;
+      height: 48px;
+      border-radius: 4px;
+      font-weight: 500;
+      width: 100%;
+      margin-top: 10px;
+  }
+
+  .register-btn:hover {
+      background-color: #e65c00;
+  }
+
+  .login-link {
+      margin-top: 20px;
+      text-align: center;
+      color: var(--light-text);
+  }
+
+  .login-link a {
+      color: var(--accent-color);
+      text-decoration: none;
+  }
+
+  .login-link a:hover {
+      text-decoration: underline;
+  }
+
+  .form-label {
+      font-weight: 500;
+      color: var(--primary-color);
+  }
+
+  .form-text {
+      color: var(--light-text);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Main content -->
+<div class="container">
+  <div class="register-container">
+    <h2 class="register-title">Create Your Account</h2>
+
+    <!-- Registration form -->
+    <form id="register-form" class="register-form" method="POST" action="{{ url_for('auth.register') }}">
+      {{ form.hidden_tag() }}
+      <div class="row">
+        <!-- First Name input -->
+        <div class="col-md-6 mb-3">
+          <label for="firstname" class="form-label">First Name</label>
+          {{ form.firstname(class="form-control", id="firstname") }}
+        </div>
+
+        <!-- Last Name input -->
+        <div class="col-md-6 mb-3">
+          <label for="lastname" class="form-label">Last Name</label>
+          {{ form.lastname(class="form-control", id="lastname") }}
+        </div>
+      </div>
+
+      <!-- Username input -->
+      <div class="mb-3">
+        <label for="username" class="form-label">Username</label>
+        {{ form.username(class="form-control", id="username") }}
+        <div class="form-text">Choose a unique username for your profile</div>
+      </div>
+
+      <!-- Email input -->
+      <div class="mb-3">
+        <label for="email" class="form-label">Email Address</label>
+        {{ form.email(class="form-control", id="email") }}
+        <div class="form-text">We'll send a verification link to this email</div>
+      </div>
+
+      <!-- Password input -->
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        {{ form.password(class="form-control", id="password") }}
+        <div class="form-text">Use 8+ characters with a mix of letters, numbers & symbols</div>
+      </div>
+      
+      <!-- Confirm Password input -->
+      <div class="mb-3">
+        <label for="password2" class="form-label">Confirm Password</label>
+        {{ form.password2(class="form-control", id="password2") }}
+      </div>
+
+      <!-- Date of Birth input -->
+      <div class="mb-3">
+        <label for="dob" class="form-label">Date of Birth</label>
+        {{ form.dob(class="form-control", id="dob") }}
+      </div>
+
+      <!-- Terms agreement checkbox -->
+      <div class="mb-3 form-check">
+        {{ form.terms_agreement(class="form-check-input", id="terms-agreement") }}
+        <label class="form-check-label" for="terms-agreement">
+          I agree to the <a href="{{ url_for('main.terms') }}" target="_blank">Terms of Service</a> and <a href="{{ url_for('main.privacy') }}" target="_blank">Privacy Policy</a>
+        </label>
+      </div>
+
+      <!-- Register button -->
+      {{ form.submit(class="btn btn-primary register-btn") }}
+
+      <!-- Login link -->
+      <div class="login-link">
+        Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+{% endblock %} 
