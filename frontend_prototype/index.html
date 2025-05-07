@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DiveLogger - Track Your Underwater Adventures</title>
+    <link rel="stylesheet" href="public/css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <h1>DiveLogger</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="my-logs.html">My Logs</a></li>
+                <li><a href="new-log.html">New Log</a></li>
+                <li><a href="share.html">Share</a></li>
+                <li><a href="login.html" class="login-btn">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Track Your Underwater Adventures</h1>
+            <p>Record, analyse and share your scuba diving experiences with fellow divers</p>
+            <a href="register.html" class="btn">Sign Up Now</a>
+        </div>
+    </section>
+
+    <section class="dive-map">
+        <h2>Explore Dive Sites</h2>
+        <div id="map"></div>
+    </section>
+
+    <!-- Combined features section with 3-column layout -->
+    <section class="features-section">
+        <div class="features-container">
+            <!-- Top Dive Locations Column -->
+            <div class="feature-column">
+                <h2>Top Dive Locations</h2>
+                <div class="feature-cards">
+                    <div class="card">
+                        <img src="public/images/great-barrier-reef.jpg" alt="Great Barrier Reef">
+                        <h3>Great Barrier Reef, Australia</h3>
+                        <p>Visibility: 15-30m</p>
+                        <p>Difficulty: Beginner to Advanced</p>
+                    </div>
+                    <div class="card">
+                        <img src="public/images/helengeli.jpg" alt="Helengeli">
+                        <h3>Helengeli, Male Atoll, Maldives</h3>
+                        <p>Visibility: 30m+</p>
+                        <p>Difficulty: Beginner</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Marine Life Column -->
+            <div class="feature-column">
+                <h2>Recently Spotted Fauna</h2>
+                <div class="feature-cards">
+                    <div class="sighting">
+                        <img src="public/images/turtle.jpg" alt="Sea Turtle">
+                        <div class="sighting-info">
+                            <h3>Green Sea Turtle</h3>
+                            <p>Spotted by <a href="#">JaneDiver</a> at Great Barrier Reef</p>
+                            <p>2 days ago</p>
+                        </div>
+                    </div>
+                    <div class="sighting">
+                        <img src="public/images/manta.jpg" alt="Manta Ray">
+                        <div class="sighting-info">
+                            <h3>Manta Ray</h3>
+                            <p>Spotted by <a href="#">DiveExplorer</a> at Maldives</p>
+                            <p>5 days ago</p>
+                        </div>
+                    </div>
+                    <div class="sighting">
+                        <img src="public/images/whale-shark.jpg" alt="Whale Shark">
+                        <div class="sighting-info">
+                            <h3>Whale Shark</h3>
+                            <p>Spotted by <a href="#">OceanWanderer</a> at Philippines</p>
+                            <p>1 week ago</p>
+                        </div>
+                    </div>
+                    <div class="sighting">
+                        <img src="public/images/octopus.jpg" alt="Blue-ringed Octopus">
+                        <div class="sighting-info">
+                            <h3>Blue-ringed Octopus</h3>
+                            <p>Spotted by <a href="#">MarinePhotographer</a> at Indonesia</p>
+                            <p>2 weeks ago</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Logs Column -->
+            <div class="feature-column">
+                <h2>Recent Public Dive Logs</h2>
+                <div class="feature-cards">
+                    <div class="log-entry">
+                        <div class="log-header">
+                            <h3>Night Dive at Koh Tao</h3>
+                            <span class="date">April 15, 2023</span>
+                        </div>
+                        <p class="diver">By <a href="#">ScubaMaster</a></p>
+                        <p>Amazing visibility and spotted several octopi during this night dive!</p>
+                        <div class="log-details">
+                            <span>Depth: 18m</span>
+                            <span>Duration: 45 min</span>
+                            <span>Rating: ★★★★★</span>
+                        </div>
+                        <a href="#" class="btn btn-small">View Full Log</a>
+                    </div>
+                    <div class="log-entry">
+                        <div class="log-header">
+                            <h3>Wreck Dive at SS Yongala</h3>
+                            <span class="date">April 10, 2023</span>
+                        </div>
+                        <p class="diver">By <a href="#">DeepBlue</a></p>
+                        <p>Incredible marine life around this historic wreck. Saw schools of barracuda and several reef sharks.</p>
+                        <div class="log-details">
+                            <span>Depth: 28m</span>
+                            <span>Duration: 50 min</span>
+                            <span>Rating: ★★★★☆</span>
+                        </div>
+                        <a href="#" class="btn btn-small">View Full Log</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-about">
+                <h3>DiveLogger</h3>
+                <p>Your digital diving logbook for tracking and sharing underwater adventures.</p>
+            </div>
+            <div class="footer-links">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="terms.html">Terms of Service</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h3>Contact Us</h3>
+                <p>Email: info@divelogger.com</p>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 DiveLogger. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="public/js/map.js"></script>
+    <script src="public/js/main.js"></script>
+</body>
+</html> 

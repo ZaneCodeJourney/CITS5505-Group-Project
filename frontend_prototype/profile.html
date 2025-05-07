@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - DiveLogger</title>
+    <link rel="stylesheet" href="public/css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <h1>DiveLogger</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="my-logs.html">My Logs</a></li>
+                <li><a href="new-log.html">New Log</a></li>
+                <li><a href="share.html">Share</a></li>
+                <li><a href="profile.html" class="user-menu active">DiverJiaoo <span class="dropdown-icon">▼</span></a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="profile-container">
+        <div class="profile-sidebar">
+            <div class="profile-avatar">
+                <img src="public/images/profile-avatar.jpg" alt="Profile Avatar">
+                <button class="btn btn-small">Change Picture</button>
+            </div>
+
+            <div class="profile-navigation">
+                <ul class="profile-nav-list">
+                    <li class="profile-nav-item active"><a href="#personal-info">Personal Information</a></li>
+                    <li class="profile-nav-item"><a href="#account-settings">Account Settings</a></li>
+                    <li class="profile-nav-item"><a href="#dive-certifications">Dive Certifications</a></li>
+                    <li class="profile-nav-item"><a href="#equipment">Your Equipment</a></li>
+                    <li class="profile-nav-item"><a href="#preferences">Preferences</a></li>
+                    <li class="profile-nav-item"><a href="#privacy">Privacy Settings</a></li>
+                </ul>
+            </div>
+
+            <div class="profile-stats-summary">
+                <h3>Your Diving Stats</h3>
+                <div class="stat-item">
+                    <span class="stat-label">Total Dives:</span>
+                    <span class="stat-value">42</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Dive Hours:</span>
+                    <span class="stat-value">28</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Deepest Dive:</span>
+                    <span class="stat-value">32m</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Countries Dived:</span>
+                    <span class="stat-value">7</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-content">
+            <div class="profile-header">
+                <h1>My Profile</h1>
+                <button class="btn btn-primary">Save Changes</button>
+            </div>
+
+            <div id="personal-info" class="profile-section active">
+                <h2>Personal Information</h2>
+                <form class="profile-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="first-name">First Name</label>
+                            <input type="text" id="first-name" name="first-name" value="Jiaoo">
+                        </div>
+                        <div class="form-group">
+                            <label for="last-name">Last Name</label>
+                            <input type="text" id="last-name" name="last-name" value="Li">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" value="jiaoo.chen@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" value="+1 (555) 123-4567">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="location">Location</label>
+                            <input type="text" id="location" name="location" value="Sydney, Australia">
+                        </div>
+                        <div class="form-group">
+                            <label for="birthdate">Date of Birth</label>
+                            <input type="date" id="birthdate" name="birthdate" value="1992-04-15">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="bio">Bio</label>
+                        <textarea id="bio" name="bio" rows="4">Passionate diver with 5 years of experience exploring reef and wreck sites across the Pacific. PADI Advanced Open Water certified. Always looking for new diving buddies and underwater adventures!</textarea>
+                    </div>
+                </form>
+            </div>
+
+            <div id="account-settings" class="profile-section">
+                <h2>Account Settings</h2>
+                <form class="profile-form">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" value="DiverJiaoo">
+                    </div>
+                    <div class="form-group">
+                        <label for="current-password">Current Password</label>
+                        <input type="password" id="current-password" name="current-password" placeholder="Enter your current password">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="new-password">New Password</label>
+                            <input type="password" id="new-password" name="new-password" placeholder="Enter new password">
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm-password">Confirm New Password</label>
+                            <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm new password">
+                        </div>
+                    </div>
+                    <h3>Linked Accounts</h3>
+                    <div class="linked-accounts">
+                        <div class="account-item">
+                            <span class="account-icon">📱</span>
+                            <span class="account-name">Facebook</span>
+                            <button class="btn btn-small btn-secondary">Connect</button>
+                        </div>
+                        <div class="account-item">
+                            <span class="account-icon">📱</span>
+                            <span class="account-name">Google</span>
+                            <button class="btn btn-small">Disconnect</button>
+                        </div>
+                        <div class="account-item">
+                            <span class="account-icon">📱</span>
+                            <span class="account-name">Apple</span>
+                            <button class="btn btn-small btn-secondary">Connect</button>
+                        </div>
+                    </div>
+                    <div class="danger-zone">
+                        <h3>Danger Zone</h3>
+                        <button class="btn btn-delete">Delete Account</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="dive-certifications" class="profile-section">
+                <h2>Dive Certifications</h2>
+                <div class="certification-list">
+                    <div class="certification-item">
+                        <div class="certification-info">
+                            <h3>PADI Advanced Open Water Diver</h3>
+                            <p>Certification #: AOW-123456789</p>
+                            <p>Issued: May 15, 2019</p>
+                            <p>Instructor: Michael Johnson, PADI #54321</p>
+                            <p>Dive Center: Ocean Explorers, Cairns, Australia</p>
+                        </div>
+                        <div class="certification-actions">
+                            <button class="btn btn-small">Edit</button>
+                            <button class="btn btn-small btn-delete">Remove</button>
+                        </div>
+                    </div>
+                    <div class="certification-item">
+                        <div class="certification-info">
+                            <h3>PADI Open Water Diver</h3>
+                            <p>Certification #: OW-987654321</p>
+                            <p>Issued: January 10, 2018</p>
+                            <p>Instructor: Sarah Williams, PADI #67890</p>
+                            <p>Dive Center: Dive World, Sydney, Australia</p>
+                        </div>
+                        <div class="certification-actions">
+                            <button class="btn btn-small">Edit</button>
+                            <button class="btn btn-small btn-delete">Remove</button>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-primary">Add New Certification</button>
+            </div>
+
+            <div id="equipment" class="profile-section">
+                <h2>Your Equipment</h2>
+                <div class="equipment-list">
+                    <div class="equipment-item">
+                        <div class="equipment-info">
+                            <h3>BCD</h3>
+                            <p>Aqua Lung Wave</p>
+                            <p>Size: Medium</p>
+                            <p>Purchased: 2020</p>
+                        </div>
+                        <div class="equipment-actions">
+                            <button class="btn btn-small">Edit</button>
+                            <button class="btn btn-small btn-delete">Remove</button>
+                        </div>
+                    </div>
+                    <div class="equipment-item">
+                        <div class="equipment-info">
+                            <h3>Regulator</h3>
+                            <p>Scubapro MK25 EVO/S600</p>
+                            <p>Last Serviced: March 2023</p>
+                        </div>
+                        <div class="equipment-actions">
+                            <button class="btn btn-small">Edit</button>
+                            <button class="btn btn-small btn-delete">Remove</button>
+                        </div>
+                    </div>
+                    <div class="equipment-item">
+                        <div class="equipment-info">
+                            <h3>Wetsuit</h3>
+                            <p>Mares Flexa 5.4.3</p>
+                            <p>Thickness: 5mm</p>
+                        </div>
+                        <div class="equipment-actions">
+                            <button class="btn btn-small">Edit</button>
+                            <button class="btn btn-small btn-delete">Remove</button>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-primary">Add New Equipment</button>
+            </div>
+
+            <div id="preferences" class="profile-section">
+                <h2>Preferences</h2>
+                <form class="profile-form">
+                    <h3>Units</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="depth-unit">Depth</label>
+                            <select id="depth-unit" name="depth-unit">
+                                <option value="meters" selected>Meters</option>
+                                <option value="feet">Feet</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="temp-unit">Temperature</label>
+                            <select id="temp-unit" name="temp-unit">
+                                <option value="celsius" selected>Celsius (°C)</option>
+                                <option value="fahrenheit">Fahrenheit (°F)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="weight-unit">Weight</label>
+                            <select id="weight-unit" name="weight-unit">
+                                <option value="kg" selected>Kilograms (kg)</option>
+                                <option value="lbs">Pounds (lbs)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <h3>Notifications</h3>
+                    <div class="toggle-group">
+                        <div class="toggle-switch">
+                            <label class="switch">
+                                <input type="checkbox" id="email-notify" name="email-notify" checked>
+                                <span class="slider round"></span>
+                            </label>
+                            <div class="toggle-label">
+                                <span>Email Notifications</span>
+                                <small>Receive emails about new buddy requests and dive log comments</small>
+                            </div>
+                        </div>
+                        <div class="toggle-switch">
+                            <label class="switch">
+                                <input type="checkbox" id="buddy-notify" name="buddy-notify" checked>
+                                <span class="slider round"></span>
+                            </label>
+                            <div class="toggle-label">
+                                <span>Buddy Updates</span>
+                                <small>Get notified when buddies add new dives</small>
+                            </div>
+                        </div>
+                        <div class="toggle-switch">
+                            <label class="switch">
+                                <input type="checkbox" id="marketing-notify" name="marketing-notify">
+                                <span class="slider round"></span>
+                            </label>
+                            <div class="toggle-label">
+                                <span>Marketing</span>
+                                <small>Receive updates about new features and promotions</small>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div id="privacy" class="profile-section">
+                <h2>Privacy Settings</h2>
+                <form class="profile-form">
+                    <h3>Profile Visibility</h3>
+                    <div class="form-group">
+                        <label for="profile-visibility">Who can see my profile?</label>
+                        <select id="profile-visibility" name="profile-visibility">
+                            <option value="public">Everyone</option>
+                            <option value="buddies" selected>Only My Buddies</option>
+                            <option value="private">Only Me</option>
+                        </select>
+                    </div>
+                    <h3>Default Log Privacy</h3>
+                    <div class="form-group">
+                        <label for="default-log-privacy">Default privacy for new dive logs</label>
+                        <select id="default-log-privacy" name="default-log-privacy">
+                            <option value="public">Public</option>
+                            <option value="buddies" selected>Buddies Only</option>
+                            <option value="private">Private</option>
+                        </select>
+                    </div>
+                    <h3>Additional Privacy Settings</h3>
+                    <div class="toggle-group">
+                        <div class="toggle-switch">
+                            <label class="switch">
+                                <input type="checkbox" id="location-privacy" name="location-privacy" checked>
+                                <span class="slider round"></span>
+                            </label>
+                            <div class="toggle-label">
+                                <span>Location Sharing</span>
+                                <small>Show my dive site locations to others</small>
+                            </div>
+                        </div>
+                        <div class="toggle-switch">
+                            <label class="switch">
+                                <input type="checkbox" id="buddy-privacy" name="buddy-privacy" checked>
+                                <span class="slider round"></span>
+                            </label>
+                            <div class="toggle-label">
+                                <span>Buddy Visibility</span>
+                                <small>Allow others to see who I dove with</small>
+                            </div>
+                        </div>
+                        <div class="toggle-switch">
+                            <label class="switch">
+                                <input type="checkbox" id="searchable" name="searchable" checked>
+                                <span class="slider round"></span>
+                            </label>
+                            <div class="toggle-label">
+                                <span>Searchable Profile</span>
+                                <small>Allow others to find me in search results</small>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-about">
+                <h3>DiveLogger</h3>
+                <p>Your digital diving logbook for tracking and sharing underwater adventures.</p>
+            </div>
+            <div class="footer-links">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="terms.html">Terms of Service</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h3>Contact Us</h3>
+                <p>Email: info@divelogger.com</p>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 DiveLogger. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="public/js/profile.js"></script>
+    <script src="public/js/main.js"></script>
+</body>
+</html> 

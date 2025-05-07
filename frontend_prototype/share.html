@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Dive Logs - DiveLogger</title>
+    <link rel="stylesheet" href="public/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <h1>DiveLogger</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="my-logs.html">My Logs</a></li>
+                <li><a href="new-log.html">New Log</a></li>
+                <li><a href="share.html" class="active">Share</a></li>
+                <li><a href="profile.html">DiverJiaoo</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="page-container">
+        <div class="main-content">
+            <div class="page-header">
+                <h1>Share Your Dive Logs</h1>
+                <p>Control who can see your underwater adventures</p>
+            </div>
+
+            <div class="share-container">
+                <div class="share-options">
+                    <div class="share-option-card active" id="share-logs-option">
+                        <div class="option-icon">📋</div>
+                        <div class="option-text">
+                            <h3>Share Dive Logs</h3>
+                            <p>Share specific dive logs with other divers</p>
+                        </div>
+                    </div>
+                    <div class="share-option-card" id="share-collections-option">
+                        <div class="option-icon">📚</div>
+                        <div class="option-text">
+                            <h3>Share Collections</h3>
+                            <p>Create and share dive log collections</p>
+                        </div>
+                    </div>
+                    <div class="share-option-card" id="shared-with-me-option">
+                        <div class="option-icon">🔄</div>
+                        <div class="option-text">
+                            <h3>Shared With Me</h3>
+                            <p>View logs and collections shared with you</p>
+                        </div>
+                    </div>
+                    <div class="share-option-card" id="public-profile-option">
+                        <div class="option-icon">🌐</div>
+                        <div class="option-text">
+                            <h3>Public Profile</h3>
+                            <p>Control what's visible on your public profile</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="share-content">
+                    <div class="share-section active" id="share-logs-section">
+                        <div class="section-header">
+                            <h2>Share Individual Dive Logs</h2>
+                            <div class="search-container">
+                                <input type="text" placeholder="Search your logs..." class="search-input">
+                                <button class="search-btn">🔍</button>
+                            </div>
+                        </div>
+
+                        <div class="share-logs-list">
+                            <div class="share-log-item">
+                                <div class="log-info">
+                                    <h3>Great Barrier Reef - Cod Hole</h3>
+                                    <p>May 12, 2023</p>
+                                    <div class="log-meta">
+                                        <span class="detail-item">Depth: 18m</span>
+                                        <span class="detail-item">Duration: 48 min</span>
+                                    </div>
+                                </div>
+                                <div class="share-status">
+                                    <div class="status-icon public">🌎</div>
+                                    <span>Public</span>
+                                </div>
+                                <div class="share-actions">
+                                    <button class="btn btn-small share-btn">Share</button>
+                                </div>
+                            </div>
+
+                            <div class="share-log-item">
+                                <div class="log-info">
+                                    <h3>Silfra Fissure - Iceland</h3>
+                                    <p>April 2, 2023</p>
+                                    <div class="log-meta">
+                                        <span class="detail-item">Depth: 12m</span>
+                                        <span class="detail-item">Duration: 35 min</span>
+                                    </div>
+                                </div>
+                                <div class="share-status">
+                                    <div class="status-icon private">🔒</div>
+                                    <span>Private</span>
+                                </div>
+                                <div class="share-actions">
+                                    <button class="btn btn-small share-btn">Share</button>
+                                </div>
+                            </div>
+
+                            <div class="share-log-item">
+                                <div class="log-info">
+                                    <h3>Blue Hole - Belize</h3>
+                                    <p>January 15, 2023</p>
+                                    <div class="log-meta">
+                                        <span class="detail-item">Depth: 32m</span>
+                                        <span class="detail-item">Duration: 42 min</span>
+                                    </div>
+                                </div>
+                                <div class="share-status">
+                                    <div class="status-icon public">🌎</div>
+                                    <span>Public</span>
+                                </div>
+                                <div class="share-actions">
+                                    <button class="btn btn-small share-btn">Share</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="share-section" id="share-collections-section">
+                        <div class="section-header">
+                            <h2>Share Collections</h2>
+                            <button class="btn btn-small">+ Create Collection</button>
+                        </div>
+
+                        <div class="collections-list">
+                            <div class="collection-item">
+                                <div class="collection-info">
+                                    <h3>Australia Dives</h3>
+                                    <p>4 dive logs</p>
+                                </div>
+                                <div class="share-status">
+                                    <div class="status-icon private">🔒</div>
+                                    <span>Private</span>
+                                </div>
+                                <div class="share-actions">
+                                    <button class="btn btn-small">Manage</button>
+                                    <button class="btn btn-small share-btn">Share</button>
+                                </div>
+                            </div>
+
+                            <div class="collection-item">
+                                <div class="collection-info">
+                                    <h3>Cave Diving Adventures</h3>
+                                    <p>3 dive logs</p>
+                                </div>
+                                <div class="share-status">
+                                    <div class="status-icon shared">👥</div>
+                                    <span>Shared with 2</span>
+                                </div>
+                                <div class="share-actions">
+                                    <button class="btn btn-small">Manage</button>
+                                    <button class="btn btn-small share-btn">Share</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="share-section" id="shared-with-me-section">
+                        <div class="section-header">
+                            <h2>Shared With Me</h2>
+                            <div class="filter-dropdown">
+                                <select>
+                                    <option value="all">All Items</option>
+                                    <option value="logs">Dive Logs</option>
+                                    <option value="collections">Collections</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="shared-items-list">
+                            <div class="shared-item">
+                                <div class="shared-item-info">
+                                    <h3>Maldives Reef Exploration</h3>
+                                    <p>Shared by: DiveExplorer</p>
+                                    <p class="shared-date">Shared on: May 5, 2023</p>
+                                </div>
+                                <div class="shared-item-type">
+                                    <div class="type-icon">📋</div>
+                                    <span>Dive Log</span>
+                                </div>
+                                <div class="shared-item-actions">
+                                    <button class="btn btn-small">View</button>
+                                </div>
+                            </div>
+
+                            <div class="shared-item">
+                                <div class="shared-item-info">
+                                    <h3>Southeast Asia Dives</h3>
+                                    <p>Shared by: OceanWanderer</p>
+                                    <p class="shared-date">Shared on: April 18, 2023</p>
+                                </div>
+                                <div class="shared-item-type">
+                                    <div class="type-icon">📚</div>
+                                    <span>Collection (8 logs)</span>
+                                </div>
+                                <div class="shared-item-actions">
+                                    <button class="btn btn-small">View</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="share-section" id="public-profile-section">
+                        <div class="section-header">
+                            <h2>Public Profile Settings</h2>
+                            <a href="profile.html" class="btn btn-small">View Profile</a>
+                        </div>
+
+                        <div class="privacy-settings">
+                            <div class="privacy-setting-item">
+                                <div class="setting-info">
+                                    <h3>Public Dive Logs</h3>
+                                    <p>Allow your public logs to appear on your profile</p>
+                                </div>
+                                <div class="setting-toggle">
+                                    <label class="switch">
+                                        <input type="checkbox" checked>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="privacy-setting-item">
+                                <div class="setting-info">
+                                    <h3>Diving Statistics</h3>
+                                    <p>Show your dive statistics on your public profile</p>
+                                </div>
+                                <div class="setting-toggle">
+                                    <label class="switch">
+                                        <input type="checkbox" checked>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="privacy-setting-item">
+                                <div class="setting-info">
+                                    <h3>Marine Life Sightings</h3>
+                                    <p>Display marine life you've spotted on your profile</p>
+                                </div>
+                                <div class="setting-toggle">
+                                    <label class="switch">
+                                        <input type="checkbox" checked>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="privacy-setting-item">
+                                <div class="setting-info">
+                                    <h3>Equipment Details</h3>
+                                    <p>Show your diving equipment information publicly</p>
+                                </div>
+                                <div class="setting-toggle">
+                                    <label class="switch">
+                                        <input type="checkbox">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="privacy-setting-item">
+                                <div class="setting-info">
+                                    <h3>Profile Discovery</h3>
+                                    <p>Allow other divers to find your profile</p>
+                                </div>
+                                <div class="setting-toggle">
+                                    <label class="switch">
+                                        <input type="checkbox" checked>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Share Modal -->
+            <div class="modal" id="share-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Share - Great Barrier Reef - Cod Hole</h3>
+                        <span class="close-modal">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <div class="share-methods">
+                            <div class="share-method-section">
+                                <h4>Share with DiveLogger Users</h4>
+                                <div class="user-search">
+                                    <input type="text" placeholder="Search by name or email..." class="search-input">
+                                </div>
+                                
+                                <div class="suggested-users">
+                                    <h5>Suggested</h5>
+                                    <div class="user-list">
+                                        <div class="user-item">
+                                            <div class="user-avatar">
+                                                <img src="public/images/user1.jpg" alt="Sarah">
+                                            </div>
+                                            <div class="user-info">
+                                                <p class="user-name">Sarah</p>
+                                                <p class="user-email">sarah@example.com</p>
+                                            </div>
+                                            <button class="btn btn-small">Share</button>
+                                        </div>
+                                        <div class="user-item">
+                                            <div class="user-avatar">
+                                                <img src="public/images/user2.jpg" alt="Mike">
+                                            </div>
+                                            <div class="user-info">
+                                                <p class="user-name">Mike</p>
+                                                <p class="user-email">mike@example.com</p>
+                                            </div>
+                                            <button class="btn btn-small">Share</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="shared-with-users">
+                                    <h5>Already Shared With</h5>
+                                    <div class="user-list">
+                                        <div class="user-item">
+                                            <div class="user-avatar">
+                                                <img src="public/images/user3.jpg" alt="Emma">
+                                            </div>
+                                            <div class="user-info">
+                                                <p class="user-name">Emma</p>
+                                                <p class="user-email">emma@example.com</p>
+                                            </div>
+                                            <button class="btn btn-small btn-delete">Remove</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="share-method-section">
+                                <h4>Share via Link</h4>
+                                <div class="link-share">
+                                    <input type="text" value="https://divelogger.com/share/log/123456" readonly class="link-input">
+                                    <button class="btn btn-small copy-btn">Copy</button>
+                                </div>
+                                <div class="link-permissions">
+                                    <label>Who can access with this link:</label>
+                                    <select>
+                                        <option value="view">Anyone with the link (view only)</option>
+                                        <option value="none">No one (disable link)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="share-method-section">
+                                <h4>Share on Social Media</h4>
+                                <div class="social-share">
+                                    <button class="social-share-btn facebook">
+                                        <img src="public/images/facebook-icon.png" alt="Facebook">
+                                        Facebook
+                                    </button>
+                                    <button class="social-share-btn twitter">
+                                        <img src="public/images/twitter-icon.png" alt="Twitter">
+                                        Twitter
+                                    </button>
+                                    <button class="social-share-btn instagram">
+                                        <img src="public/images/instagram-icon.png" alt="Instagram">
+                                        Instagram
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary close-btn">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-about">
+                <h3>DiveLogger</h3>
+                <p>Your digital diving logbook for tracking and sharing underwater adventures.</p>
+            </div>
+            <div class="footer-links">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="terms.html">Terms of Service</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h3>Contact Us</h3>
+                <p>Email: info@divelogger.com</p>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2023 DiveLogger. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="public/js/share.js"></script>
+    <script src="public/js/main.js"></script>
+</body>
+</html> 

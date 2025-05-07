@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Log - DiveLogger</title>
+    <link rel="stylesheet" href="public/css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <h1>DiveLogger</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="my-logs.html">My Logs</a></li>
+                <li><a href="new-log.html" class="active">New Log</a></li>
+                <li><a href="share.html">Share</a></li>
+                <li><a href="profile.html">DiverJiaoo</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="page-container">
+        <div class="main-content wide">
+            <div class="page-header">
+                <h1>Add New Dive Log</h1>
+                <p>Log your underwater adventure with all important details</p>
+            </div>
+
+            <form class="dive-log-form">
+                <div class="form-section">
+                    <h2>Dive Information</h2>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dive-site">Dive Site Name*</label>
+                            <input type="text" id="dive-site" name="dive-site" placeholder="e.g. Great Barrier Reef - Cod Hole" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="dive-date">Date*</label>
+                            <input type="date" id="dive-date" name="dive-date" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dive-location">Location</label>
+                            <input type="text" id="dive-location" name="dive-location" placeholder="e.g. Queensland, Australia">
+                        </div>
+                        <div class="form-group">
+                            <label for="dive-type">Dive Type</label>
+                            <select id="dive-type" name="dive-type">
+                                <option value="reef">Reef Dive</option>
+                                <option value="wreck">Wreck Dive</option>
+                                <option value="cave">Cave Dive</option>
+                                <option value="wall">Wall Dive</option>
+                                <option value="drift">Drift Dive</option>
+                                <option value="night">Night Dive</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="map-form-section">
+                        <label for="dive-map">Pin Dive Location on Map</label>
+                        <div id="dive-location-map"></div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="latitude">Latitude</label>
+                                <input type="text" id="latitude" name="latitude" placeholder="e.g. -16.6818">
+                            </div>
+                            <div class="form-group">
+                                <label for="longitude">Longitude</label>
+                                <input type="text" id="longitude" name="longitude" placeholder="e.g. 145.9919">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Dive Details</h2>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="start-time">Start Time</label>
+                            <input type="time" id="start-time" name="start-time">
+                        </div>
+                        <div class="form-group">
+                            <label for="end-time">End Time</label>
+                            <input type="time" id="end-time" name="end-time">
+                        </div>
+                        <div class="form-group">
+                            <label for="duration">Duration (minutes)*</label>
+                            <input type="number" id="duration" name="duration" min="1" max="240" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="max-depth">Max Depth (meters)*</label>
+                            <input type="number" id="max-depth" name="max-depth" min="0" max="100" step="0.1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="avg-depth">Average Depth (meters)</label>
+                            <input type="number" id="avg-depth" name="avg-depth" min="0" max="100" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="visibility">Visibility (meters)</label>
+                            <input type="number" id="visibility" name="visibility" min="0" max="100" step="0.1">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="water-temp">Water Temperature (°C)</label>
+                            <input type="number" id="water-temp" name="water-temp" min="-2" max="40" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="air-temp">Air Temperature (°C)</label>
+                            <input type="number" id="air-temp" name="air-temp" min="-20" max="50" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="weather">Weather Conditions</label>
+                            <select id="weather" name="weather">
+                                <option value="sunny">Sunny</option>
+                                <option value="cloudy">Cloudy</option>
+                                <option value="rainy">Rainy</option>
+                                <option value="stormy">Stormy</option>
+                                <option value="windy">Windy</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Equipment</h2>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="suit-type">Suit Type</label>
+                            <select id="suit-type" name="suit-type">
+                                <option value="none">None</option>
+                                <option value="shorty">Shorty</option>
+                                <option value="wetsuit">Wetsuit</option>
+                                <option value="semi-dry">Semi-Dry</option>
+                                <option value="drysuit">Drysuit</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="suit-thickness">Suit Thickness (mm)</label>
+                            <input type="number" id="suit-thickness" name="suit-thickness" min="0" max="10" step="0.5">
+                        </div>
+                        <div class="form-group">
+                            <label for="weight">Weight (kg)</label>
+                            <input type="number" id="weight" name="weight" min="0" max="20" step="0.5">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tank-type">Tank Type</label>
+                            <select id="tank-type" name="tank-type">
+                                <option value="aluminum">Aluminum</option>
+                                <option value="steel">Steel</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="tank-size">Tank Size (L)</label>
+                            <input type="number" id="tank-size" name="tank-size" min="0" max="20" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="gas-mix">Gas Mix</label>
+                            <select id="gas-mix" name="gas-mix">
+                                <option value="air">Air</option>
+                                <option value="nitrox">Nitrox</option>
+                                <option value="trimix">Trimix</option>
+                                <option value="heliox">Heliox</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row" id="nitrox-details" style="display: none;">
+                        <div class="form-group">
+                            <label for="o2-percentage">O2 Percentage (%)</label>
+                            <input type="number" id="o2-percentage" name="o2-percentage" min="21" max="100" step="0.1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Dive Buddies</h2>
+                    
+                    <div class="dive-buddies-section">
+                        <div class="buddies-list" id="buddies-list">
+                            <!-- Buddy entries will be added here -->
+                        </div>
+                        
+                        <div class="add-buddy-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="buddy-name">Buddy Name</label>
+                                    <input type="text" id="buddy-name" name="buddy-name" placeholder="Buddy's name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="buddy-email">Buddy Email (optional)</label>
+                                    <input type="email" id="buddy-email" name="buddy-email" placeholder="Buddy's email">
+                                </div>
+                                <div class="form-group">
+                                    <label>&nbsp;</label>
+                                    <button type="button" class="btn add-buddy-btn" id="add-buddy-btn">Add Buddy</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Marine Life Sightings</h2>
+                    
+                    <div class="marine-life-section">
+                        <div class="sightings-list" id="sightings-list">
+                            <!-- Marine life entries will be added here -->
+                        </div>
+                        
+                        <div class="add-sighting-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="species-name">Species</label>
+                                    <input type="text" id="species-name" name="species-name" placeholder="Species name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="species-count">Quantity</label>
+                                    <input type="number" id="species-count" name="species-count" min="1" placeholder="How many?">
+                                </div>
+                                <div class="form-group">
+                                    <label>&nbsp;</label>
+                                    <button type="button" class="btn add-species-btn" id="add-species-btn">Add Sighting</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Notes & Media</h2>
+                    
+                    <div class="form-group">
+                        <label for="dive-notes">Dive Notes</label>
+                        <textarea id="dive-notes" name="dive-notes" rows="5" placeholder="Describe your dive experience..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dive-photos">Add Photos</label>
+                        <input type="file" id="dive-photos" name="dive-photos" multiple accept="image/*">
+                        <div class="photo-preview" id="photo-preview">
+                            <!-- Photo previews will be added here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Privacy Settings</h2>
+                    
+                    <div class="toggle-switch">
+                        <label class="switch">
+                            <input type="checkbox" id="privacy-toggle" name="privacy-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                        <div class="toggle-label">
+                            <span class="public">Public</span>
+                            <span class="private">Private</span>
+                        </div>
+                    </div>
+                    <p class="privacy-note">Public logs can be viewed by all DiveLogger members. Private logs are only visible to you and people you specifically share with.</p>
+                </div>
+
+                <div class="form-section">
+                    <h2>Dive Profile Data</h2>
+                    
+                    <div class="dive-computer-section">
+                        <div class="form-group">
+                            <label for="dive-computer-file">Import from Dive Computer (CSV)</label>
+                            <input type="file" id="dive-computer-file" name="dive-computer-file" accept=".csv">
+                            <p class="input-help">Upload CSV file with columns: Time, Depth (m), Air (bar), Temperature (°C)</p>
+                        </div>
+                        
+                        <div class="sample-format">
+                            <h4>Sample CSV Format:</h4>
+                            <pre>Time,Depth (m),Air (bar),Temp (°C)
+0:00,0,200,26
+0:10,5,180,25
+0:20,15,160,24</pre>
+                            <a href="#" id="load-sample-data" class="btn btn-small">Load Sample Data</a>
+                        </div>
+                        
+                        <div class="dive-profile-container" style="display: none;">
+                            <div class="profile-stats">
+                                <div class="stat-box">
+                                    <span class="stat-label">Max Depth</span>
+                                    <span class="stat-value" id="stat-max-depth">-- m</span>
+                                </div>
+                                <div class="stat-box">
+                                    <span class="stat-label">Avg Depth</span>
+                                    <span class="stat-value" id="stat-avg-depth">-- m</span>
+                                </div>
+                                <div class="stat-box">
+                                    <span class="stat-label">Dive Time</span>
+                                    <span class="stat-value" id="stat-dive-time">-- min</span>
+                                </div>
+                                <div class="stat-box">
+                                    <span class="stat-label">Air Used</span>
+                                    <span class="stat-value" id="stat-air-used">-- bar</span>
+                                </div>
+                                <div class="stat-box">
+                                    <span class="stat-label">Min Temp</span>
+                                    <span class="stat-value" id="stat-min-temp">-- °C</span>
+                                </div>
+                            </div>
+                            
+                            <div class="dive-profile-chart-container">
+                                <canvas id="dive-profile-chart"></canvas>
+                            </div>
+                            
+                            <div class="dive-data-table-container">
+                                <h4>Dive Log Data</h4>
+                                <div class="dive-data-table-wrapper">
+                                    <table class="dive-data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Time</th>
+                                                <th>Depth (m)</th>
+                                                <th>Air (bar)</th>
+                                                <th>Temp (°C)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dive-data-body">
+                                            <!-- Data will be inserted here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Dive Log</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-about">
+                <h3>DiveLogger</h3>
+                <p>Your digital diving logbook for tracking and sharing underwater adventures.</p>
+            </div>
+            <div class="footer-links">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="terms.html">Terms of Service</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h3>Contact Us</h3>
+                <p>Email: info@divelogger.com</p>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2023 DiveLogger. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    <script src="public/js/new-log.js"></script>
+    <script src="public/js/main.js"></script>
+</body>
+</html> 

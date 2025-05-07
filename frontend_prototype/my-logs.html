@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Logs - DiveLogger</title>
+    <link rel="stylesheet" href="public/css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <h1>DiveLogger</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="my-logs.html" class="active">My Logs</a></li>
+                <li><a href="new-log.html">New Log</a></li>
+                <li><a href="share.html">Share</a></li>
+                <li><a href="profile.html">DiverJiaoo</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="my-logs-container">
+        <div class="sidebar">
+            <div class="filter-section">
+                <h3>Filter Logs</h3>
+                <div class="filter-group">
+                    <label for="date-from">Date From:</label>
+                    <input type="date" id="date-from">
+                </div>
+                <div class="filter-group">
+                    <label for="date-to">Date To:</label>
+                    <input type="date" id="date-to">
+                </div>
+                <div class="filter-group">
+                    <label for="location">Location:</label>
+                    <select id="location">
+                        <option value="">All Locations</option>
+                        <option value="great-barrier-reef">Great Barrier Reef</option>
+                        <option value="blue-hole">Blue Hole</option>
+                        <option value="silfra">Silfra Fissure</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="min-depth">Min Depth:</label>
+                    <input type="number" id="min-depth" min="0" max="100">
+                </div>
+                <div class="filter-group">
+                    <label for="max-depth">Max Depth:</label>
+                    <input type="number" id="max-depth" min="0" max="100">
+                </div>
+                <button class="btn filter-btn">Apply Filters</button>
+                <button class="btn reset-btn">Reset</button>
+            </div>
+            <div class="stats-section">
+                <h3>Your Diving Stats</h3>
+                <div class="stat-item">
+                    <span class="stat-label">Total Dives:</span>
+                    <span class="stat-value">42</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Max Depth:</span>
+                    <span class="stat-value">32m</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Longest Dive:</span>
+                    <span class="stat-value">65 min</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Total Dive Time:</span>
+                    <span class="stat-value">28 hours</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="page-header">
+                <h1>My Dive Logs</h1>
+                <a href="new-log.html" class="btn">+ Add New Log</a>
+            </div>
+
+            <div class="map-section">
+                <h2>My Dive Map</h2>
+                <div id="my-dive-map"></div>
+            </div>
+
+            <div class="logs-list">
+                <!-- Dive Computer Data log entry moved to the top -->
+                <div class="log-card">
+                    <div class="log-header">
+                        <h3>Tubbataha Reef - Philippines</h3>
+                        <span class="date">June 5, 2023</span>
+                        <span class="badge computer-data">Dive Computer Data</span>
+                    </div>
+                    <div class="log-details">
+                        <div class="detail-item">
+                            <span class="detail-icon">⏱️</span>
+                            <span class="detail-label">Duration:</span>
+                            <span class="detail-value">48 min</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">📏</span>
+                            <span class="detail-label">Max Depth:</span>
+                            <span class="detail-value">25m</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">🌡️</span>
+                            <span class="detail-label">Water Temp:</span>
+                            <span class="detail-value">21°C</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">🧮</span>
+                            <span class="detail-label">Air Used:</span>
+                            <span class="detail-value">96 bar</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Dive Profile Graph Section -->
+                    <div class="dive-profile-section">
+                        <h4>Dive Profile</h4>
+                        <div class="profile-stats">
+                            <div class="stat-box">
+                                <span class="stat-label">Max Depth</span>
+                                <span class="stat-value">25 m</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-label">Avg Depth</span>
+                                <span class="stat-value">18.2 m</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-label">Dive Time</span>
+                                <span class="stat-value">48 min</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-label">Air Used</span>
+                                <span class="stat-value">96 bar</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-label">Min Temp</span>
+                                <span class="stat-value">21 °C</span>
+                            </div>
+                        </div>
+                        <div class="dive-profile-chart-container">
+                            <canvas id="dive-profile-chart-log"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="log-buddies">
+                        <span class="buddy-label">Dive Buddies:</span>
+                        <div class="buddy-list">
+                            <span class="buddy">Lisa</span>
+                            <span class="buddy">Tom</span>
+                        </div>
+                    </div>
+                    <div class="log-notes">
+                        <p>Beautiful wall dive with incredible visibility. Spotted several turtles, a school of barracuda, and even a reef shark! Uploaded computer data for this dive.</p>
+                    </div>
+                    <div class="log-visibility">
+                        <span class="visibility-icon public">🌎</span>
+                        <span class="visibility-label">Public</span>
+                    </div>
+                    <div class="log-actions">
+                        <a href="#" class="btn btn-small">View Details</a>
+                        <a href="#" class="btn btn-small">Edit</a>
+                        <a href="#" class="btn btn-small btn-delete">Delete</a>
+                        <button class="btn btn-small share-btn">Share</button>
+                    </div>
+                </div>
+
+                <div class="log-card">
+                    <div class="log-header">
+                        <h3>Great Barrier Reef - Cod Hole</h3>
+                        <span class="date">May 12, 2023</span>
+                    </div>
+                    <div class="log-details">
+                        <div class="detail-item">
+                            <span class="detail-icon">⏱️</span>
+                            <span class="detail-label">Duration:</span>
+                            <span class="detail-value">48 min</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">📏</span>
+                            <span class="detail-label">Max Depth:</span>
+                            <span class="detail-value">18m</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">🌡️</span>
+                            <span class="detail-label">Water Temp:</span>
+                            <span class="detail-value">24°C</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">👁️</span>
+                            <span class="detail-label">Visibility:</span>
+                            <span class="detail-value">15m</span>
+                        </div>
+                    </div>
+                    <div class="log-buddies">
+                        <span class="buddy-label">Dive Buddies:</span>
+                        <div class="buddy-list">
+                            <span class="buddy">Sarah</span>
+                            <span class="buddy">Mike</span>
+                        </div>
+                    </div>
+                    <div class="log-notes">
+                        <p>Amazing dive with great visibility. Saw plenty of colorful coral and a massive potato cod!</p>
+                    </div>
+                    <div class="log-visibility">
+                        <span class="visibility-icon public">🌎</span>
+                        <span class="visibility-label">Public</span>
+                    </div>
+                    <div class="log-actions">
+                        <a href="#" class="btn btn-small">View Details</a>
+                        <a href="#" class="btn btn-small">Edit</a>
+                        <a href="#" class="btn btn-small btn-delete">Delete</a>
+                        <button class="btn btn-small share-btn">Share</button>
+                    </div>
+                </div>
+
+                <div class="log-card">
+                    <div class="log-header">
+                        <h3>Silfra Fissure - Iceland</h3>
+                        <span class="date">April 2, 2023</span>
+                    </div>
+                    <div class="log-details">
+                        <div class="detail-item">
+                            <span class="detail-icon">⏱️</span>
+                            <span class="detail-label">Duration:</span>
+                            <span class="detail-value">35 min</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">📏</span>
+                            <span class="detail-label">Max Depth:</span>
+                            <span class="detail-value">12m</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">🌡️</span>
+                            <span class="detail-label">Water Temp:</span>
+                            <span class="detail-value">2°C</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">👁️</span>
+                            <span class="detail-label">Visibility:</span>
+                            <span class="detail-value">100m+</span>
+                        </div>
+                    </div>
+                    <div class="log-buddies">
+                        <span class="buddy-label">Dive Buddies:</span>
+                        <div class="buddy-list">
+                            <span class="buddy">Emma</span>
+                        </div>
+                    </div>
+                    <div class="log-notes">
+                        <p>Incredible crystal clear water! Very cold but the drysuit kept me comfortable. Amazing experience diving between continental plates.</p>
+                    </div>
+                    <div class="log-visibility">
+                        <span class="visibility-icon private">🔒</span>
+                        <span class="visibility-label">Private</span>
+                    </div>
+                    <div class="log-actions">
+                        <a href="#" class="btn btn-small">View Details</a>
+                        <a href="#" class="btn btn-small">Edit</a>
+                        <a href="#" class="btn btn-small btn-delete">Delete</a>
+                        <button class="btn btn-small share-btn">Share</button>
+                    </div>
+                </div>
+
+                <div class="log-card">
+                    <div class="log-header">
+                        <h3>Blue Hole - Belize</h3>
+                        <span class="date">January 15, 2023</span>
+                    </div>
+                    <div class="log-details">
+                        <div class="detail-item">
+                            <span class="detail-icon">⏱️</span>
+                            <span class="detail-label">Duration:</span>
+                            <span class="detail-value">42 min</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">📏</span>
+                            <span class="detail-label">Max Depth:</span>
+                            <span class="detail-value">32m</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">🌡️</span>
+                            <span class="detail-label">Water Temp:</span>
+                            <span class="detail-value">26°C</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">👁️</span>
+                            <span class="detail-label">Visibility:</span>
+                            <span class="detail-value">30m</span>
+                        </div>
+                    </div>
+                    <div class="log-buddies">
+                        <span class="buddy-label">Dive Buddies:</span>
+                        <div class="buddy-list">
+                            <span class="buddy">Alex</span>
+                            <span class="buddy">James</span>
+                        </div>
+                    </div>
+                    <div class="log-notes">
+                        <p>Amazing cave dive with perfect conditions. Spotted several reef sharks and a large school of jacks.</p>
+                    </div>
+                    <div class="log-visibility">
+                        <span class="visibility-icon public">🌎</span>
+                        <span class="visibility-label">Public</span>
+                    </div>
+                    <div class="log-actions">
+                        <a href="#" class="btn btn-small">View Details</a>
+                        <a href="#" class="btn btn-small">Edit</a>
+                        <a href="#" class="btn btn-small btn-delete">Delete</a>
+                        <button class="btn btn-small share-btn">Share</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div class="modal" id="share-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Share - Great Barrier Reef - Cod Hole</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="share-methods">
+                    <div class="share-method-section">
+                        <h4>Share with DiveLogger Users</h4>
+                        <div class="user-search">
+                            <input type="text" placeholder="Search by name or email..." class="search-input">
+                        </div>
+                        
+                        <div class="suggested-users">
+                            <h5>Suggested</h5>
+                            <div class="user-list">
+                                <div class="user-item">
+                                    <div class="user-avatar">
+                                        <img src="public/images/user1.jpg" alt="Sarah">
+                                    </div>
+                                    <div class="user-info">
+                                        <p class="user-name">Sarah</p>
+                                        <p class="user-email">sarah@example.com</p>
+                                    </div>
+                                    <button class="btn btn-small">Share</button>
+                                </div>
+                                <div class="user-item">
+                                    <div class="user-avatar">
+                                        <img src="public/images/user2.jpg" alt="Mike">
+                                    </div>
+                                    <div class="user-info">
+                                        <p class="user-name">Mike</p>
+                                        <p class="user-email">mike@example.com</p>
+                                    </div>
+                                    <button class="btn btn-small">Share</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="shared-with-users">
+                            <h5>Already Shared With</h5>
+                            <div class="user-list">
+                                <div class="user-item">
+                                    <div class="user-avatar">
+                                        <img src="public/images/user3.jpg" alt="Emma">
+                                    </div>
+                                    <div class="user-info">
+                                        <p class="user-name">Emma</p>
+                                        <p class="user-email">emma@example.com</p>
+                                    </div>
+                                    <button class="btn btn-small btn-delete">Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="share-method-section">
+                        <h4>Share via Link</h4>
+                        <div class="link-share">
+                            <input type="text" value="https://divelogger.com/share/log/123456" readonly class="link-input">
+                            <button class="btn btn-small copy-btn">Copy</button>
+                        </div>
+                        <div class="link-permissions">
+                            <label>Who can access with this link:</label>
+                            <select>
+                                <option value="view">Anyone with the link (view only)</option>
+                                <option value="none">No one (disable link)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="share-method-section">
+                        <h4>Share on Social Media</h4>
+                        <div class="social-share">
+                            <button class="social-share-btn facebook">
+                                <img src="public/images/facebook-icon.png" alt="Facebook">
+                                Facebook
+                            </button>
+                            <button class="social-share-btn twitter">
+                                <img src="public/images/twitter-icon.png" alt="Twitter">
+                                Twitter
+                            </button>
+                            <button class="social-share-btn instagram">
+                                <img src="public/images/instagram-icon.png" alt="Instagram">
+                                Instagram
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary close-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-about">
+                <h3>DiveLogger</h3>
+                <p>Your digital diving logbook for tracking and sharing underwater adventures.</p>
+            </div>
+            <div class="footer-links">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="terms.html">Terms of Service</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h3>Contact Us</h3>
+                <p>Email: info@divelogger.com</p>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2023 DiveLogger. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="public/js/my-logs-map.js"></script>
+    <script src="public/js/my-logs-share.js"></script>
+    <script src="public/js/main.js"></script>
+</body>
+</html> 
