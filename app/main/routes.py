@@ -9,4 +9,8 @@ def index():
 
 @bp.route('/dashboard')
 def dashboard():
-    return render_template('dashboard.html', title='Dashboard') 
+    return render_template('dashboard.html', title='Dashboard')
+
+@bp.route('/new-log')
+def new_log():
+    return render_template('new_log.html', title='Add New Dive Log') 
