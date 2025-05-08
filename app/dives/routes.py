@@ -1,17 +1,20 @@
 # app/dives/routes.py
 
-from flask import Blueprint, request, jsonify, render_template, flash, redirect, url_for
+from flask import Blueprint, request, jsonify, render_template, flash, redirect, url_for, abort, current_app
 from flask_login import login_required, current_user
 from app import db
 from app.dives import bp
 from app.models import Dive, Site
 from datetime import datetime
+import os
+from werkzeug.utils import secure_filename
+import uuid
 
 # Helper: Convert a Dive object to dictionary
 def dive_to_dict(dive):
     return {
         'id': dive.id,
-        'user_id': dive.user_id,  # fixed typo: usåer_id -> user_id
+        'user_id': dive.user_id,
         'dive_number': dive.dive_number,
         'start_time': dive.start_time.isoformat() if dive.start_time else None,
         'end_time': dive.end_time.isoformat() if dive.end_time else None,
@@ -24,8 +27,20 @@ def dive_to_dict(dive):
         'notes': dive.notes,
         'media': dive.media,
         'location_thumbnail': dive.location_thumbnail,
-        'created_at': dive.created_at.isoformat() if dive.created_at else None
+        'created_at': dive.created_at.isoformat() if dive.created_at else None,
+        'suit_type': dive.suit_type,
+        'suit_thickness': dive.suit_thickness,
+        'weight': dive.weight,
+        'tank_type': dive.tank_type,
+        'tank_size': dive.tank_size,
+        'gas_mix': dive.gas_mix,
+        'o2_percentage': dive.o2_percentage,
     }
+
+# Get allowed file extensions
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg', 'gif'}
 
 # GET /dives/api/ - Retrieve all diving records
 @bp.route('/api/', methods=['GET'])
@@ -55,7 +70,14 @@ def create_dive():
             dive_partner=data.get('dive_partner'),
             notes=data.get('notes'),
             media=data.get('media'),
-            location_thumbnail=data.get('location_thumbnail')
+            location_thumbnail=data.get('location_thumbnail'),
+            suit_type=data.get('suit_type'),
+            suit_thickness=data.get('suit_thickness'),
+            weight=data.get('weight'),
+            tank_type=data.get('tank_type'),
+            tank_size=data.get('tank_size'),
+            gas_mix=data.get('gas_mix'),
+            o2_percentage=data.get('o2_percentage'),
         )
     except KeyError as e:
         return jsonify({"error": f"Missing required field: {e.args[0]}"}), 400
@@ -90,6 +112,13 @@ def update_dive(dive_id):
     dive.notes = data.get('notes', dive.notes)
     dive.media = data.get('media', dive.media)
     dive.location_thumbnail = data.get('location_thumbnail', dive.location_thumbnail)
+    dive.suit_type = data.get('suit_type', dive.suit_type)
+    dive.suit_thickness = data.get('suit_thickness', dive.suit_thickness)
+    dive.weight = data.get('weight', dive.weight)
+    dive.tank_type = data.get('tank_type', dive.tank_type)
+    dive.tank_size = data.get('tank_size', dive.tank_size)
+    dive.gas_mix = data.get('gas_mix', dive.gas_mix)
+    dive.o2_percentage = data.get('o2_percentage', dive.o2_percentage)
 
     db.session.commit()
     return jsonify(dive_to_dict(dive)), 200
@@ -107,3 +136,41 @@ def delete_dive(dive_id):
 @login_required
 def dive_logs():
     return render_template('dives/dive_logs.html', title='Dive Logs')
+
+# POST /api/dives/<dive_id>/upload - Upload media for a dive
+@bp.route('/api/<int:dive_id>/upload', methods=['POST'])
+def upload_dive_media(dive_id):
+    dive = Dive.query.get_or_404(dive_id)
+    
+    if 'media' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+        
+    file = request.files['media']
+    
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+        
+    if file and allowed_file(file.filename):
+        # Generate unique filename
+        filename = secure_filename(file.filename)
+        unique_filename = f"{uuid.uuid4().hex}_{filename}"
+        
+        # Ensure upload directory exists
+        upload_dir = os.path.join(current_app.static_folder, 'uploads', 'dives')
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # Save the file
+        file_path = os.path.join(upload_dir, unique_filename)
+        file.save(file_path)
+        
+        # Update the dive record with the file path
+        relative_path = f'/static/uploads/dives/{unique_filename}'
+        dive.media = relative_path
+        db.session.commit()
+        
+        return jsonify({
+            "message": "File uploaded successfully",
+            "media_url": relative_path
+        }), 201
+    
+    return jsonify({"error": "Invalid file type"}), 400

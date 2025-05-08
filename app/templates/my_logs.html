@@ -1,0 +1,541 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dive_log.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/my_logs.css') }}">
+<style>
+    /* Success message styles */
+    .success-message {
+        background-color: #d4edda;
+        color: #155724;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border-radius: var(--border-radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .success-message button {
+        background: none;
+        border: none;
+        color: #155724;
+        cursor: pointer;
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="my-logs-container">
+    <div class="sidebar">
+        <div class="filter-section">
+            <h3>Filter Logs</h3>
+            <form id="filter-form">
+                <div class="filter-group">
+                    <label for="date-from">Date From:</label>
+                    <input type="date" id="date-from" name="date_from">
+                </div>
+                <div class="filter-group">
+                    <label for="date-to">Date To:</label>
+                    <input type="date" id="date-to" name="date_to">
+                </div>
+                <div class="filter-group">
+                    <label for="location">Location:</label>
+                    <select id="location" name="location">
+                        <option value="">All Locations</option>
+                        {% for location in locations %}
+                        <option value="{{ location }}">{{ location }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="min-depth">Min Depth (m):</label>
+                    <input type="number" id="min-depth" name="min_depth" min="0" max="100">
+                </div>
+                <div class="filter-group">
+                    <label for="max-depth">Max Depth (m):</label>
+                    <input type="number" id="max-depth" name="max_depth" min="0" max="100">
+                </div>
+                <button type="submit" class="btn filter-btn">Apply Filters</button>
+                <button type="button" class="btn reset-btn">Reset</button>
+            </form>
+        </div>
+        <div class="stats-section">
+            <h3>Your Diving Stats</h3>
+            <div class="stat-item">
+                <span class="stat-label">Total Dives:</span>
+                <span class="stat-value">{{ stats.total_dives }}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Max Depth:</span>
+                <span class="stat-value">{{ stats.max_depth }}m</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Longest Dive:</span>
+                <span class="stat-value">{{ stats.longest_dive }} min</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Total Dive Time:</span>
+                <span class="stat-value">{{ stats.total_dive_time }} hours</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="page-header">
+            <h1>My Dive Logs</h1>
+            <a href="{{ url_for('main.new_log') }}" class="btn">+ Add New Log</a>
+        </div>
+
+        {% if success_message %}
+        <div class="success-message" id="success-message">
+            <span>{{ success_message }}</span>
+            <button type="button" onclick="this.parentElement.style.display='none';">&times;</button>
+        </div>
+        {% endif %}
+
+        <div class="map-section">
+            <h2>My Dive Map</h2>
+            <div id="my-dive-map"></div>
+        </div>
+
+        <div class="logs-list">
+            {% if dives %}
+                {% for dive in dives %}
+                <div class="log-card" data-dive-id="{{ dive.id }}" data-location="{{ dive.location }}" data-latitude="" data-longitude="">
+                    <div class="log-header">
+                        <h3>{{ dive.location }}</h3>
+                        <span class="date">{{ dive.start_time.strftime('%B %d, %Y') }}</span>
+                    </div>
+                    <div class="log-details">
+                        <div class="detail-item">
+                            <span class="detail-icon">⏱️</span>
+                            <span class="detail-label">Duration:</span>
+                            <span class="detail-value">
+                                {% if dive.start_time and dive.end_time %}
+                                    {{ ((dive.end_time - dive.start_time).total_seconds() / 60)|round|int }} min
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">📏</span>
+                            <span class="detail-label">Max Depth:</span>
+                            <span class="detail-value">{{ dive.max_depth }}m</span>
+                        </div>
+                        {% if dive.visibility %}
+                        <div class="detail-item">
+                            <span class="detail-icon">👁️</span>
+                            <span class="detail-label">Visibility:</span>
+                            <span class="detail-value">{{ dive.visibility }}</span>
+                        </div>
+                        {% endif %}
+                        {% if dive.weather %}
+                        <div class="detail-item">
+                            <span class="detail-icon">☁️</span>
+                            <span class="detail-label">Weather:</span>
+                            <span class="detail-value">{{ dive.weather }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if dive.dive_partner %}
+                    <div class="log-buddies">
+                        <span class="buddy-label">Dive Buddies:</span>
+                        <div class="buddy-list">
+                            <span class="buddy">{{ dive.dive_partner }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if dive.notes %}
+                    <div class="log-notes">
+                        <p>{{ dive.notes }}</p>
+                    </div>
+                    {% endif %}
+                    <div class="log-actions">
+                        <a href="#" class="btn btn-small view-details" data-id="{{ dive.id }}">View Details</a>
+                        <a href="#" class="btn btn-small edit-dive" data-id="{{ dive.id }}">Edit</a>
+                        <a href="#" class="btn btn-small btn-delete delete-dive" data-id="{{ dive.id }}">Delete</a>
+                        <button class="btn btn-small share-btn" data-id="{{ dive.id }}">Share</button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-logs-message">
+                    <p>You haven't logged any dives yet. Start by <a href="{{ url_for('main.new_log') }}">adding your first dive log</a>.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Share Modal -->
+<div class="modal" id="share-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Share Dive Log</h3>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="share-method-section">
+                <h4>Share via Link</h4>
+                <div class="link-share">
+                    <input type="text" id="share-link" value="" readonly class="form-control">
+                    <button class="btn btn-small copy-btn">Copy</button>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary close-btn">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal" id="delete-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Confirm Deletion</h3>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete this dive log? This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary cancel-btn">Cancel</button>
+            <button class="btn btn-delete confirm-delete-btn">Delete</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the map
+    initMap();
+    
+    // Setup event listeners
+    setupEventListeners();
+    
+    // Setup modals
+    setupModals();
+    
+    // Auto-hide success message after 5 seconds
+    const successMessage = document.getElementById('success-message');
+    if (successMessage) {
+        setTimeout(() => {
+            successMessage.style.display = 'none';
+        }, 5000);
+    }
+});
+
+function initMap() {
+    // Check if map container exists
+    const mapContainer = document.getElementById('my-dive-map');
+    if (!mapContainer) return;
+
+    // Initialize the map
+    const map = L.map('my-dive-map').setView([0, 0], 2);
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+    }).addTo(map);
+
+    // Attempt to add OpenSeaMap tiles
+    try {
+        L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openseamap.org/">OpenSeaMap</a> contributors',
+            maxZoom: 19
+        }).addTo(map);
+    } catch (e) {
+        console.warn('Failed to load OpenSeaMap tiles:', e);
+    }
+
+    // Create default icon
+    const defaultIcon = L.icon({
+        iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+        shadowSize: [41, 41]
+    });
+
+    // Create a bounds object to fit all dive sites
+    const bounds = L.latLngBounds();
+    let hasValidMarkers = false;
+
+    // Add markers for each dive log
+    const logCards = document.querySelectorAll('.log-card');
+    logCards.forEach(card => {
+        const location = card.dataset.location;
+        let lat = parseFloat(card.dataset.latitude);
+        let lng = parseFloat(card.dataset.longitude);
+        
+        // Try to extract coordinates from location string if not provided
+        if (isNaN(lat) || isNaN(lng)) {
+            const coordsMatch = location.match(/\((-?\d+\.\d+),\s*(-?\d+\.\d+)\)/);
+            if (coordsMatch) {
+                lat = parseFloat(coordsMatch[1]);
+                lng = parseFloat(coordsMatch[2]);
+                
+                // Store the extracted coordinates in the card
+                card.dataset.latitude = lat;
+                card.dataset.longitude = lng;
+            }
+        }
+        
+        // Skip if no valid coordinates
+        if (isNaN(lat) || isNaN(lng)) return;
+        
+        hasValidMarkers = true;
+        
+        // Create marker
+        const marker = L.marker([lat, lng], {
+            icon: defaultIcon,
+            alt: location
+        }).addTo(map);
+        
+        // Create popup content
+        const diveId = card.dataset.diveId;
+        const diveDate = card.querySelector('.date').textContent;
+        const diveDetails = Array.from(card.querySelectorAll('.detail-item')).map(item => {
+            const label = item.querySelector('.detail-label').textContent;
+            const value = item.querySelector('.detail-value').textContent;
+            return `<div><strong>${label}</strong> ${value}</div>`;
+        }).join('');
+        
+        const popupContent = `
+            <div class="dive-log-popup">
+                <h3>${location}</h3>
+                <div class="dive-date">${diveDate}</div>
+                <div class="dive-log-details">
+                    ${diveDetails}
+                </div>
+                <div class="popup-actions">
+                    <a href="#" class="popup-link view-details" data-id="${diveId}">View Details</a>
+                </div>
+            </div>
+        `;
+        
+        // Bind popup to marker
+        marker.bindPopup(popupContent, {
+            maxWidth: 300
+        });
+        
+        // Add this location to bounds
+        bounds.extend([lat, lng]);
+    });
+
+    // Fit the map to show all dive sites with some padding
+    if (hasValidMarkers && bounds.isValid()) {
+        map.fitBounds(bounds, {
+            padding: [50, 50],
+            maxZoom: 10
+        });
+    }
+}
+
+function setupEventListeners() {
+    // Filter form submission
+    const filterForm = document.getElementById('filter-form');
+    if (filterForm) {
+        filterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = new FormData(filterForm);
+            const queryParams = new URLSearchParams();
+            
+            // Add form data to query parameters
+            for (const [key, value] of formData.entries()) {
+                if (value) queryParams.append(key, value);
+            }
+            
+            // Redirect to filtered URL
+            window.location.href = `${window.location.pathname}?${queryParams.toString()}`;
+        });
+    }
+    
+    // Reset filters button
+    const resetBtn = document.querySelector('.reset-btn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            // Reset all form fields
+            filterForm.reset();
+            
+            // Redirect to unfiltered URL
+            window.location.href = window.location.pathname;
+        });
+    }
+    
+    // View details buttons
+    const viewDetailsButtons = document.querySelectorAll('.view-details');
+    viewDetailsButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const diveId = this.dataset.id;
+            // Redirect to dive details page
+            // window.location.href = `/dive/${diveId}`;
+            alert('View details functionality to be implemented');
+        });
+    });
+    
+    // Edit buttons
+    const editButtons = document.querySelectorAll('.edit-dive');
+    editButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const diveId = this.dataset.id;
+            // Redirect to edit page
+            // window.location.href = `/edit-dive/${diveId}`;
+            alert('Edit functionality to be implemented');
+        });
+    });
+    
+    // Delete buttons
+    const deleteButtons = document.querySelectorAll('.delete-dive');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const diveId = this.dataset.id;
+            
+            // Store dive ID in delete modal
+            document.getElementById('delete-modal').dataset.diveId = diveId;
+            
+            // Show delete confirmation modal
+            document.getElementById('delete-modal').style.display = 'block';
+        });
+    });
+    
+    // Share buttons
+    const shareButtons = document.querySelectorAll('.share-btn');
+    shareButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const diveId = this.dataset.id;
+            const diveLocation = this.closest('.log-card').querySelector('h3').textContent;
+            
+            // Update modal title
+            document.querySelector('#share-modal .modal-header h3').textContent = `Share - ${diveLocation}`;
+            
+            // Update share link (this would be a real link in production)
+            document.getElementById('share-link').value = `${window.location.origin}/share/dive/${diveId}`;
+            
+            // Show share modal
+            document.getElementById('share-modal').style.display = 'block';
+        });
+    });
+}
+
+function setupModals() {
+    // Setup Share Modal
+    const shareModal = document.getElementById('share-modal');
+    const shareCloseBtn = shareModal.querySelector('.close-modal');
+    const shareCloseFooterBtn = shareModal.querySelector('.close-btn');
+    
+    if (shareCloseBtn) {
+        shareCloseBtn.addEventListener('click', function() {
+            shareModal.style.display = 'none';
+        });
+    }
+    
+    if (shareCloseFooterBtn) {
+        shareCloseFooterBtn.addEventListener('click', function() {
+            shareModal.style.display = 'none';
+        });
+    }
+    
+    // Setup Copy Button
+    const copyBtn = shareModal.querySelector('.copy-btn');
+    const shareLink = document.getElementById('share-link');
+    
+    if (copyBtn && shareLink) {
+        copyBtn.addEventListener('click', function() {
+            shareLink.select();
+            document.execCommand('copy');
+            
+            // Show feedback
+            const originalText = this.textContent;
+            this.textContent = 'Copied!';
+            
+            setTimeout(() => {
+                this.textContent = originalText;
+            }, 2000);
+        });
+    }
+    
+    // Setup Delete Confirmation Modal
+    const deleteModal = document.getElementById('delete-modal');
+    const deleteCloseBtn = deleteModal.querySelector('.close-modal');
+    const deleteCancelBtn = deleteModal.querySelector('.cancel-btn');
+    const deleteConfirmBtn = deleteModal.querySelector('.confirm-delete-btn');
+    
+    if (deleteCloseBtn) {
+        deleteCloseBtn.addEventListener('click', function() {
+            deleteModal.style.display = 'none';
+        });
+    }
+    
+    if (deleteCancelBtn) {
+        deleteCancelBtn.addEventListener('click', function() {
+            deleteModal.style.display = 'none';
+        });
+    }
+    
+    if (deleteConfirmBtn) {
+        deleteConfirmBtn.addEventListener('click', async function() {
+            const diveId = deleteModal.dataset.diveId;
+            
+            try {
+                // Send delete request to API
+                const response = await fetch(`/api/dives/${diveId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    // Remove the dive card from the page
+                    const diveCard = document.querySelector(`.log-card[data-dive-id="${diveId}"]`);
+                    if (diveCard) {
+                        diveCard.remove();
+                    }
+                    
+                    // Close modal
+                    deleteModal.style.display = 'none';
+                    
+                    // Show success message
+                    alert('Dive log deleted successfully');
+                    
+                    // Reload page to update stats
+                    window.location.reload();
+                } else {
+                    throw new Error('Failed to delete dive log');
+                }
+            } catch (error) {
+                console.error('Error deleting dive log:', error);
+                alert('Error deleting dive log. Please try again.');
+            }
+        });
+    }
+    
+    // Close modals when clicking outside
+    window.addEventListener('click', function(e) {
+        if (e.target === shareModal) {
+            shareModal.style.display = 'none';
+        }
+        
+        if (e.target === deleteModal) {
+            deleteModal.style.display = 'none';
+        }
+    });
+}
+</script>
+{% endblock %} 

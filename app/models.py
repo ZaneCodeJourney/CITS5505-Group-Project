@@ -63,6 +63,15 @@ class Dive(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     site_id = db.Column(db.Integer, db.ForeignKey('sites.id'))
 
+    # Equipment fields
+    suit_type = db.Column(db.String(20))        # None, Shorty, Wetsuit, Semi-Dry, Drysuit
+    suit_thickness = db.Column(db.Float)        # in mm, 0.0–10.0
+    weight = db.Column(db.Float)                # in kg, 0.0–20.0
+    tank_type = db.Column(db.String(20))        # Aluminum, Steel
+    tank_size = db.Column(db.Float)             # in liters, 0.0–20.0
+    gas_mix = db.Column(db.String(20))          # Air, Nitrox, Trimix, Heliox
+    o2_percentage = db.Column(db.Float)         # only for Nitrox, 21–100%
+
     # Relationships
     shares = db.relationship('Share', backref='dive', lazy='dynamic')
     
@@ -85,7 +94,14 @@ class Dive(db.Model):
             'notes': self.notes,
             'media': self.media,
             'location_thumbnail': self.location_thumbnail,
-            'created_at': self.created_at.isoformat() if self.created_at else None
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'suit_type': self.suit_type,
+            'suit_thickness': self.suit_thickness,
+            'weight': self.weight,
+            'tank_type': self.tank_type,
+            'tank_size': self.tank_size,
+            'gas_mix': self.gas_mix,
+            'o2_percentage': self.o2_percentage,
         }
 
 
