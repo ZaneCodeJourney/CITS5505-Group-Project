@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const fileNameSpan = document.getElementById('file-name');
     const alertContainer = document.getElementById('alert-container');
     const successModal = document.getElementById('success-modal');
+    const resetButton = document.getElementById('reset-button');
 
     // Initialize page
     init();
@@ -22,17 +23,55 @@ document.addEventListener('DOMContentLoaded', function() {
         // Load dive sites list
         loadDiveSites();
 
-        // Set default sighting time to current time
-        const now = new Date();
-        now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); // Fix timezone issue
-        const formattedNow = now.toISOString().slice(0, 16);
-        document.getElementById('sighting-time').value = formattedNow;
+        // Set default sighting time to current time if field is empty
+        const sightingTimeField = document.getElementById('sighting-time');
+        if (sightingTimeField && !sightingTimeField.value) {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); // Fix timezone issue
+            const formattedNow = now.toISOString().slice(0, 16);
+            sightingTimeField.value = formattedNow;
+        }
 
         // Add file upload event listener
-        photoInput.addEventListener('change', updateFileName);
+        if (photoInput && fileNameSpan) {
+            photoInput.addEventListener('change', function() {
+                if (photoInput.files.length > 0) {
+                    let fileName = photoInput.files[0].name;
+                    // Truncate long filenames
+                    if (fileName.length > 25) {
+                        fileName = fileName.substr(0, 22) + '...';
+                    }
+                    fileNameSpan.textContent = fileName;
+                } else {
+                    fileNameSpan.textContent = 'No file chosen';
+                }
+            });
+        }
 
-        // Add form submission event listener
-        reportForm.addEventListener('submit', handleFormSubmit);
+        // Add reset button event listener
+        if (resetButton) {
+            resetButton.addEventListener('click', function(e) {
+                console.log('Reset button clicked');
+                e.preventDefault();
+                if (reportForm) {
+                    reportForm.reset();
+                    if (fileNameSpan) {
+                        fileNameSpan.textContent = 'No file chosen';
+                    }
+                    
+                    // Reset time to current time
+                    if (sightingTimeField) {
+                        const now = new Date();
+                        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                        const formattedNow = now.toISOString().slice(0, 16);
+                        sightingTimeField.value = formattedNow;
+                    }
+                }
+            });
+        }
+
+        // 允许表单正常提交，不再阻止默认行为
+        // 已经在模板中设置了action属性，表单会直接提交到服务器端
     }
 
     /**
@@ -55,17 +94,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 showAlert('Failed to load dive sites. Please try again later.', 'danger');
             }
         });
-    }
-
-    /**
-     * Update file name display
-     */
-    function updateFileName() {
-        const fileName = photoInput.files.length > 0 ?
-                        photoInput.files[0].name :
-                        'No file chosen';
-
-        fileNameSpan.textContent = fileName;
     }
 
     /**

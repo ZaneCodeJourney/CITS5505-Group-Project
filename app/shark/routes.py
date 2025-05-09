@@ -7,6 +7,7 @@ from app.models import SharkWarning, Site
 from datetime import datetime
 import os
 import uuid
+import sys
 
 # Obtain all shark warnings
 @bp.route('/warnings')
@@ -26,10 +27,9 @@ def shark_warnings_api():
             'species': warning.species,
             'size_estimate': warning.size_estimate,
             'sighting_time': warning.sighting_time.isoformat(),
-            'report_time': warning.report_time.isoformat(),
             'severity': warning.severity,
             'description': warning.description,
-            'photo_url': warning.photo_url,
+            'photo': warning.photo,
             'status': warning.status,
             'reporter_name': f"{warning.reporter.firstname} {warning.reporter.lastname}" 
                              if warning.reporter else "Anonymous"
@@ -39,39 +39,59 @@ def shark_warnings_api():
 @bp.route('/report', methods=['GET', 'POST'])
 @login_required
 def report_shark():
+    print("DEBUG: 进入report_shark视图函数", file=sys.stderr)
     form = SharkReportForm()
     
     # 填充选择框的选项
     form.site_id.choices = [(site.id, site.name) for site in Site.query.all()]
     
+    print(f"DEBUG: 请求方法: {request.method}", file=sys.stderr)
+    if request.method == 'POST':
+        print("DEBUG: 这是一个POST请求", file=sys.stderr)
+        print(f"DEBUG: 表单验证结果: {form.validate()}", file=sys.stderr)
+        if not form.validate():
+            print("DEBUG: 表单验证错误:", file=sys.stderr)
+            for field, errors in form.errors.items():
+                print(f"DEBUG: 字段 {field} 错误: {errors}", file=sys.stderr)
+    
     if form.validate_on_submit():
+        print("DEBUG: 表单验证成功！", file=sys.stderr)
         # 处理照片上传
-        photo_url = None
+        photo = None
         if form.photo.data:
+            print("DEBUG: 处理照片上传", file=sys.stderr)
             filename = str(uuid.uuid4()) + '.jpg'
             photo_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
             form.photo.data.save(photo_path)
-            photo_url = url_for('static', filename=f'uploads/{filename}')
+            photo = url_for('static', filename=f'uploads/{filename}')
         
         # 创建新的鲨鱼警告
-        warning = SharkWarning(
-            site_id=form.site_id.data,
-            species=form.species.data,
-            size_estimate=form.size_estimate.data,
-            sighting_time=form.sighting_time.data,
-            report_time=datetime.utcnow(),
-            severity=form.severity.data,
-            description=form.description.data,
-            photo_url=photo_url,
-            status='active',
-            reporter_id=current_user.id
-        )
-        
-        db.session.add(warning)
-        db.session.commit()
-        
-        flash('Your shark warning has been submitted successfully!', 'success')
-        return redirect(url_for('shark.shark_warnings'))
+        try:
+            print("DEBUG: 创建新的鲨鱼警告", file=sys.stderr)
+            warning = SharkWarning(
+                site_id=form.site_id.data,
+                user_id=current_user.id,
+                species=form.species.data,
+                size_estimate=form.size_estimate.data,
+                sighting_time=form.sighting_time.data,
+                severity=form.severity.data,
+                description=form.description.data,
+                photo=photo,
+                status='active',
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+            
+            db.session.add(warning)
+            db.session.commit()
+            print("DEBUG: 成功保存到数据库", file=sys.stderr)
+            
+            flash('Your shark warning has been submitted successfully!', 'success')
+            return redirect(url_for('shark.shark_warnings'))
+        except Exception as e:
+            db.session.rollback()
+            print(f"DEBUG: 数据库错误: {str(e)}", file=sys.stderr)
+            flash(f'An error occurred: {str(e)}', 'danger')
     
     return render_template('shark/report_shark.html', title='Report Shark Sighting', form=form)
 

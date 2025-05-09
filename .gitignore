@@ -17,3 +17,19 @@ __pycache__/
 
 # Create database files
 create_db.py
+app.db
+enhanced_test_data.py
+test_data.py
+modified_test_data.py
+simple_fix.py
+fix_database.py
+migrate_db.py
+add_site_id.py
+check_missing_columns.py
+debug_shark_columns.py
+fix_sites_location.py
+update_sites_data.py
+seed.py
+setup_test_sites.py
+__pycache__
+.DS_Store

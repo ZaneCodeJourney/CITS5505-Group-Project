@@ -149,7 +149,11 @@ async function handleFormSubmit(e) {
     const endTimeISOString = `${dateInput}T${endTimeInput}:00`;
     
     // Required fields from our dive model
-    diveData.user_id = 1; // This would normally come from the logged-in user session
+    const currentUserId = document.querySelector('meta[name="user-id"]')?.content || 
+                         document.getElementById('current-user-id')?.value || 
+                         document.body.dataset.userId;
+                         
+    diveData.user_id = currentUserId || 1; // 如果无法获取，则使用默认值1作为fallback
     diveData.location = formData.get('location');
     diveData.start_time = startTimeISOString;
     diveData.end_time = endTimeISOString;
@@ -173,7 +177,7 @@ async function handleFormSubmit(e) {
     
     try {
         // Step 1: Submit dive data to API
-        const response = await fetch('/api/dives/', {
+        const response = await fetch('/dives/api/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -195,7 +199,7 @@ async function handleFormSubmit(e) {
             const mediaFormData = new FormData();
             mediaFormData.append('media', photoFile);
             
-            const uploadResponse = await fetch(`/api/dives/${diveId}/upload`, {
+            const uploadResponse = await fetch(`/dives/api/${diveId}/upload`, {
                 method: 'POST',
                 body: mediaFormData
             });

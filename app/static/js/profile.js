@@ -246,3 +246,164 @@ function updateProfile(data) {
         }
     });
 }
+
+// 等待DOM加载完成后执行
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化修改密码表单
+    const passwordForm = document.getElementById('password-form');
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', handlePasswordChange);
+    }
+
+    // 初始化修改邮箱表单
+    const emailForm = document.getElementById('email-form');
+    if (emailForm) {
+        emailForm.addEventListener('submit', handleEmailChange);
+    }
+
+    // 处理密码修改
+    function handlePasswordChange(e) {
+        e.preventDefault();
+        
+        // 获取表单数据
+        const currentPassword = document.getElementById('current-password').value;
+        const newPassword = document.getElementById('new-password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+        
+        // 验证表单
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            showAlert('All fields are required', 'danger');
+            return;
+        }
+        
+        if (newPassword !== confirmPassword) {
+            showAlert('New passwords do not match', 'danger');
+            return;
+        }
+        
+        if (newPassword.length < 8) {
+            showAlert('Password must be at least 8 characters long', 'danger');
+            return;
+        }
+        
+        // 创建表单数据
+        const formData = new FormData();
+        formData.append('current_password', currentPassword);
+        formData.append('new_password', newPassword);
+        formData.append('confirm_password', confirmPassword);
+        
+        // 发送请求
+        fetch('/api/users/change-password', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                showAlert(data.message, 'success');
+                // 重置表单
+                passwordForm.reset();
+            } else if (data.error) {
+                showAlert(data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('An error occurred while changing password', 'danger');
+        });
+    }
+    
+    // 处理邮箱修改
+    function handleEmailChange(e) {
+        e.preventDefault();
+        
+        // 获取表单数据
+        const currentEmail = document.getElementById('current-email').value;
+        const newEmail = document.getElementById('new-email').value;
+        const password = document.getElementById('password-email').value;
+        
+        // 验证表单
+        if (!newEmail || !password) {
+            showAlert('All fields are required', 'danger');
+            return;
+        }
+        
+        if (!isValidEmail(newEmail)) {
+            showAlert('Please enter a valid email address', 'danger');
+            return;
+        }
+        
+        if (newEmail === currentEmail) {
+            showAlert('New email is the same as current email', 'danger');
+            return;
+        }
+        
+        // 创建表单数据
+        const formData = new FormData();
+        formData.append('current_password', password);
+        formData.append('new_email', newEmail);
+        
+        // 发送请求
+        fetch('/api/users/change-email', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                showAlert(data.message, 'success');
+                // 更新显示的当前邮箱
+                document.getElementById('current-email').value = newEmail;
+                // 重置表单
+                document.getElementById('new-email').value = '';
+                document.getElementById('password-email').value = '';
+            } else if (data.error) {
+                showAlert(data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('An error occurred while changing email', 'danger');
+        });
+    }
+    
+    // 显示提示消息
+    function showAlert(message, type) {
+        // 查找或创建提示区域
+        let alertArea = document.querySelector('.alert-messages');
+        if (!alertArea) {
+            alertArea = document.createElement('div');
+            alertArea.className = 'alert-messages';
+            document.querySelector('.tab-content').prepend(alertArea);
+        }
+        
+        // 创建提示消息
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type}`;
+        alert.textContent = message;
+        
+        // 添加关闭按钮
+        const closeButton = document.createElement('button');
+        closeButton.type = 'button';
+        closeButton.className = 'btn-close float-end';
+        closeButton.setAttribute('data-bs-dismiss', 'alert');
+        closeButton.setAttribute('aria-label', 'Close');
+        alert.appendChild(closeButton);
+        
+        // 显示提示
+        alertArea.innerHTML = '';
+        alertArea.appendChild(alert);
+        
+        // 5秒后自动关闭
+        setTimeout(() => {
+            alert.classList.add('fade');
+            setTimeout(() => alert.remove(), 500);
+        }, 5000);
+    }
+    
+    // 验证邮箱格式
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+});

@@ -1,10 +1,12 @@
 # Main routes
-from flask import render_template, redirect, url_for, flash, current_app, request
+from flask import render_template, redirect, url_for, flash, current_app, request, jsonify
 from flask_login import current_user, login_required
 from app.main import bp
 from app.models import User, Dive
 from sqlalchemy import func
 from datetime import datetime
+from werkzeug.security import check_password_hash
+import os, uuid
 from app import db
 
 @bp.route('/')
@@ -29,6 +31,113 @@ def settings():
 @login_required
 def edit_profile():
     return render_template('profile/edit-public-profile.html', title='Edit Profile', user=current_user)
+
+@bp.route('/api/users/me', methods=['PUT'])
+@login_required
+def update_profile():
+    """API端点处理用户个人资料更新"""
+    try:
+        # 获取表单数据
+        firstname = request.form.get('firstname')
+        lastname = request.form.get('lastname')
+        username = request.form.get('username')
+        bio = request.form.get('bio')
+        
+        # 更新用户信息
+        current_user.firstname = firstname
+        current_user.lastname = lastname
+        current_user.bio = bio
+        
+        # 如果用户名更改了，确保新用户名不与现有用户名冲突
+        if username != current_user.username:
+            existing_user = User.query.filter_by(username=username).first()
+            if existing_user and existing_user.id != current_user.id:
+                return jsonify({"error": "Username already taken"}), 400
+            current_user.username = username
+        
+        # 处理头像上传
+        if 'avatar' in request.files:
+            avatar_file = request.files['avatar']
+            if avatar_file and avatar_file.filename:
+                # 生成唯一的文件名
+                filename = str(uuid.uuid4()) + os.path.splitext(avatar_file.filename)[1]
+                filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+                avatar_file.save(filepath)
+                
+                # 更新用户头像
+                current_user.avatar = url_for('static', filename=f'uploads/{filename}')
+        
+        # 保存更改
+        db.session.commit()
+        
+        return jsonify({"message": "Profile updated successfully"}), 200
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+@bp.route('/api/users/change-email', methods=['POST'])
+@login_required
+def change_email():
+    """API端点处理用户邮箱更改"""
+    try:
+        # 获取表单数据
+        current_password = request.form.get('current_password')
+        new_email = request.form.get('new_email')
+        
+        # 验证当前密码
+        if not current_user.check_password(current_password):
+            return jsonify({"error": "Current password is incorrect"}), 400
+        
+        # 验证新邮箱是否已被使用
+        if new_email == current_user.email:
+            return jsonify({"error": "New email is the same as current email"}), 400
+            
+        existing_user = User.query.filter_by(email=new_email).first()
+        if existing_user:
+            return jsonify({"error": "Email is already registered to another account"}), 400
+        
+        # 更新邮箱
+        current_user.email = new_email
+        db.session.commit()
+        
+        return jsonify({"message": "Email updated successfully"}), 200
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+@bp.route('/api/users/change-password', methods=['POST'])
+@login_required
+def change_password():
+    """API端点处理用户密码更改"""
+    try:
+        # 获取表单数据
+        current_password = request.form.get('current_password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+        
+        # 验证当前密码
+        if not current_user.check_password(current_password):
+            return jsonify({"error": "Current password is incorrect"}), 400
+        
+        # 验证新密码
+        if len(new_password) < 8:
+            return jsonify({"error": "Password must be at least 8 characters long"}), 400
+            
+        # 确认新密码
+        if new_password != confirm_password:
+            return jsonify({"error": "New passwords do not match"}), 400
+        
+        # 更新密码
+        current_user.set_password(new_password)
+        db.session.commit()
+        
+        return jsonify({"message": "Password updated successfully"}), 200
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
 
 @bp.route('/about')
 def about():

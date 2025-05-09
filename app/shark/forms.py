@@ -13,6 +13,6 @@ class SharkReportForm(FlaskForm):
         ('medium', 'Medium Risk'),
         ('high', 'High Risk')
     ], validators=[DataRequired()])
-    description = TextAreaField('Description', validators=[DataRequired(), Length(min=20, max=1000)])
+    description = TextAreaField('Description', validators=[DataRequired(), Length(min=5, max=1000)])
     photo = FileField('Photo', validators=[Optional(), FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
     submit = SubmitField('Submit Warning') 

@@ -29,6 +29,19 @@
     </p>
   </header>
 
+  <!-- Flash messages display -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
   <!-- Alert message area -->
   <div id="alert-container" class="alert-container"></div>
 
@@ -41,24 +54,52 @@
           <label for="site-id">Dive Site*</label>
           {{ form.site_id(class="", id="site-id") }}
           <span class="form-hint">Select the dive site where you spotted the shark</span>
+          {% if form.site_id.errors %}
+            <div class="form-errors">
+              {% for error in form.site_id.errors %}
+                <span class="error-text">{{ error }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
 
         <div class="form-group">
           <label for="species">Shark Species</label>
           {{ form.species(class="", id="species", placeholder="If known, enter shark species") }}
           <span class="form-hint">If uncertain, you can enter "Unknown"</span>
+          {% if form.species.errors %}
+            <div class="form-errors">
+              {% for error in form.species.errors %}
+                <span class="error-text">{{ error }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
 
         <div class="form-group">
           <label for="size-estimate">Size Estimate</label>
           {{ form.size_estimate(class="", id="size-estimate", placeholder="E.g., 3-4 meters") }}
           <span class="form-hint">Estimate the shark's length</span>
+          {% if form.size_estimate.errors %}
+            <div class="form-errors">
+              {% for error in form.size_estimate.errors %}
+                <span class="error-text">{{ error }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
 
         <div class="form-group">
           <label for="sighting-time">Sighting Time*</label>
           {{ form.sighting_time(class="", id="sighting-time") }}
           <span class="form-hint">The exact time when you spotted the shark</span>
+          {% if form.sighting_time.errors %}
+            <div class="form-errors">
+              {% for error in form.sighting_time.errors %}
+                <span class="error-text">{{ error }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
 
         <div class="form-group">
@@ -67,12 +108,26 @@
           <span class="form-hint">
             Low: Shark was distant or calm. Medium: Shark approached but was non-aggressive. High: Shark showed aggressive behavior.
           </span>
+          {% if form.severity.errors %}
+            <div class="form-errors">
+              {% for error in form.severity.errors %}
+                <span class="error-text">{{ error }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
 
         <div class="form-group full-width">
           <label for="description">Description*</label>
           {{ form.description(class="", id="description", rows=5, placeholder="Please describe the shark's behavior, location, and any other relevant information in detail") }}
           <span class="form-hint">Provide as much detail as possible, including the shark's behavior, direction, depth, etc.</span>
+          {% if form.description.errors %}
+            <div class="form-errors">
+              {% for error in form.description.errors %}
+                <span class="error-text">{{ error }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
 
         <div class="form-group full-width">
@@ -86,15 +141,22 @@
             <span id="file-name" class="file-name">No file chosen</span>
           </div>
           <span class="form-hint">Optional. Upload if available (5MB max)</span>
+          {% if form.photo.errors %}
+            <div class="form-errors">
+              {% for error in form.photo.errors %}
+                <span class="error-text">{{ error }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
       </div>
 
       <div class="form-actions">
-        <button type="submit" class="submit-button">
+        <button type="submit" class="submit-button" id="submit-button">
           <i class="fas fa-exclamation-triangle"></i>
           Submit Warning
         </button>
-        <button type="reset" class="reset-button">
+        <button type="button" class="reset-button" id="reset-button">
           <i class="fas fa-redo"></i>
           Reset Form
         </button>

@@ -15,13 +15,11 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
-    password_hash = db.Column(db.String(128))
     firstname = db.Column(db.String(64))
     lastname = db.Column(db.String(64))
-    date_of_birth = db.Column(db.Date)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    is_active = db.Column(db.Boolean, default=True)
     bio = db.Column(db.Text)
+    dob = db.Column(db.Date)  # Date of birth field
+    password_hash = db.Column(db.String(128))
     registration_date = db.Column(db.DateTime, default=datetime.utcnow)
     avatar = db.Column(db.String(255))
     status = db.Column(db.String(20), default='active')
@@ -31,7 +29,8 @@ class User(db.Model, UserMixin):
     reviews = db.relationship('Review', backref='reviewer', lazy='dynamic')
     shared_dives = db.relationship('Share', backref='creator', 
                                   foreign_keys='Share.creator_user_id', lazy='dynamic')
-    shark_warnings = db.relationship('SharkWarning', backref='reporter', lazy='dynamic')
+    shark_warnings = db.relationship('SharkWarning', backref='reporter', 
+                                    foreign_keys='SharkWarning.user_id', lazy='dynamic')
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -112,8 +111,8 @@ class Site(db.Model):
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text)
     location = db.Column(db.String(100))
-    latitude = db.Column(db.Float(8, 6))
-    longitude = db.Column(db.Float(9, 6))
+    lat = db.Column(db.Float(8, 6))
+    lng = db.Column(db.Float(9, 6))
     country = db.Column(db.String(100))
     region = db.Column(db.String(100))
     avg_visibility = db.Column(db.String(50))
@@ -137,8 +136,8 @@ class Site(db.Model):
             'name': self.name,
             'description': self.description,
             'location': self.location,
-            'latitude': self.latitude,
-            'longitude': self.longitude,
+            'lat': self.lat,
+            'lng': self.lng,
             'country': self.country,
             'region': self.region,
             'avg_visibility': self.avg_visibility,
@@ -193,15 +192,16 @@ class SharkWarning(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     site_id = db.Column(db.Integer, db.ForeignKey('sites.id'), nullable=False)
-    reporter_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     species = db.Column(db.String(100))
     size_estimate = db.Column(db.String(50))
     description = db.Column(db.Text, nullable=False)
     sighting_time = db.Column(db.DateTime, nullable=False)
-    report_time = db.Column(db.DateTime, default=datetime.utcnow)
     severity = db.Column(db.String(20), default='medium')  # low, medium, high
     status = db.Column(db.String(20), default='active')  # active, resolved, expired
-    photo_url = db.Column(db.String(255))
+    photo = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     def __repr__(self):
         return f"<SharkWarning {self.id} at Site {self.site_id}>"
@@ -210,13 +210,14 @@ class SharkWarning(db.Model):
         return {
             'id': self.id,
             'site_id': self.site_id,
-            'reporter_id': self.reporter_id,
+            'user_id': self.user_id,
             'species': self.species,
             'size_estimate': self.size_estimate,
             'description': self.description,
             'sighting_time': self.sighting_time.isoformat() if self.sighting_time else None,
-            'report_time': self.report_time.isoformat() if self.report_time else None,
             'severity': self.severity,
             'status': self.status,
-            'photo_url': self.photo_url
+            'photo': self.photo,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
         } 
