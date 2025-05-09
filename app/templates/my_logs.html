@@ -4,28 +4,6 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dive_log.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/my_logs.css') }}">
-<style>
-    /* Success message styles */
-    .success-message {
-        background-color: #d4edda;
-        color: #155724;
-        padding: 1rem;
-        margin-bottom: 1.5rem;
-        border-radius: var(--border-radius-md);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-    
-    .success-message button {
-        background: none;
-        border: none;
-        color: #155724;
-        cursor: pointer;
-        font-size: 1.2rem;
-        font-weight: bold;
-    }
-</style>
 {% endblock %}
 
 {% block content %}
