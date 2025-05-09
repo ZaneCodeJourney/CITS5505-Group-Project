@@ -8,6 +8,7 @@ from datetime import datetime
 import os
 from werkzeug.utils import secure_filename
 import uuid
+from flask_wtf.csrf import validate_csrf, CSRFError
 
 # Helper: Convert a Dive object to dictionary
 def dive_to_dict(dive):
@@ -50,6 +51,12 @@ def get_dives():
 # POST /api/dives/ - Create a new diving record
 @dives_bp.route('/', methods=['POST'])
 def create_dive():
+    token = request.headers.get("X-CSRFToken")
+    try:
+        validate_csrf(token)
+    except CSRFError as e:
+        return jsonify({"error": "Invalid or missing CSRF token"}), 400
+
     data = request.get_json()
 
     if not data:
