@@ -72,8 +72,8 @@ def my_logs():
             except ValueError:
                 pass
     
-    # Order by date (oldest first)
-    dives = query.order_by(Dive.start_time.asc()).all()
+    # Order by date (newest first)
+    dives = query.order_by(Dive.start_time.desc()).all()
     
     # Calculate diving statistics
     stats = {}
