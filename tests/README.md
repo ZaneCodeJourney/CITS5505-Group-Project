@@ -1,11 +1,12 @@
-# Auth Tests
+# Auth and Share Tests
 
-This directory contains unit tests for the authentication functionality of the application.
+This directory contains unit tests for the authentication and sharing functionality of the application.
 
 ## Test Files
 
 - `test_auth.py`: Tests the API endpoints for authentication (register, login, logout, password reset)
 - `test_user_model.py`: Tests the User model and its authentication-related functionality
+- `test_share.py`: Tests the share functionality for dive records
 - `run_tests.py`: Script to run all tests
 
 ## Running the Tests
@@ -29,29 +30,34 @@ This directory contains unit tests for the authentication functionality of the a
 ### Running All Tests
 
 ```
-python -m tests.run_tests
+python -m tests.auth.run_tests
 ```
 
 ### Running Specific Test Files
 
 ```
 # Run auth API tests
-python -m unittest tests.test_auth
+python -m unittest tests.auth.test_auth
 
 # Run User model tests
-python -m unittest tests.test_user_model
+python -m unittest tests.auth.test_user_model
+
+# Run Share functionality tests
+python -m unittest tests.auth.test_share
 ```
 
 ### Running Specific Test Methods
 
 ```
 # Run specific test method
-python -m unittest tests.test_auth.AuthTestCase.test_login_success
+python -m unittest tests.auth.test_auth.AuthTestCase.test_login_success
 ```
 
 ## Test Coverage
 
 The tests cover:
+
+### Authentication
 
 - User registration (success and various failure cases)
 - User login (success and various failure cases)
@@ -61,14 +67,27 @@ The tests cover:
 - Handling of duplicate usernames and emails
 - User status changes
 
+### Share Functionality
+
+- Creating share links for dives
+- Accessing shared dives with valid tokens
+- Handling expired share links
+- Updating share visibility settings
+- Creating multiple share links for the same dive
+
 ## Expected Success Cases
 
 - Successful user registration with valid data
 - Successful login with correct credentials
 - Successful logout
 - Successful password reset with valid token
+- Successful creation of share links
+- Successful access to shared dive records
+- Successful updating of share visibility
 
 ## Edge Cases
+
+### Authentication Edge Cases
 
 - Registration with existing username or email
 - Registration with invalid email format
@@ -77,4 +96,12 @@ The tests cover:
 - Login to inactive account
 - Missing required fields in requests
 - Password reset with invalid token
-- Password reset for inactive account 
+- Password reset for inactive account
+
+### Share Functionality Edge Cases
+
+- Creating share links for nonexistent dives
+- Accessing shared dives with invalid tokens
+- Accessing expired share links
+- Updating visibility for nonexistent dives
+- Updating visibility for dives without share records 
