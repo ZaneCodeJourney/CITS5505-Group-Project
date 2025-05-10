@@ -10,4 +10,10 @@ class Config:
     
     # File upload configuration
     UPLOAD_FOLDER = os.path.join(basedir, 'app/static/uploads')
-    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file upload size 
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file upload size
+
+class TestingConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    WTF_CSRF_ENABLED = False
