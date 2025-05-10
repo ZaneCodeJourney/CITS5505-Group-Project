@@ -4,6 +4,7 @@ from flask import request, jsonify, abort, current_app, url_for
 from app.models import Dive
 from app.dives import dives_bp
 from app import db
+from app import csrf
 from datetime import datetime
 import os
 from werkzeug.utils import secure_filename
@@ -48,14 +49,15 @@ def get_dives():
     dives = Dive.query.all()
     return jsonify([dive_to_dict(dive) for dive in dives]), 200
 
-# POST /api/dives/ - Create a new diving record
+@csrf.exempt
 @dives_bp.route('/', methods=['POST'])
 def create_dive():
-    token = request.headers.get("X-CSRFToken")
-    try:
-        validate_csrf(token)
-    except CSRFError as e:
-        return jsonify({"error": "Invalid or missing CSRF token"}), 400
+    if current_app.config.get("WTF_CSRF_ENABLED", True):
+        token = request.headers.get("X-CSRFToken")
+        try:
+            validate_csrf(token)
+        except CSRFError as e:
+            return jsonify({"error": "Invalid or missing CSRF token"}), 400
 
     data = request.get_json()
 
