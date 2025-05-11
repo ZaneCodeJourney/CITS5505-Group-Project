@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% if title %}{{ title }} - {% endif %}DiveLogger</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     {% block styles %}{% endblock %}
@@ -68,31 +69,11 @@
                         e.preventDefault();
                         
                         try {
-                            // Get CSRF token
-                            const tokenResponse = await fetch('/dev/get-csrf-token', {
-                                method: 'GET',
-                                credentials: 'include'
-                            });
+                            // Use the centralized API request function
+                            await apiRequest('/api/auth/logout', 'POST');
                             
-                            const tokenData = await tokenResponse.json();
-                            const csrfToken = tokenData.csrf_token;
-                            
-                            // Send logout request
-                            const response = await fetch('/api/auth/logout', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRFToken': csrfToken
-                                },
-                                credentials: 'include'
-                            });
-                            
-                            if (response.ok) {
-                                // Redirect to home page on successful logout
-                                window.location.href = '/';
-                            } else {
-                                alert('Logout failed. Please try again.');
-                            }
+                            // Redirect to home page on successful logout
+                            window.location.href = '/';
                         } catch (error) {
                             console.error('Logout error:', error);
                             alert('An error occurred during logout. Please try again.');
