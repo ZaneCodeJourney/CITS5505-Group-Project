@@ -175,10 +175,14 @@ class Share(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     dive_id = db.Column(db.Integer, db.ForeignKey('dives.id'), nullable=False)
     creator_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    shared_with_user_id = db.Column(db.Integer, db.ForeignKey('users.id', name='fk_shared_with_user'), nullable=True)
     token = db.Column(db.String(64), unique=True, nullable=False)
     visibility = db.Column(db.String(20), default='user_specific')
     expiration_time = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Add relationship for shared_with_user
+    shared_with = db.relationship('User', foreign_keys=[shared_with_user_id], backref=db.backref('shared_with_me', lazy='dynamic'))
     
     def __repr__(self):
         return f"<Share {self.id} of Dive {self.dive_id} by User {self.creator_user_id}>"
