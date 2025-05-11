@@ -166,16 +166,7 @@
             }
             
             try {
-                // 1. Get CSRF token
-                const tokenResponse = await fetch('/dev/get-csrf-token', {
-                    method: 'GET',
-                    credentials: 'include'
-                });
-                
-                const tokenData = await tokenResponse.json();
-                const csrfToken = tokenData.csrf_token;
-                
-                // 2. Prepare registration data
+                // Prepare registration data
                 const registrationData = {
                     username: document.getElementById('username').value,
                     email: document.getElementById('email').value,
@@ -191,46 +182,8 @@
                     registrationData.dob = dob;
                 }
                 
-                // 3. Send registration request
-                const response = await fetch('/api/auth/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify(registrationData)
-                });
-                
-                const data = await response.json();
-                
-                if (!response.ok) {
-                    // Handle validation errors from backend
-                    if (data.error) {
-                        if (data.error.includes('Username already exists')) {
-                            const errorEl = document.getElementById('username-error');
-                            errorEl.textContent = 'Username already exists';
-                            errorEl.style.display = 'block';
-                        } else if (data.error.includes('Email already registered')) {
-                            const errorEl = document.getElementById('email-error');
-                            errorEl.textContent = 'Email already registered';
-                            errorEl.style.display = 'block';
-                        } else if (data.error.includes('Password must be')) {
-                            const errorEl = document.getElementById('password-error');
-                            errorEl.textContent = 'Password must meet all requirements';
-                            errorEl.style.display = 'block';
-                        } else if (data.error.includes('Invalid email')) {
-                            const errorEl = document.getElementById('email-error');
-                            errorEl.textContent = 'Invalid email format';
-                            errorEl.style.display = 'block';
-                        } else {
-                            alert('Registration error: ' + data.error);
-                        }
-                    } else {
-                        alert('An error occurred during registration');
-                    }
-                    return;
-                }
+                // Use the centralized API request function
+                const data = await apiRequest('/api/auth/register', 'POST', registrationData);
                 
                 // Success - redirect to login page
                 alert('Registration successful! You can now log in.');
@@ -238,7 +191,28 @@
                 
             } catch (error) {
                 console.error('Registration error:', error);
-                alert('An error occurred during registration. Please try again later.');
+                
+                // Handle specific errors
+                const errorMessage = error.message;
+                if (errorMessage.includes('Username already exists')) {
+                    const errorEl = document.getElementById('username-error');
+                    errorEl.textContent = 'Username already exists';
+                    errorEl.style.display = 'block';
+                } else if (errorMessage.includes('Email already registered')) {
+                    const errorEl = document.getElementById('email-error');
+                    errorEl.textContent = 'Email already registered';
+                    errorEl.style.display = 'block';
+                } else if (errorMessage.includes('Password must be')) {
+                    const errorEl = document.getElementById('password-error');
+                    errorEl.textContent = 'Password must meet all requirements';
+                    errorEl.style.display = 'block';
+                } else if (errorMessage.includes('Invalid email')) {
+                    const errorEl = document.getElementById('email-error');
+                    errorEl.textContent = 'Invalid email format';
+                    errorEl.style.display = 'block';
+                } else {
+                    alert('Registration error: ' + errorMessage);
+                }
             }
         });
     });
