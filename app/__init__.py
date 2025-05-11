@@ -60,6 +60,11 @@ def create_app(config_class=Config):
         db.create_all()
         print("Database tables created.")
 
+    # Initialize database tables if they don't exist
+    with app.app_context():
+        db.create_all()
+        app.logger.info("Database tables created or confirmed to exist")
+
     return app
 
 # Import models here to avoid circular imports
