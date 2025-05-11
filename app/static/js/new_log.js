@@ -134,6 +134,7 @@ async function handleFormSubmit(e) {
     // Get form data
     const formElement = e.target;
     const photoFile = document.getElementById('dive-photos').files[0];
+    const csvFile = document.getElementById('dive-profile-csv').files[0];
     
     // Extract form data (excluding file inputs)
     const formData = new FormData(formElement);
@@ -208,9 +209,54 @@ async function handleFormSubmit(e) {
             }
         }
         
-        // Show success message and redirect to my-logs page
-        alert('Dive log created successfully!');
-        window.location.href = '/my-logs?success=dive_created';
+        // Step 3: Upload CSV file if one was selected
+        if (csvFile) {
+            console.log("Uploading CSV file:", csvFile.name, "size:", csvFile.size, "type:", csvFile.type);
+            
+            // Basic client-side validation
+            if (!csvFile.name.toLowerCase().endsWith('.csv')) {
+                console.warn('Not a CSV file');
+                alert('Please select a CSV file (must have .csv extension)');
+                window.location.href = '/my-logs?success=dive_created';
+                return;
+            }
+            
+            const csvFormData = new FormData();
+            csvFormData.append('profile_csv', csvFile);
+            
+            try {
+                console.log(`Sending CSV upload request to /api/dives/${diveId}/upload-csv`);
+                const csvUploadResponse = await fetch(`/api/dives/${diveId}/upload-csv`, {
+                    method: 'POST',
+                    body: csvFormData,
+                    // Do not include any custom headers that might trigger preflight CORS requests
+                });
+                
+                console.log("CSV upload response status:", csvUploadResponse.status);
+                
+                if (csvUploadResponse.ok) {
+                    console.log('CSV data uploaded successfully');
+                    // Redirect to my-logs with success message
+                    window.location.href = '/my-logs?success=dive_created_with_profile';
+                } else {
+                    // Handle error
+                    const errorText = await csvUploadResponse.text();
+                    console.warn('CSV upload failed:', errorText);
+                    
+                    // Show alert but still redirect to logs page
+                    alert('The dive log was created, but there was an issue with the CSV profile data. You can try adding it later.');
+                    window.location.href = '/my-logs?success=dive_created';
+                }
+            } catch (error) {
+                console.error('CSV upload error:', error);
+                // Still redirect to logs page
+                alert('The dive log was created, but there was an issue uploading the CSV file. You can try adding it later.');
+                window.location.href = '/my-logs?success=dive_created';
+            }
+        } else {
+            // No CSV file selected, just redirect to logs page
+            window.location.href = '/my-logs?success=dive_created';
+        }
     } catch (error) {
         console.error('Error submitting form:', error);
         alert('Failed to save dive log. Please try again.');
