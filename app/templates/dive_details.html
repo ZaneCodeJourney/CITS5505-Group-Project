@@ -1,0 +1,728 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dive_log.css') }}">
+<style>
+    .dive-details-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 1rem;
+    }
+    
+    .dive-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .dive-title {
+        margin: 0;
+    }
+    
+    .dive-date {
+        color: #666;
+        font-size: 1.1rem;
+    }
+    
+    .dive-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .dive-meta-section {
+        flex: 1;
+        min-width: 250px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+    
+    .meta-section-title {
+        margin-top: 0;
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+        color: #333;
+    }
+    
+    .meta-item {
+        display: flex;
+        margin-bottom: 0.7rem;
+    }
+    
+    .meta-label {
+        font-weight: bold;
+        min-width: 140px;
+        margin-right: 1rem;
+    }
+    
+    .meta-value {
+        flex: 1;
+    }
+    
+    .map-section {
+        margin-bottom: 2rem;
+    }
+    
+    #dive-location-map {
+        height: 300px;
+        border-radius: 8px;
+        margin-top: 1rem;
+    }
+    
+    .profile-section {
+        margin-bottom: 2rem;
+    }
+    
+    .profile-chart-container {
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        padding: 1rem;
+        height: 400px;
+    }
+    
+    .notes-section {
+        margin-bottom: 2rem;
+    }
+    
+    .notes-content {
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        padding: 1rem;
+        white-space: pre-line;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .btn {
+        padding: 0.6rem 1.2rem;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: bold;
+        cursor: pointer;
+        border: none;
+    }
+    
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+    
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+    
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    .share-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .modal-content {
+        background-color: white;
+        margin: 10% auto;
+        padding: 1.5rem;
+        border-radius: 8px;
+        max-width: 500px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .close-modal {
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+    
+    .link-share {
+        display: flex;
+        gap: 0.5rem;
+        margin: 1rem 0;
+    }
+    
+    .form-control {
+        flex: 1;
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 1.5rem;
+    }
+    
+    .expiration-options {
+        margin-top: 1rem;
+    }
+    
+    .radio-option {
+        margin-bottom: 0.5rem;
+    }
+    
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-left: 0.5rem;
+    }
+    
+    .badge-success {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .badge-warning {
+        background-color: #ffc107;
+        color: #212529;
+    }
+    
+    .badge-info {
+        background-color: #17a2b8;
+        color: white;
+    }
+    
+    .shared-banner {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        border-left: 4px solid #28a745;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .shared-banner-icon {
+        font-size: 1.5rem;
+    }
+    
+    .shared-banner-text {
+        flex: 1;
+    }
+    
+    .shared-banner-text h3 {
+        margin: 0;
+        font-size: 1.2rem;
+    }
+    
+    .shared-banner-text p {
+        margin: 0.5rem 0 0 0;
+        color: #666;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dive-details-container">
+    {% if is_shared %}
+    <div class="shared-banner">
+        <div class="shared-banner-icon">🔗</div>
+        <div class="shared-banner-text">
+            <h3>Shared Dive Log</h3>
+            <p>This dive log was shared with you by {{ owner.username }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="dive-header">
+        <div>
+            <h1 class="dive-title">{{ dive.location }}</h1>
+            <div class="dive-date">{{ dive.start_time.strftime('%B %d, %Y') }}</div>
+        </div>
+        {% if dive.profile_csv_data %}
+        <div>
+            <span class="badge badge-info">Dive Computer Data</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="dive-meta">
+        <div class="dive-meta-section">
+            <h3 class="meta-section-title">Dive Details</h3>
+            
+            <div class="meta-item">
+                <span class="meta-label">Dive #</span>
+                <span class="meta-value">{{ dive.dive_number or 'Not specified' }}</span>
+            </div>
+            
+            <div class="meta-item">
+                <span class="meta-label">Start Time</span>
+                <span class="meta-value">{{ dive.start_time.strftime('%H:%M') }}</span>
+            </div>
+            
+            <div class="meta-item">
+                <span class="meta-label">End Time</span>
+                <span class="meta-value">{{ dive.end_time.strftime('%H:%M') }}</span>
+            </div>
+            
+            <div class="meta-item">
+                <span class="meta-label">Duration</span>
+                <span class="meta-value">
+                    {% if dive.start_time and dive.end_time %}
+                    {{ ((dive.end_time - dive.start_time).total_seconds() / 60)|round|int }} minutes
+                    {% else %}
+                    Not available
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div class="meta-item">
+                <span class="meta-label">Max Depth</span>
+                <span class="meta-value">{{ dive.max_depth }} meters</span>
+            </div>
+            
+            {% if dive.visibility %}
+            <div class="meta-item">
+                <span class="meta-label">Visibility</span>
+                <span class="meta-value">{{ dive.visibility }}</span>
+            </div>
+            {% endif %}
+            
+            {% if dive.weather %}
+            <div class="meta-item">
+                <span class="meta-label">Weather</span>
+                <span class="meta-value">{{ dive.weather }}</span>
+            </div>
+            {% endif %}
+            
+            {% if dive.dive_partner %}
+            <div class="meta-item">
+                <span class="meta-label">Dive Partner</span>
+                <span class="meta-value">{{ dive.dive_partner }}</span>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="dive-meta-section">
+            <h3 class="meta-section-title">Equipment</h3>
+            
+            {% if dive.suit_type %}
+            <div class="meta-item">
+                <span class="meta-label">Suit Type</span>
+                <span class="meta-value">{{ dive.suit_type }}</span>
+            </div>
+            {% endif %}
+            
+            {% if dive.suit_thickness %}
+            <div class="meta-item">
+                <span class="meta-label">Suit Thickness</span>
+                <span class="meta-value">{{ dive.suit_thickness }} mm</span>
+            </div>
+            {% endif %}
+            
+            {% if dive.weight %}
+            <div class="meta-item">
+                <span class="meta-label">Weight</span>
+                <span class="meta-value">{{ dive.weight }} kg</span>
+            </div>
+            {% endif %}
+            
+            {% if dive.weight_belt %}
+            <div class="meta-item">
+                <span class="meta-label">Weight Belt</span>
+                <span class="meta-value">{{ dive.weight_belt }}</span>
+            </div>
+            {% endif %}
+            
+            {% if dive.tank_type %}
+            <div class="meta-item">
+                <span class="meta-label">Tank Type</span>
+                <span class="meta-value">{{ dive.tank_type }}</span>
+            </div>
+            {% endif %}
+            
+            {% if dive.tank_size %}
+            <div class="meta-item">
+                <span class="meta-label">Tank Size</span>
+                <span class="meta-value">{{ dive.tank_size }} L</span>
+            </div>
+            {% endif %}
+            
+            {% if dive.gas_mix %}
+            <div class="meta-item">
+                <span class="meta-label">Gas Mix</span>
+                <span class="meta-value">{{ dive.gas_mix }}</span>
+            </div>
+            {% endif %}
+            
+            {% if dive.o2_percentage %}
+            <div class="meta-item">
+                <span class="meta-label">O2 Percentage</span>
+                <span class="meta-value">{{ dive.o2_percentage }}%</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="map-section">
+        <h2>Location</h2>
+        <div id="dive-location-map" data-location="{{ dive.location }}"></div>
+    </div>
+
+    {% if dive.profile_csv_data %}
+    <div class="profile-section">
+        <h2>Dive Profile</h2>
+        <div class="profile-chart-container">
+            <canvas id="dive-profile-chart" data-csv-data="{{ dive.profile_csv_data|e }}"></canvas>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if dive.notes %}
+    <div class="notes-section">
+        <h2>Notes</h2>
+        <div class="notes-content">
+            {{ dive.notes }}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not is_shared and dive.user_id == current_user.id %}
+    <div class="action-buttons">
+        <a href="/edit-dive/{{ dive.id }}" class="btn btn-primary">Edit Dive</a>
+        <button id="share-dive-btn" class="btn btn-secondary">Share Dive</button>
+        <button id="delete-dive-btn" class="btn btn-danger">Delete</button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Share Modal -->
+<div id="share-modal" class="share-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Share Dive Log</h3>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p>Create a link to share this dive log with others.</p>
+            
+            {% if shares %}
+            <h4>Existing Share Links</h4>
+            {% for share in shares %}
+            <div class="existing-share">
+                <div class="link-share">
+                    <input type="text" class="form-control" value="{{ url_for('main.shared_dive', token=share.token, _external=True) }}" readonly>
+                    <button class="btn btn-secondary copy-btn" data-link="{{ url_for('main.shared_dive', token=share.token, _external=True) }}">Copy</button>
+                </div>
+                <div>
+                    {% if share.expiration_time %}
+                    <small>Expires: {{ share.expiration_time.strftime('%Y-%m-%d') }}</small>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+            
+            <h4>Create New Share Link</h4>
+            <div class="expiration-options">
+                <div class="radio-option">
+                    <input type="radio" id="expire-7days" name="expiration" value="7" checked>
+                    <label for="expire-7days">Expire after 7 days</label>
+                </div>
+                <div class="radio-option">
+                    <input type="radio" id="expire-30days" name="expiration" value="30">
+                    <label for="expire-30days">Expire after 30 days</label>
+                </div>
+                <div class="radio-option">
+                    <input type="radio" id="expire-never" name="expiration" value="never">
+                    <label for="expire-never">Never expire</label>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id="create-share-btn" class="btn btn-primary">Create Share Link</button>
+            <button class="btn btn-secondary close-btn">Cancel</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize map
+        initMap();
+        
+        // Initialize dive profile chart if data exists
+        const profileChartElement = document.getElementById('dive-profile-chart');
+        if (profileChartElement) {
+            initDiveProfileChart(profileChartElement);
+        }
+        
+        // Setup share modal
+        const shareModal = document.getElementById('share-modal');
+        const shareDiveBtn = document.getElementById('share-dive-btn');
+        const closeModal = document.querySelector('.close-modal');
+        const closeBtn = document.querySelector('.close-btn');
+        const createShareBtn = document.getElementById('create-share-btn');
+        
+        if (shareDiveBtn) {
+            shareDiveBtn.addEventListener('click', function() {
+                shareModal.style.display = 'block';
+            });
+        }
+        
+        if (closeModal) {
+            closeModal.addEventListener('click', function() {
+                shareModal.style.display = 'none';
+            });
+        }
+        
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                shareModal.style.display = 'none';
+            });
+        }
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', function(e) {
+            if (e.target === shareModal) {
+                shareModal.style.display = 'none';
+            }
+        });
+        
+        // Setup copy buttons
+        const copyButtons = document.querySelectorAll('.copy-btn');
+        copyButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const linkInput = this.previousElementSibling;
+                linkInput.select();
+                document.execCommand('copy');
+                
+                // Show feedback
+                const originalText = this.textContent;
+                this.textContent = 'Copied!';
+                
+                setTimeout(() => {
+                    this.textContent = originalText;
+                }, 2000);
+            });
+        });
+        
+        // Create share link functionality
+        if (createShareBtn) {
+            createShareBtn.addEventListener('click', async function() {
+                const expirationValue = document.querySelector('input[name="expiration"]:checked').value;
+                
+                try {
+                    // Get CSRF token
+                    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    
+                    // Make API request to create share link
+                    const response = await fetch('/api/shared/dives/{{ dive.id }}/share', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': token
+                        },
+                        body: JSON.stringify({
+                            expiration_days: expirationValue === 'never' ? null : parseInt(expirationValue)
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to create share link');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Reload the page to show the new share link
+                    window.location.reload();
+                } catch (error) {
+                    console.error('Error creating share link:', error);
+                    alert('Failed to create share link. Please try again.');
+                }
+            });
+        }
+        
+        // Delete dive functionality
+        const deleteDiveBtn = document.getElementById('delete-dive-btn');
+        if (deleteDiveBtn) {
+            deleteDiveBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to delete this dive log? This action cannot be undone.')) {
+                    deleteDive();
+                }
+            });
+        }
+        
+        async function deleteDive() {
+            try {
+                // Get CSRF token
+                const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                
+                // Make API request to delete dive
+                const response = await fetch('/api/dives/{{ dive.id }}', {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': token
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to delete dive');
+                }
+                
+                // Redirect to my logs page
+                window.location.href = '/my-logs';
+            } catch (error) {
+                console.error('Error deleting dive:', error);
+                alert('Failed to delete dive. Please try again.');
+            }
+        }
+    });
+    
+    function initMap() {
+        const mapElement = document.getElementById('dive-location-map');
+        if (!mapElement) return;
+        
+        const location = mapElement.dataset.location;
+        
+        // Try to extract coordinates from location string
+        let lat = 0, lng = 0;
+        const coordsMatch = location.match(/\((-?\d+\.\d+),\s*(-?\d+\.\d+)\)/);
+        
+        if (coordsMatch) {
+            lat = parseFloat(coordsMatch[1]);
+            lng = parseFloat(coordsMatch[2]);
+        } else {
+            // Default coordinates if we can't extract them
+            lat = 0;
+            lng = 0;
+        }
+        
+        // Initialize map
+        const map = L.map('dive-location-map').setView([lat, lng], 10);
+        
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19
+        }).addTo(map);
+        
+        // Attempt to add OpenSeaMap tiles
+        try {
+            L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openseamap.org/">OpenSeaMap</a> contributors',
+                maxZoom: 19
+            }).addTo(map);
+        } catch (e) {
+            console.warn('Failed to load OpenSeaMap tiles:', e);
+        }
+        
+        // Add marker
+        if (lat !== 0 || lng !== 0) {
+            const marker = L.marker([lat, lng]).addTo(map);
+            marker.bindPopup(`<b>${location}</b>`).openPopup();
+        }
+    }
+    
+    function initDiveProfileChart(chartElement) {
+        const csvData = chartElement.dataset.csvData;
+        
+        if (!csvData) return;
+        
+        // Parse CSV data
+        const rows = csvData.trim().split('\n');
+        const headers = rows[0].split(',');
+        
+        // Find index of depth and time columns
+        const timeIndex = headers.findIndex(h => h.toLowerCase().includes('time'));
+        const depthIndex = headers.findIndex(h => h.toLowerCase().includes('depth'));
+        
+        if (timeIndex === -1 || depthIndex === -1) {
+            console.error('Missing required columns in CSV data');
+            return;
+        }
+        
+        // Extract data
+        const timeData = [];
+        const depthData = [];
+        
+        for (let i = 1; i < rows.length; i++) {
+            const values = rows[i].split(',');
+            if (values.length > Math.max(timeIndex, depthIndex)) {
+                timeData.push(parseFloat(values[timeIndex]));
+                depthData.push(parseFloat(values[depthIndex]));
+            }
+        }
+        
+        // Create chart
+        const ctx = chartElement.getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: timeData,
+                datasets: [{
+                    label: 'Depth (m)',
+                    data: depthData,
+                    backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                    borderColor: 'rgba(0, 123, 255, 1)',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time (minutes)'
+                        }
+                    },
+                    y: {
+                        reverse: true,
+                        title: {
+                            display: true,
+                            text: 'Depth (meters)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %} 
