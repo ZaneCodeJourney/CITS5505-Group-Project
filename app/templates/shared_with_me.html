@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Dives Shared With Me{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Dives Shared With Me</h1>
+    
+    {% if shared_dives %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for shared_dive in shared_dives %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        {% if shared_dive.dive.location_thumbnail %}
+                            <img src="{{ shared_dive.dive.location_thumbnail }}" class="card-img-top" alt="{{ shared_dive.dive.location }}">
+                        {% else %}
+                            <div class="card-img-top bg-primary text-white d-flex align-items-center justify-content-center" style="height: 160px;">
+                                <i class="fas fa-water fa-3x"></i>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="card-body">
+                            <h5 class="card-title">{{ shared_dive.dive.location }}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Dive #{{ shared_dive.dive.dive_number }}</h6>
+                            
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar-alt"></i> 
+                                    {{ shared_dive.dive.start_time.strftime('%b %d, %Y') }}
+                                </small>
+                            </p>
+                            
+                            <p class="card-text">
+                                <i class="fas fa-ruler-vertical"></i> Max Depth: {{ shared_dive.dive.max_depth }} m<br>
+                                <i class="fas fa-clock"></i> Duration: 
+                                {% set duration = (shared_dive.dive.end_time - shared_dive.dive.start_time).total_seconds() // 60 %}
+                                {{ duration|int }} min
+                            </p>
+                            
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    Shared by <strong>{{ shared_dive.shared_by }}</strong> on 
+                                    {{ shared_dive.shared_date.strftime('%b %d, %Y') }}
+                                </small>
+                            </p>
+                        </div>
+                        
+                        <div class="card-footer bg-transparent border-top-0">
+                            <a href="{{ url_for('shared.get_shared_dive', token=shared_dive.token) }}" class="btn btn-primary btn-sm w-100">
+                                <i class="fas fa-eye"></i> View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> No dives have been shared with you yet.
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 
