@@ -136,61 +136,34 @@
             });
             
             try {
-                // 1. Get CSRF token
-                const tokenResponse = await fetch('/dev/get-csrf-token', {
-                    method: 'GET',
-                    credentials: 'include'
-                });
-                
-                const tokenData = await tokenResponse.json();
-                const csrfToken = tokenData.csrf_token;
-                
-                // 2. Prepare login data
+                // Prepare login data
                 const loginData = {
                     email: document.getElementById('email').value,
                     password: document.getElementById('password').value,
                     remember: document.getElementById('remember').checked
                 };
                 
-                // 3. Send login request
-                const response = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify(loginData)
-                });
-                
-                const data = await response.json();
-                
-                if (!response.ok) {
-                    // Handle login errors
-                    if (data.error) {
-                        if (data.error.includes('Invalid email or password')) {
-                            const errorEl = document.getElementById('email-error');
-                            errorEl.textContent = 'Invalid email or password';
-                            errorEl.style.display = 'block';
-                        } else if (data.error.includes('Account is deactivated')) {
-                            const errorEl = document.getElementById('email-error');
-                            errorEl.textContent = 'This account has been deactivated';
-                            errorEl.style.display = 'block';
-                        } else {
-                            alert('Login error: ' + data.error);
-                        }
-                    } else {
-                        alert('An error occurred during login');
-                    }
-                    return;
-                }
+                // Use the centralized API request function
+                const data = await apiRequest('/api/auth/login', 'POST', loginData);
                 
                 // Success - redirect to homepage or dashboard
                 window.location.href = '/';
                 
             } catch (error) {
                 console.error('Login error:', error);
-                alert('An error occurred during login. Please try again later.');
+                
+                // Handle specific errors
+                if (error.message.includes('Invalid email or password')) {
+                    const errorEl = document.getElementById('email-error');
+                    errorEl.textContent = 'Invalid email or password';
+                    errorEl.style.display = 'block';
+                } else if (error.message.includes('Account is deactivated')) {
+                    const errorEl = document.getElementById('email-error');
+                    errorEl.textContent = 'This account has been deactivated';
+                    errorEl.style.display = 'block';
+                } else {
+                    alert('Login error: ' + error.message);
+                }
             }
         });
     });
