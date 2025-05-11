@@ -558,32 +558,26 @@ function setupModals() {
             const diveId = deleteModal.dataset.diveId;
             
             try {
-                // Send delete request to API
-                const response = await fetch(`/api/dives/${diveId}`, {
-                    method: 'DELETE'
-                });
+                // Use the centralized API request function with CSRF protection
+                await apiRequest(`/api/dives/${diveId}`, 'DELETE');
                 
-                if (response.ok) {
-                    // Remove the dive card from the page
-                    const diveCard = document.querySelector(`.log-card[data-dive-id="${diveId}"]`);
-                    if (diveCard) {
-                        diveCard.remove();
-                    }
-                    
-                    // Close modal
-                    deleteModal.style.display = 'none';
-                    
-                    // Show success message
-                    alert('Dive log deleted successfully');
-                    
-                    // Reload page to update stats
-                    window.location.reload();
-                } else {
-                    throw new Error('Failed to delete dive log');
+                // Remove the dive card from the page
+                const diveCard = document.querySelector(`.log-card[data-dive-id="${diveId}"]`);
+                if (diveCard) {
+                    diveCard.remove();
                 }
+                
+                // Close modal
+                deleteModal.style.display = 'none';
+                
+                // Show success message
+                alert('Dive log deleted successfully');
+                
+                // Reload page to update stats
+                window.location.reload();
             } catch (error) {
                 console.error('Error deleting dive log:', error);
-                alert('Error deleting dive log. Please try again.');
+                alert('Error deleting dive log: ' + error.message);
             }
         });
     }
