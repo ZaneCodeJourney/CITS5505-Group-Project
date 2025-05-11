@@ -6,13 +6,32 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize the map if the map container exists
     const mapContainer = document.getElementById('dive-location-map');
     if (mapContainer) {
-        // Initialize map centered at a default location (Great Barrier Reef)
-        map = L.map('dive-location-map').setView([-16.7, 145.8], 10);
+        // Initialize map without a specific center - will default to a world view
+        map = L.map('dive-location-map', {
+            center: [0, 0],
+            zoom: 2,
+            worldCopyJump: true
+        });
         
         // Add the tile layer (OpenStreetMap)
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
+        
+        // Try to use browser geolocation to center the map if permission is granted
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    map.setView([lat, lng], 10);
+                },
+                function(error) {
+                    console.log("Geolocation error or permission denied:", error);
+                    // Keep default world view
+                }
+            );
+        }
         
         // Add click event to the map
         map.on('click', function(e) {
@@ -26,6 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (latInput.value && lngInput.value) {
             const latLng = L.latLng(parseFloat(latInput.value), parseFloat(lngInput.value));
             addMarker(latLng);
+            map.setView(latLng, 10);
         }
         
         // Update map when coordinates are manually entered
