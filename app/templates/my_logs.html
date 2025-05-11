@@ -73,7 +73,48 @@
             <span>{{ success_message }}</span>
             <button type="button" onclick="this.parentElement.style.display='none';">&times;</button>
         </div>
+        {% else %}
+        <!-- Success message container for JavaScript-created messages -->
+        <div class="success-message" id="js-success-message" style="display: none;">
+            <span id="js-success-text"></span>
+            <button type="button" onclick="this.parentElement.style.display='none';">&times;</button>
+        </div>
         {% endif %}
+
+        <script>
+            // Check for success parameter in URL and display appropriate message
+            document.addEventListener('DOMContentLoaded', function() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const success = urlParams.get('success');
+                const messageEl = document.getElementById('js-success-message');
+                const textEl = document.getElementById('js-success-text');
+                
+                if (success === 'dive_created') {
+                    textEl.textContent = 'Dive log created successfully!';
+                    messageEl.style.display = 'block';
+                    
+                    // Auto-hide after 5 seconds
+                    setTimeout(() => {
+                        messageEl.style.display = 'none';
+                    }, 5000);
+                    
+                    // Remove the query parameter
+                    history.replaceState(null, '', window.location.pathname);
+                }
+                else if (success === 'dive_created_with_profile') {
+                    textEl.textContent = 'Dive log created successfully with dive profile data!';
+                    messageEl.style.display = 'block';
+                    
+                    // Auto-hide after 5 seconds
+                    setTimeout(() => {
+                        messageEl.style.display = 'none';
+                    }, 5000);
+                    
+                    // Remove the query parameter
+                    history.replaceState(null, '', window.location.pathname);
+                }
+            });
+        </script>
 
         <div class="map-section">
             <h2>My Dive Map</h2>
@@ -87,6 +128,9 @@
                     <div class="log-header">
                         <h3>{{ dive.location }}</h3>
                         <span class="date">{{ dive.start_time.strftime('%B %d, %Y') }}</span>
+                        {% if dive.profile_csv_data %}
+                        <span class="badge computer-data">Dive Computer Data</span>
+                        {% endif %}
                     </div>
                     <div class="log-details">
                         <div class="detail-item">
@@ -120,6 +164,45 @@
                         </div>
                         {% endif %}
                     </div>
+                    
+                    {% if dive.profile_csv_data %}
+                    <!-- Dive Profile Chart Section -->
+                    <div class="dive-profile-section">
+                        <h4>Dive Profile</h4>
+                        <div class="profile-stats">
+                            <div class="stat-box">
+                                <span class="stat-label">Max Depth</span>
+                                <span class="stat-value">{{ dive.max_depth }} m</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-label">Avg Depth</span>
+                                <span class="stat-value">18.2 m</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-label">Dive Time</span>
+                                <span class="stat-value">
+                                    {% if dive.start_time and dive.end_time %}
+                                        {{ ((dive.end_time - dive.start_time).total_seconds() / 60)|round|int }} min
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-label">Air Used</span>
+                                <span class="stat-value">96 bar</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-label">Min Temp</span>
+                                <span class="stat-value">21 °C</span>
+                            </div>
+                        </div>
+                        <div class="dive-profile-chart-container">
+                            <canvas id="dive-profile-chart-{{ dive.id }}" data-csv-data="{{ dive.profile_csv_data|e }}"></canvas>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
                     {% if dive.dive_partner %}
                     <div class="log-buddies">
                         <span class="buddy-label">Dive Buddies:</span>
@@ -193,6 +276,7 @@
 {% block scripts %}
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<script src="{{ url_for('static', filename='js/dive_profile_chart.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize the map
