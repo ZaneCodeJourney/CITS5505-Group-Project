@@ -15,8 +15,20 @@
             </div>
             <ul class="nav-links">
                 <li><a href="{{ url_for('main.index') }}">Home</a></li>
-                <li><a href="{{ url_for('main.my_logs') }}">My Logs</a></li>
-                <li><a href="{{ url_for('main.new_log') }}">New Log</a></li>
+                {% if current_user.is_authenticated %}
+                    <li><a href="{{ url_for('main.my_logs') }}">My Logs</a></li>
+                    <li><a href="{{ url_for('main.new_log') }}">New Log</a></li>
+                    <li class="user-menu">
+                        <a href="#" id="user-dropdown-toggle">{{ current_user.username }} ▼</a>
+                        <ul class="dropdown-menu" id="user-dropdown-menu">
+                            <li><a href="/auth/profile">Profile</a></li>
+                            <li><a href="#" id="logout-button">Logout</a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li><a href="/auth/login">Login</a></li>
+                    <li><a href="/auth/register">Register</a></li>
+                {% endif %}
             </ul>
         </nav>
     </header>
@@ -29,7 +41,109 @@
         <p>&copy; 2025 DiveLogger</p>
     </footer>
 
+    {% if current_user.is_authenticated %}
+    <script>
+        // Dropdown menu functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const userDropdownToggle = document.getElementById('user-dropdown-toggle');
+            const userDropdownMenu = document.getElementById('user-dropdown-menu');
+            
+            if (userDropdownToggle && userDropdownMenu) {
+                userDropdownToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    userDropdownMenu.classList.toggle('show');
+                });
+                
+                // Close the dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!e.target.closest('.user-menu')) {
+                        userDropdownMenu.classList.remove('show');
+                    }
+                });
+                
+                // Logout functionality
+                const logoutButton = document.getElementById('logout-button');
+                if (logoutButton) {
+                    logoutButton.addEventListener('click', async function(e) {
+                        e.preventDefault();
+                        
+                        try {
+                            // Get CSRF token
+                            const tokenResponse = await fetch('/dev/get-csrf-token', {
+                                method: 'GET',
+                                credentials: 'include'
+                            });
+                            
+                            const tokenData = await tokenResponse.json();
+                            const csrfToken = tokenData.csrf_token;
+                            
+                            // Send logout request
+                            const response = await fetch('/api/auth/logout', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': csrfToken
+                                },
+                                credentials: 'include'
+                            });
+                            
+                            if (response.ok) {
+                                // Redirect to home page on successful logout
+                                window.location.href = '/';
+                            } else {
+                                alert('Logout failed. Please try again.');
+                            }
+                        } catch (error) {
+                            console.error('Logout error:', error);
+                            alert('An error occurred during logout. Please try again.');
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+    {% endif %}
+
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     {% block scripts %}{% endblock %}
+
+    <style>
+        /* Dropdown menu styling */
+        .user-menu {
+            position: relative;
+        }
+        
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            min-width: 150px;
+            z-index: 1000;
+        }
+        
+        .dropdown-menu.show {
+            display: block;
+        }
+        
+        .dropdown-menu li {
+            display: block;
+        }
+        
+        .dropdown-menu a {
+            display: block;
+            padding: 10px 15px;
+            color: #333;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        
+        .dropdown-menu a:hover {
+            background-color: #f5f5f5;
+        }
+    </style>
 </body>
 </html> 
