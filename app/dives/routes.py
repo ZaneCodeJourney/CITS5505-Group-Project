@@ -52,13 +52,12 @@ def get_dives():
 @csrf.exempt
 @dives_bp.route('/', methods=['POST'])
 def create_dive():
-    # Temporarily disable CSRF check during development
-    # if current_app.config.get("WTF_CSRF_ENABLED", True):
-    #     token = request.headers.get("X-CSRFToken")
-    #     try:
-    #         validate_csrf(token)
-    #     except CSRFError as e:
-    #         return jsonify({"error": "Invalid or missing CSRF token"}), 400
+    if current_app.config.get("WTF_CSRF_ENABLED", True):
+         token = request.headers.get("X-CSRFToken")
+         try:
+             validate_csrf(token)
+         except CSRFError as e:
+             return jsonify({"error": "Invalid or missing CSRF token"}), 400
 
     data = request.get_json()
 
