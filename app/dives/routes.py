@@ -49,7 +49,7 @@ def get_dives():
     dives = Dive.query.all()
     return jsonify([dive_to_dict(dive) for dive in dives]), 200
 
-@csrf.exempt
+
 @dives_bp.route('/', methods=['POST'])
 def create_dive():
     if current_app.config.get("WTF_CSRF_ENABLED", True):
