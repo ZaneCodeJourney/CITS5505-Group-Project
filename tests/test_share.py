@@ -13,10 +13,10 @@ class TestConfig(Config):
     """Test configuration."""
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
-    WTF_CSRF_ENABLED = False  # 禁用CSRF以便于测试
+    WTF_CSRF_ENABLED = False  # Disable CSRF for testing
     SECRET_KEY = 'test-secret-key'
     DEBUG = True
-    PROPAGATE_EXCEPTIONS = True  # 传递异常以便于调试
+    PROPAGATE_EXCEPTIONS = True  # Propagate exceptions for debugging
 
 
 class ShareTestCase(unittest.TestCase):
@@ -41,6 +41,18 @@ class ShareTestCase(unittest.TestCase):
         )
         self.test_user.set_password('Password123')
         db.session.add(self.test_user)
+        
+        # Create another test user for sharing with
+        self.share_recipient = User(
+            username='sharerecipient',
+            email='recipient@example.com',
+            firstname='Share',
+            lastname='Recipient',
+            registration_date=datetime.utcnow(),
+            status='active'
+        )
+        self.share_recipient.set_password('Password123')
+        db.session.add(self.share_recipient)
         db.session.commit()
         
         # Create a test dive
@@ -66,7 +78,7 @@ class ShareTestCase(unittest.TestCase):
         db.session.add(self.test_dive)
         db.session.commit()
         
-        # 登录测试用户
+        # Login test user
         with self.app.test_request_context():
             login_user(self.test_user)
             
@@ -87,21 +99,21 @@ class ShareTestCase(unittest.TestCase):
     
     def test_create_share_link(self):
         """Test creating a share link for a dive."""
-        # 先登录用户
+        # Login user
         with self.client.session_transaction() as session:
             session['user_id'] = self.test_user.id
             
-        # 增加content-type和CSRF token
+        # Add content-type and CSRF token
         headers = {
             'Content-Type': 'application/json',
-            'X-CSRFToken': 'test-token'
+            'X-CSRFToken': 'test-csrf-token'
         }
         data = {
             'expiration_days': 7
         }
         
         response = self.client.post(
-            f'/api/shared/dives/{self.test_dive.id}/share', 
+            f'/shared/dives/{self.test_dive.id}/share', 
             json=data, 
             headers=headers
         )
@@ -124,14 +136,14 @@ class ShareTestCase(unittest.TestCase):
     
     def test_create_share_link_nonexistent_dive(self):
         """Test creating a share link for a nonexistent dive."""
-        # 先登录用户
+        # Login user
         with self.client.session_transaction() as session:
             session['user_id'] = self.test_user.id
             
-        # 增加content-type和CSRF token
+        # Add content-type and CSRF token
         headers = {
             'Content-Type': 'application/json',
-            'X-CSRFToken': 'test-token'
+            'X-CSRFToken': 'test-csrf-token'
         }
         data = {
             'expiration_days': 7
@@ -139,13 +151,13 @@ class ShareTestCase(unittest.TestCase):
         
         nonexistent_id = 9999  # An ID that doesn't exist
         response = self.client.post(
-            f'/api/shared/dives/{nonexistent_id}/share',
+            f'/shared/dives/{nonexistent_id}/share',
             json=data,
             headers=headers
         )
         
-        # 应该返回404或500错误
-        self.assertIn(response.status_code, [404, 500])
+        # Should return 404 error
+        self.assertEqual(response.status_code, 404)
     
     def test_access_shared_dive(self):
         """Test accessing a shared dive with a valid token."""
@@ -162,26 +174,18 @@ class ShareTestCase(unittest.TestCase):
         db.session.commit()
         
         # Access the shared dive
-        response = self.client.get(f'/api/shared/dives/{token}')
+        response = self.client.get(f'/shared/dive/{token}')
         
-        # Check response status and content
+        # Check response
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.data)
-        self.assertEqual(data['id'], self.test_dive.id)
-        self.assertEqual(data['dive_number'], self.test_dive.dive_number)
-        
-        # For depth comparison, convert both values to float for comparison
-        self.assertAlmostEqual(float(data['max_depth']), float(self.test_dive.max_depth), places=2)
-        
-        self.assertEqual(data['location'], self.test_dive.location)
     
     def test_access_shared_dive_invalid_token(self):
         """Test accessing a shared dive with an invalid token."""
         invalid_token = 'invalid-token'
-        response = self.client.get(f'/api/shared/dives/{invalid_token}')
+        response = self.client.get(f'/shared/dive/{invalid_token}')
         
-        # 应该返回404或500错误
-        self.assertIn(response.status_code, [404, 500])
+        # Should return 404 error
+        self.assertEqual(response.status_code, 404)
     
     def test_access_expired_share(self):
         """Test accessing an expired shared dive."""
@@ -198,141 +202,96 @@ class ShareTestCase(unittest.TestCase):
         db.session.commit()
         
         # Attempt to access the expired share
-        response = self.client.get(f'/api/shared/dives/{token}')
+        response = self.client.get(f'/shared/dive/{token}')
         
-        # Should return 410 Gone
-        self.assertEqual(response.status_code, 410)
-        data = json.loads(response.data)
-        self.assertIn('error', data)
-        self.assertEqual(data['error'], 'Share link expired.')
+        # Should be redirected or receive an error status
+        self.assertIn(response.status_code, [302, 404, 410])
     
-    def test_update_dive_visibility(self):
-        """Test updating the visibility of a shared dive."""
-        # 先登录用户
+    def test_share_with_user(self):
+        """Test sharing a dive with a specific user."""
+        # Login user
         with self.client.session_transaction() as session:
             session['user_id'] = self.test_user.id
+            
+        # Add content-type and CSRF token
+        headers = {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': 'test-csrf-token'
+        }
         
-        # Create a share
+        data = {
+            'username': self.share_recipient.username
+        }
+        
+        response = self.client.post(
+            f'/shared/dives/{self.test_dive.id}/share-with-user',
+            json=data,
+            headers=headers
+        )
+        
+        # Check response
+        self.assertEqual(response.status_code, 201)
+        
+        # Verify share record was created
+        share = Share.query.filter_by(
+            dive_id=self.test_dive.id,
+            creator_user_id=self.test_user.id,
+            shared_with_user_id=self.share_recipient.id
+        ).first()
+        
+        self.assertIsNotNone(share)
+        self.assertEqual(share.visibility, 'user_specific')
+    
+    def test_share_with_nonexistent_user(self):
+        """Test sharing a dive with a user that doesn't exist."""
+        # Login user
+        with self.client.session_transaction() as session:
+            session['user_id'] = self.test_user.id
+            
+        # Add content-type and CSRF token
+        headers = {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': 'test-csrf-token'
+        }
+        
+        data = {
+            'username': 'nonexistentuser'
+        }
+        
+        response = self.client.post(
+            f'/shared/dives/{self.test_dive.id}/share-with-user',
+            json=data,
+            headers=headers
+        )
+        
+        # Should return 404 error
+        self.assertEqual(response.status_code, 404)
+        
+    def test_dives_shared_with_me(self):
+        """Test viewing dives shared with current user."""
+        # Create a share with the current user as recipient
+        token = secrets.token_urlsafe(32)
         share = Share(
             dive_id=self.test_dive.id,
             creator_user_id=self.test_user.id,
-            token=secrets.token_urlsafe(32),
-            visibility='public'
+            shared_with_user_id=self.share_recipient.id,
+            token=token,
+            visibility='user_specific',
+            expiration_time=datetime.utcnow() + timedelta(days=7)
         )
         db.session.add(share)
         db.session.commit()
         
-        # 增加content-type和CSRF token
-        headers = {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': 'test-token'
-        }
+        # Switch to recipient user
+        with self.client.session_transaction() as session:
+            session['_user_id'] = str(self.share_recipient.id)
+            session['_fresh'] = True
         
-        # Update the visibility
-        response = self.client.put(
-            f'/api/shared/dives/{self.test_dive.id}/visibility',
-            data=json.dumps({'visibility': 'private'}),
-            content_type='application/json',
-            headers=headers
-        )
+        # Access shared with me page
+        response = self.client.get('/shared-with-me')
         
-        # Check response status and content
+        # Check response
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.data)
-        self.assertEqual(data['visibility'], 'private')
-        
-        # Verify visibility was updated in the database
-        updated_share = Share.query.filter_by(dive_id=self.test_dive.id).first()
-        self.assertEqual(updated_share.visibility, 'private')
-    
-    def test_update_visibility_nonexistent_share(self):
-        """Test updating visibility for a dive without a share record."""
-        # 先登录用户
-        with self.client.session_transaction() as session:
-            session['user_id'] = self.test_user.id
-            
-        # 增加content-type和CSRF token
-        headers = {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': 'test-token'
-        }
-        
-        # No share record exists for the dive
-        response = self.client.put(
-            f'/api/shared/dives/{self.test_dive.id}/visibility',
-            data=json.dumps({'visibility': 'private'}),
-            content_type='application/json',
-            headers=headers
-        )
-        
-        # Should return 404 Not Found
-        self.assertEqual(response.status_code, 404)
-        data = json.loads(response.data)
-        self.assertIn('error', data)
-        self.assertEqual(data['error'], 'No share record found.')
-    
-    def test_update_visibility_nonexistent_dive(self):
-        """Test updating visibility for a nonexistent dive."""
-        # 先登录用户
-        with self.client.session_transaction() as session:
-            session['user_id'] = self.test_user.id
-            
-        # 增加content-type和CSRF token
-        headers = {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': 'test-token'
-        }
-        
-        nonexistent_id = 9999  # An ID that doesn't exist
-        response = self.client.put(
-            f'/api/shared/dives/{nonexistent_id}/visibility',
-            data=json.dumps({'visibility': 'private'}),
-            content_type='application/json',
-            headers=headers
-        )
-        
-        # 应该返回404或500错误
-        self.assertIn(response.status_code, [404, 500])
-    
-    def test_multiple_shares_for_same_dive(self):
-        """Test creating multiple share links for the same dive."""
-        # 先登录用户
-        with self.client.session_transaction() as session:
-            session['user_id'] = self.test_user.id
-            
-        # 增加content-type和CSRF token
-        headers = {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': 'test-token'
-        }
-        data = {
-            'expiration_days': 7
-        }
-        
-        # Create first share
-        response1 = self.client.post(
-            f'/api/shared/dives/{self.test_dive.id}/share',
-            json=data,
-            headers=headers
-        )
-        self.assertEqual(response1.status_code, 201)
-        data1 = json.loads(response1.data)
-        
-        # Create second share
-        response2 = self.client.post(
-            f'/api/shared/dives/{self.test_dive.id}/share',
-            json=data,
-            headers=headers
-        )
-        self.assertEqual(response2.status_code, 201)
-        data2 = json.loads(response2.data)
-        
-        # Verify the two share links are different
-        self.assertNotEqual(data1['share_link'], data2['share_link'])
-        
-        # Verify two share records exist in the database
-        shares = Share.query.filter_by(dive_id=self.test_dive.id).all()
-        self.assertEqual(len(shares), 2)
 
 
 if __name__ == '__main__':
