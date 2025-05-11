@@ -141,6 +141,31 @@
                         <!-- Photo previews will be added here -->
                     </div>
                 </div>
+                
+                <div class="form-group">
+                    <label for="dive-profile-csv">Upload Dive Profile CSV</label>
+                    <input type="file" id="dive-profile-csv" name="profile_csv" accept=".csv">
+                    <p class="form-help-text">Upload a CSV file from your dive computer to generate a dive profile chart. The CSV should contain time, depth, temperature, and/or air data.</p>
+                    <p class="form-help-text">
+                        <a href="{{ url_for('static', filename='templates/sample_dive_profile.csv') }}" download="sample_dive_profile.csv">Download a sample CSV template</a> to see the expected format.
+                    </p>
+                    <div class="csv-format-info">
+                        <h5>CSV Format Requirements:</h5>
+                        <ul>
+                            <li>First row must be a header with column names</li>
+                            <li>Must include at least columns for time and depth</li>
+                            <li>Values must be separated by commas</li>
+                            <li>Time should be in minutes, depth in meters</li>
+                        </ul>
+                        <div class="csv-example">
+                            <p><strong>Example:</strong></p>
+                            <pre>Time (min),Depth (m),Temperature (°C),Air (bar)
+0,0,26,200
+3,5,25,190
+6,10,24,180</pre>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="form-section">
