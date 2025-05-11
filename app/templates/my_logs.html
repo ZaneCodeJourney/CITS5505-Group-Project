@@ -49,7 +49,7 @@
             </div>
             <div class="stat-item">
                 <span class="stat-label">Max Depth:</span>
-                <span class="stat-value">{{ stats.max_depth }}m</span>
+                <span class="stat-value">{{ stats.max_depth|round(1) }}m</span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Longest Dive:</span>
@@ -147,7 +147,7 @@
                         <div class="detail-item">
                             <span class="detail-icon">📏</span>
                             <span class="detail-label">Max Depth:</span>
-                            <span class="detail-value">{{ dive.max_depth }}m</span>
+                            <span class="detail-value">{{ dive.max_depth|round(1) }}m</span>
                         </div>
                         {% if dive.visibility %}
                         <div class="detail-item">
@@ -172,7 +172,7 @@
                         <div class="profile-stats">
                             <div class="stat-box">
                                 <span class="stat-label">Max Depth</span>
-                                <span class="stat-value">{{ dive.max_depth }} m</span>
+                                <span class="stat-value">{{ dive.max_depth|round(1) }} m</span>
                             </div>
                             <div class="stat-box">
                                 <span class="stat-label">Avg Depth</span>
@@ -302,20 +302,26 @@ function initMap() {
     const mapContainer = document.getElementById('my-dive-map');
     if (!mapContainer) return;
 
-    // Initialize the map
-    const map = L.map('my-dive-map').setView([0, 0], 2);
+    // Initialize the map with noWrap to prevent repeating world
+    const map = L.map('my-dive-map', {
+        worldCopyJump: false,
+        maxBounds: [[-90, -180], [90, 180]],
+        minZoom: 2
+    }).setView([0, 0], 2);
 
-    // Add OpenStreetMap tiles
+    // Add OpenStreetMap tiles with noWrap option
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19
+        maxZoom: 19,
+        noWrap: true
     }).addTo(map);
 
     // Attempt to add OpenSeaMap tiles
     try {
         L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openseamap.org/">OpenSeaMap</a> contributors',
-            maxZoom: 19
+            maxZoom: 19,
+            noWrap: true
         }).addTo(map);
     } catch (e) {
         console.warn('Failed to load OpenSeaMap tiles:', e);
@@ -334,8 +340,11 @@ function initMap() {
     // Create a bounds object to fit all dive sites
     const bounds = L.latLngBounds();
     let hasValidMarkers = false;
+    
+    // Store coordinates to normalize them
+    const coordinates = [];
 
-    // Add markers for each dive log
+    // First pass - collect all coordinates and normalize longitudes
     const logCards = document.querySelectorAll('.log-card');
     logCards.forEach(card => {
         const location = card.dataset.location;
@@ -358,44 +367,56 @@ function initMap() {
         // Skip if no valid coordinates
         if (isNaN(lat) || isNaN(lng)) return;
         
-        hasValidMarkers = true;
+        // Normalize longitude to -180 to 180 range
+        while (lng > 180) lng -= 360;
+        while (lng < -180) lng += 360;
         
-        // Create marker
-        const marker = L.marker([lat, lng], {
-            icon: defaultIcon,
-            alt: location
-        }).addTo(map);
-        
-        // Create popup content
-        const diveId = card.dataset.diveId;
-        const diveDate = card.querySelector('.date').textContent;
-        const diveDetails = Array.from(card.querySelectorAll('.detail-item')).map(item => {
-            const label = item.querySelector('.detail-label').textContent;
-            const value = item.querySelector('.detail-value').textContent;
-            return `<div><strong>${label}</strong> ${value}</div>`;
-        }).join('');
-        
-        const popupContent = `
-            <div class="dive-log-popup">
-                <h3>${location}</h3>
-                <div class="dive-date">${diveDate}</div>
-                <div class="dive-log-details">
-                    ${diveDetails}
-                </div>
-                <div class="popup-actions">
-                    <a href="#" class="popup-link view-details" data-id="${diveId}">View Details</a>
-                </div>
-            </div>
-        `;
-        
-        // Bind popup to marker
-        marker.bindPopup(popupContent, {
-            maxWidth: 300
-        });
-        
-        // Add this location to bounds
-        bounds.extend([lat, lng]);
+        coordinates.push({card, lat, lng, location});
     });
+    
+    // Calculate the center of all points to determine which side of the map to use
+    if (coordinates.length > 0) {
+        // Create markers after normalizing coordinates
+        coordinates.forEach(({card, lat, lng, location}) => {
+            hasValidMarkers = true;
+            
+            // Create marker
+            const marker = L.marker([lat, lng], {
+                icon: defaultIcon,
+                alt: location
+            }).addTo(map);
+            
+            // Create popup content
+            const diveId = card.dataset.diveId;
+            const diveDate = card.querySelector('.date').textContent;
+            const diveDetails = Array.from(card.querySelectorAll('.detail-item')).map(item => {
+                const label = item.querySelector('.detail-label').textContent;
+                const value = item.querySelector('.detail-value').textContent;
+                return `<div><strong>${label}</strong> ${value}</div>`;
+            }).join('');
+            
+            const popupContent = `
+                <div class="dive-log-popup">
+                    <h3>${location}</h3>
+                    <div class="dive-date">${diveDate}</div>
+                    <div class="dive-log-details">
+                        ${diveDetails}
+                    </div>
+                    <div class="popup-actions">
+                        <a href="#" class="popup-link view-details" data-id="${diveId}">View Details</a>
+                    </div>
+                </div>
+            `;
+            
+            // Bind popup to marker
+            marker.bindPopup(popupContent, {
+                maxWidth: 300
+            });
+            
+            // Add this location to bounds
+            bounds.extend([lat, lng]);
+        });
+    }
 
     // Fit the map to show all dive sites with some padding
     if (hasValidMarkers && bounds.isValid()) {
