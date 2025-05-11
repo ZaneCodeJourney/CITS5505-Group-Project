@@ -2,8 +2,9 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
-from flask_wtf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect
 from config import Config
+import os
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -21,7 +22,13 @@ def create_app(config_class=Config):
     login_manager.init_app(app)
     csrf.init_app(app)
 
-# Core Blueprints
+    # Configure CORS for development
+    if app.config.get('DEBUG', False):
+        from flask_cors import CORS
+        CORS(app, resources={r"/api/*": {"origins": "*"}})
+        app.logger.info('CORS enabled for /api/* routes in debug mode')
+
+    # Core Blueprints
 
     from app.main import bp as main_bp
     app.register_blueprint(main_bp)
@@ -35,7 +42,7 @@ def create_app(config_class=Config):
     from app.api import bp as api_bp
     app.register_blueprint(api_bp)
 
-# Feature Blueprints
+    # Feature Blueprints
 
     from app.dives import dives_bp
     app.register_blueprint(dives_bp)
@@ -52,7 +59,8 @@ def create_app(config_class=Config):
     # Development-only Blueprints
 
     from app.dev import dev_bp
-    app.register_blueprint(dev_bp, url_prefix="/dev")
+    if app.config.get('DEBUG', False):
+        app.register_blueprint(dev_bp, url_prefix="/dev")
 
     @app.cli.command("init-db")
     def init_db():
