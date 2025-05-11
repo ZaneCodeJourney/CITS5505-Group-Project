@@ -41,57 +41,86 @@ def require_json(f):
 @bp.route('/auth/register', methods=['POST'])
 @require_json
 def register():
-    if current_user.is_authenticated:
-        return jsonify({"error": "Already authenticated"}), 400
-    
-    data = request.json
-    
-    # Validate required fields
-    required_fields = ['username', 'email', 'password']
-    for field in required_fields:
-        if field not in data:
-            return jsonify({"error": f"Missing required field: {field}"}), 400
-    
-    # Validate email format
-    if not is_valid_email(data['email']):
-        return jsonify({"error": "Invalid email format"}), 400
-    
-    # Validate password strength
-    if not is_valid_password(data['password']):
-        return jsonify({"error": "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number"}), 400
-    
-    # Check if user already exists
-    if User.query.filter_by(username=data['username']).first():
-        return jsonify({"error": "Username already exists"}), 400
-    
-    if User.query.filter_by(email=data['email']).first():
-        return jsonify({"error": "Email already registered"}), 400
-    
-    # Create new user
-    user = User(
-        username=data['username'],
-        email=data['email'],
-        firstname=data.get('firstname', ''),
-        lastname=data.get('lastname', ''),
-        bio=data.get('bio', ''),
-        dob=datetime.strptime(data.get('dob', '2000-01-01'), '%Y-%m-%d').date() if data.get('dob') else None,
-        registration_date=datetime.utcnow(),
-        avatar=data.get('avatar', ''),
-        status='active'
-    )
-    user.set_password(data['password'])
-    
     try:
-        db.session.add(user)
-        db.session.commit()
-        return jsonify({
-            "message": "User registered successfully",
-            "user_id": user.id,
-            "username": user.username
-        }), 201
+        if current_user.is_authenticated:
+            return jsonify({"error": "Already authenticated"}), 400
+        
+        data = request.json
+        
+        # Log incoming request
+        current_app.logger.info(f"Registration attempt with data: {data}")
+        
+        # Validate required fields
+        required_fields = ['username', 'email', 'password']
+        for field in required_fields:
+            if field not in data:
+                current_app.logger.warning(f"Missing required field: {field}")
+                return jsonify({"error": f"Missing required field: {field}"}), 400
+        
+        # Validate email format
+        if not is_valid_email(data['email']):
+            current_app.logger.warning(f"Invalid email format: {data['email']}")
+            return jsonify({"error": "Invalid email format"}), 400
+        
+        # Validate password strength
+        if not is_valid_password(data['password']):
+            current_app.logger.warning("Password doesn't meet requirements")
+            return jsonify({"error": "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number"}), 400
+        
+        # Check if user already exists
+        if User.query.filter_by(username=data['username']).first():
+            current_app.logger.warning(f"Username already exists: {data['username']}")
+            return jsonify({"error": "Username already exists"}), 400
+        
+        if User.query.filter_by(email=data['email']).first():
+            current_app.logger.warning(f"Email already registered: {data['email']}")
+            return jsonify({"error": "Email already registered"}), 400
+        
+        # Create new user
+        try:
+            current_app.logger.info("Creating user object")
+            
+            # Handle date of birth parsing safely
+            dob = None
+            if data.get('dob'):
+                try:
+                    dob = datetime.strptime(data.get('dob'), '%Y-%m-%d').date()
+                    current_app.logger.info(f"Parsed DOB: {dob}")
+                except Exception as date_error:
+                    current_app.logger.warning(f"Failed to parse date of birth: {date_error}")
+                    # Continue with None value for dob
+            
+            user = User(
+                username=data['username'],
+                email=data['email'],
+                firstname=data.get('firstname', ''),
+                lastname=data.get('lastname', ''),
+                bio=data.get('bio', ''),
+                dob=dob,
+                registration_date=datetime.utcnow(),
+                avatar=data.get('avatar', ''),
+                status='active'
+            )
+            current_app.logger.info("Setting password")
+            user.set_password(data['password'])
+            
+            current_app.logger.info("Adding user to database session")
+            db.session.add(user)
+            current_app.logger.info("Committing to database")
+            db.session.commit()
+            current_app.logger.info(f"User registered successfully: {user.username} (ID: {user.id})")
+            return jsonify({
+                "message": "User registered successfully",
+                "user_id": user.id,
+                "username": user.username
+            }), 201
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Database error: {str(e)}")
+            return jsonify({"error": str(e)}), 500
     except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        current_app.logger.error(f"Unhandled exception in registration: {str(e)}", exc_info=True)
+        return jsonify({"error": "Internal server error"}), 500
 
 # User login
 @bp.route('/auth/login', methods=['POST'])

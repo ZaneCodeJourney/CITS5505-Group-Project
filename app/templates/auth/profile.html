@@ -1,0 +1,585 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+    .profile-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+    
+    .form-control:focus {
+        border-color: #007bff;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    }
+    
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+    }
+    
+    .btn-primary:hover {
+        background-color: #0069d9;
+    }
+    
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+    }
+    
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
+    
+    .error-message {
+        color: #dc3545;
+        font-size: 14px;
+        margin-top: 0.5rem;
+        display: none;
+    }
+    
+    .success-message {
+        color: #28a745;
+        font-size: 14px;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+        background-color: #d4edda;
+        border-radius: 4px;
+        display: none;
+    }
+    
+    .form-title {
+        margin-bottom: 2rem;
+        color: #343a40;
+    }
+    
+    .btn-container {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2rem;
+    }
+    
+    .profile-info {
+        display: flex;
+        margin-bottom: 2rem;
+    }
+    
+    .profile-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background-color: #eee;
+        margin-right: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    
+    .profile-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .profile-details {
+        flex: 1;
+    }
+    
+    .profile-username {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    
+    .profile-email {
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+    
+    .tab-container {
+        margin-bottom: 2rem;
+    }
+    
+    .tabs {
+        display: flex;
+        border-bottom: 1px solid #ddd;
+        margin-bottom: 1.5rem;
+    }
+    
+    .tab {
+        padding: 0.75rem 1.5rem;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+    }
+    
+    .tab.active {
+        border-bottom: 2px solid #007bff;
+        font-weight: bold;
+    }
+    
+    .tab-content {
+        display: none;
+    }
+    
+    .tab-content.active {
+        display: block;
+    }
+    
+    .deactivate-section {
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid #ddd;
+    }
+    
+    .deactivate-section h3 {
+        color: #dc3545;
+        margin-bottom: 1rem;
+    }
+    
+    .deactivate-section p {
+        margin-bottom: 1rem;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="success-message" id="success-message"></div>
+
+    <div class="profile-info">
+        <div class="profile-avatar">
+            <img id="avatar-img" src="{{ url_for('static', filename='css/default-avatar.png') }}" alt="Profile Picture">
+        </div>
+        <div class="profile-details">
+            <h2 class="profile-username" id="display-username">Loading...</h2>
+            <div class="profile-email" id="display-email">Loading...</div>
+            <div>Member since: <span id="display-registration-date">Loading...</span></div>
+        </div>
+    </div>
+
+    <div class="tab-container">
+        <div class="tabs">
+            <div class="tab active" data-tab="profile">Profile Information</div>
+            <div class="tab" data-tab="security">Security</div>
+        </div>
+
+        <div class="tab-content active" id="profile-tab">
+            <form id="profile-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" class="form-control">
+                    <div id="username-error" class="error-message"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" class="form-control">
+                    <div id="email-error" class="error-message"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="firstname">First Name</label>
+                    <input type="text" id="firstname" name="firstname" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="lastname">Last Name</label>
+                    <input type="text" id="lastname" name="lastname" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="bio">Bio</label>
+                    <textarea id="bio" name="bio" rows="4" class="form-control"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="dob">Date of Birth</label>
+                    <input type="date" id="dob" name="dob" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="avatar-url">Avatar URL</label>
+                    <input type="text" id="avatar-url" name="avatar" class="form-control">
+                </div>
+
+                <div class="btn-container">
+                    <button type="submit" class="btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="tab-content" id="security-tab">
+            <form id="change-password-form">
+                <div class="form-group">
+                    <label for="current-password">Current Password</label>
+                    <input type="password" id="current-password" name="current-password" class="form-control" required>
+                    <div id="current-password-error" class="error-message"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="new-password">New Password</label>
+                    <input type="password" id="new-password" name="new-password" class="form-control" required>
+                    <div class="password-requirements">
+                        Must be at least 8 characters with uppercase, lowercase, and a number
+                    </div>
+                    <div id="new-password-error" class="error-message"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm-password">Confirm New Password</label>
+                    <input type="password" id="confirm-password" name="confirm-password" class="form-control" required>
+                    <div id="confirm-password-error" class="error-message"></div>
+                </div>
+
+                <div class="btn-container">
+                    <button type="submit" class="btn-primary">Change Password</button>
+                </div>
+            </form>
+
+            <div class="deactivate-section">
+                <h3>Deactivate Account</h3>
+                <p>Warning: Deactivating your account will make your profile and data inaccessible. This action is reversible by contacting support.</p>
+                <button id="deactivate-button" class="btn-danger">Deactivate Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const profileForm = document.getElementById('profile-form');
+        const changePasswordForm = document.getElementById('change-password-form');
+        const deactivateButton = document.getElementById('deactivate-button');
+        const successMessage = document.getElementById('success-message');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        // Load user profile data
+        loadUserProfile();
+        
+        // Tab switching
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+                
+                // Remove active class from all tabs and contents
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                // Add active class to selected tab and content
+                this.classList.add('active');
+                document.getElementById(tabId + '-tab').classList.add('active');
+            });
+        });
+        
+        // Profile form submission
+        if (profileForm) {
+            profileForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Reset previous error messages
+                document.querySelectorAll('.error-message').forEach(el => {
+                    el.style.display = 'none';
+                    el.textContent = '';
+                });
+                successMessage.style.display = 'none';
+                
+                try {
+                    // Get CSRF token
+                    const tokenResponse = await fetch('/dev/get-csrf-token', {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+                    
+                    const tokenData = await tokenResponse.json();
+                    const csrfToken = tokenData.csrf_token;
+                    
+                    // Prepare profile data
+                    const profileData = {
+                        username: document.getElementById('username').value,
+                        email: document.getElementById('email').value,
+                        firstname: document.getElementById('firstname').value,
+                        lastname: document.getElementById('lastname').value,
+                        bio: document.getElementById('bio').value,
+                        avatar: document.getElementById('avatar-url').value,
+                    };
+                    
+                    // Add dob only if it has a value
+                    const dob = document.getElementById('dob').value;
+                    if (dob) {
+                        profileData.dob = dob;
+                    }
+                    
+                    // Send update request
+                    const response = await fetch('/api/users/me', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify(profileData)
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        // Handle validation errors
+                        if (data.error) {
+                            if (data.error.includes('Username already in use')) {
+                                const errorEl = document.getElementById('username-error');
+                                errorEl.textContent = 'Username already in use';
+                                errorEl.style.display = 'block';
+                            } else if (data.error.includes('Email already in use')) {
+                                const errorEl = document.getElementById('email-error');
+                                errorEl.textContent = 'Email already in use';
+                                errorEl.style.display = 'block';
+                            } else if (data.error.includes('Invalid email')) {
+                                const errorEl = document.getElementById('email-error');
+                                errorEl.textContent = 'Invalid email format';
+                                errorEl.style.display = 'block';
+                            } else {
+                                alert('Update error: ' + data.error);
+                            }
+                        } else {
+                            alert('An error occurred while updating your profile');
+                        }
+                        return;
+                    }
+                    
+                    // Success - update UI
+                    successMessage.textContent = 'Profile updated successfully';
+                    successMessage.style.display = 'block';
+                    
+                    // Update display elements
+                    document.getElementById('display-username').textContent = data.user.username;
+                    document.getElementById('display-email').textContent = data.user.email;
+                    
+                    // Update avatar if provided
+                    if (data.user.avatar) {
+                        document.getElementById('avatar-img').src = data.user.avatar;
+                    }
+                    
+                } catch (error) {
+                    console.error('Update error:', error);
+                    alert('An error occurred while updating your profile. Please try again later.');
+                }
+            });
+        }
+        
+        // Change password form submission
+        if (changePasswordForm) {
+            changePasswordForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Reset previous error messages
+                document.querySelectorAll('.error-message').forEach(el => {
+                    el.style.display = 'none';
+                    el.textContent = '';
+                });
+                successMessage.style.display = 'none';
+                
+                // Validate password match
+                const newPassword = document.getElementById('new-password').value;
+                const confirmPassword = document.getElementById('confirm-password').value;
+                
+                if (newPassword !== confirmPassword) {
+                    const errorEl = document.getElementById('confirm-password-error');
+                    errorEl.textContent = 'Passwords do not match';
+                    errorEl.style.display = 'block';
+                    return;
+                }
+                
+                try {
+                    // Get CSRF token
+                    const tokenResponse = await fetch('/dev/get-csrf-token', {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+                    
+                    const tokenData = await tokenResponse.json();
+                    const csrfToken = tokenData.csrf_token;
+                    
+                    // Prepare password data
+                    const passwordData = {
+                        current_password: document.getElementById('current-password').value,
+                        new_password: newPassword
+                    };
+                    
+                    // Send password change request
+                    // Note: This API endpoint is not provided in your backend code
+                    // You would need to implement it separately
+                    const response = await fetch('/api/users/me/change-password', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify(passwordData)
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        // Handle validation errors
+                        if (data.error) {
+                            if (data.error.includes('Current password is incorrect')) {
+                                const errorEl = document.getElementById('current-password-error');
+                                errorEl.textContent = 'Current password is incorrect';
+                                errorEl.style.display = 'block';
+                            } else if (data.error.includes('Password must be')) {
+                                const errorEl = document.getElementById('new-password-error');
+                                errorEl.textContent = 'Password must meet all requirements';
+                                errorEl.style.display = 'block';
+                            } else {
+                                alert('Password change error: ' + data.error);
+                            }
+                        } else {
+                            alert('An error occurred while changing your password');
+                        }
+                        return;
+                    }
+                    
+                    // Success
+                    successMessage.textContent = 'Password changed successfully';
+                    successMessage.style.display = 'block';
+                    
+                    // Reset form
+                    changePasswordForm.reset();
+                    
+                } catch (error) {
+                    console.error('Password change error:', error);
+                    alert('An error occurred while changing your password. Please try again later.');
+                }
+            });
+        }
+        
+        // Deactivate account button
+        if (deactivateButton) {
+            deactivateButton.addEventListener('click', async function() {
+                const confirmed = confirm('Are you sure you want to deactivate your account? This will hide your profile and data.');
+                
+                if (!confirmed) {
+                    return;
+                }
+                
+                try {
+                    // Get CSRF token
+                    const tokenResponse = await fetch('/dev/get-csrf-token', {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+                    
+                    const tokenData = await tokenResponse.json();
+                    const csrfToken = tokenData.csrf_token;
+                    
+                    // Send deactivate request
+                    const response = await fetch('/api/users/me/deactivate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
+                        credentials: 'include'
+                    });
+                    
+                    if (!response.ok) {
+                        const data = await response.json();
+                        alert('Deactivation error: ' + (data.error || 'Unknown error'));
+                        return;
+                    }
+                    
+                    // Success - redirect to logout
+                    alert('Your account has been deactivated. You will now be logged out.');
+                    window.location.href = '/api/auth/logout';
+                    
+                } catch (error) {
+                    console.error('Deactivation error:', error);
+                    alert('An error occurred while deactivating your account. Please try again later.');
+                }
+            });
+        }
+        
+        // Function to load user profile data
+        async function loadUserProfile() {
+            try {
+                const response = await fetch('/api/users/me', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load profile');
+                }
+                
+                const user = await response.json();
+                
+                // Update form fields
+                document.getElementById('username').value = user.username;
+                document.getElementById('email').value = user.email;
+                document.getElementById('firstname').value = user.firstname || '';
+                document.getElementById('lastname').value = user.lastname || '';
+                document.getElementById('bio').value = user.bio || '';
+                document.getElementById('avatar-url').value = user.avatar || '';
+                
+                if (user.dob) {
+                    document.getElementById('dob').value = user.dob;
+                }
+                
+                // Update display elements
+                document.getElementById('display-username').textContent = user.username;
+                document.getElementById('display-email').textContent = user.email;
+                document.getElementById('display-registration-date').textContent = new Date(user.registration_date).toLocaleDateString();
+                
+                // Update avatar if available
+                if (user.avatar) {
+                    document.getElementById('avatar-img').src = user.avatar;
+                }
+                
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                alert('Failed to load your profile information. Please try refreshing the page.');
+            }
+        }
+    });
+</script>
+{% endblock %} 
