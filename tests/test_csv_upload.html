@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSV Upload Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="number"] {
+            width: 100px;
+            padding: 8px;
+        }
+        input[type="file"] {
+            padding: 8px 0;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .sample {
+            font-family: monospace;
+            white-space: pre;
+            background-color: #f5f5f5;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CSV Upload Test</h1>
+        <p>Use this form to test uploading a CSV file to the dive profile API.</p>
+        
+        <form id="uploadForm">
+            <div class="form-group">
+                <label for="diveId">Dive ID:</label>
+                <input type="number" id="diveId" value="23" min="1" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="csvFile">CSV File:</label>
+                <input type="file" id="csvFile" accept=".csv" required>
+                <p><small>The CSV file should have columns for time and depth.</small></p>
+            </div>
+            
+            <div class="form-group">
+                <h3>Sample CSV Format:</h3>
+                <div class="sample">Time (min),Depth (m),Temperature (°C),Air (bar)
+0,0,26,200
+3,5,25,190
+6,10,24,180</div>
+                <p><a href="#" id="createSampleLink">Create sample file</a></p>
+            </div>
+            
+            <button type="submit">Upload CSV</button>
+        </form>
+        
+        <div class="result" id="result" style="display: none;"></div>
+    </div>
+    
+    <script>
+        // Sample CSV data
+        const sampleCsv = `Time (min),Depth (m),Temperature (°C),Air (bar)
+0,0,26,200
+3,5,25,190
+6,10,24,180
+9,15,23,170
+12,20,22,160
+15,25,21,150
+18,22,21,140
+21,20,21,130
+24,18,21,120
+27,20,21,115
+30,22,21,110
+33,25,21,105
+36,20,22,100
+39,15,23,98
+42,10,24,96
+45,5,25,95
+48,0,26,95`;
+        
+        // Create sample file link
+        document.getElementById('createSampleLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Create a blob with the sample CSV content
+            const blob = new Blob([sampleCsv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            
+            // Create a temporary download link
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'sample_dive_profile.csv';
+            document.body.appendChild(a);
+            a.click();
+            
+            // Clean up
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 0);
+        });
+        
+        // Form submission
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const diveId = document.getElementById('diveId').value;
+            const csvFile = document.getElementById('csvFile').files[0];
+            const resultDiv = document.getElementById('result');
+            
+            if (!csvFile) {
+                alert('Please select a CSV file');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('profile_csv', csvFile);
+            
+            resultDiv.innerHTML = 'Uploading...';
+            resultDiv.style.display = 'block';
+            
+            try {
+                const response = await fetch(`http://127.0.0.1:5000/api/dives/${diveId}/upload-csv`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const responseText = await response.text();
+                let resultHtml = `<h3>Upload ${response.ok ? 'Success' : 'Failed'}</h3>`;
+                resultHtml += `<p>Status: ${response.status} ${response.statusText}</p>`;
+                
+                if (responseText) {
+                    try {
+                        const jsonResponse = JSON.parse(responseText);
+                        resultHtml += `<p>Response: ${JSON.stringify(jsonResponse, null, 2)}</p>`;
+                    } catch (e) {
+                        resultHtml += `<p>Response: ${responseText}</p>`;
+                    }
+                }
+                
+                resultDiv.innerHTML = resultHtml;
+            } catch (error) {
+                resultDiv.innerHTML = `<h3>Error</h3><p>${error.message}</p>`;
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html> 

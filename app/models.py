@@ -59,6 +59,7 @@ class Dive(db.Model):
     media = db.Column(db.String(255))
     location_thumbnail = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    profile_csv_data = db.Column(db.Text)  # Store actual CSV data instead of a file path
 
     # Equipment fields
     suit_type = db.Column(db.String(20))        # None, Shorty, Wetsuit, Semi-Dry, Drysuit
@@ -99,6 +100,7 @@ class Dive(db.Model):
             'tank_size': self.tank_size,
             'gas_mix': self.gas_mix,
             'o2_percentage': self.o2_percentage,
+            'profile_csv_data': self.profile_csv_data,
         }
 
 
