@@ -173,20 +173,8 @@ async function handleFormSubmit(e) {
     console.log('Submitting dive data:', diveData);
     
     try {
-        // Step 1: Submit dive data to API
-        const response = await fetch('/api/dives/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(diveData)
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Error: ${response.status}`);
-        }
-        
-        const result = await response.json();
+        // Step 1: Create dive using our centralized API request function
+        const result = await apiRequest('/api/dives/', 'POST', diveData);
         console.log('Success - dive created:', result);
         
         const diveId = result.id;
@@ -196,17 +184,9 @@ async function handleFormSubmit(e) {
             const mediaFormData = new FormData();
             mediaFormData.append('media', photoFile);
             
-            const uploadResponse = await fetch(`/api/dives/${diveId}/upload`, {
-                method: 'POST',
-                body: mediaFormData
-            });
-            
-            if (!uploadResponse.ok) {
-                console.warn('File upload failed, but dive was created');
-            } else {
-                const uploadResult = await uploadResponse.json();
-                console.log('Media upload success:', uploadResult);
-            }
+            // Use our centralized file upload function
+            const uploadResult = await uploadFile(`/api/dives/${diveId}/upload`, mediaFormData);
+            console.log('Media upload success:', uploadResult);
         }
         
         // Step 3: Upload CSV file if one was selected
@@ -259,6 +239,6 @@ async function handleFormSubmit(e) {
         }
     } catch (error) {
         console.error('Error submitting form:', error);
-        alert('Failed to save dive log. Please try again.');
+        alert('Failed to save dive log: ' + error.message);
     }
 } 
