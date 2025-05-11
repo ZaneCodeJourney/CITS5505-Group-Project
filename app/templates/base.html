@@ -19,6 +19,7 @@
                 {% if current_user.is_authenticated %}
                     <li><a href="{{ url_for('main.my_logs') }}">My Logs</a></li>
                     <li><a href="{{ url_for('main.new_log') }}">New Log</a></li>
+                    <li><a href="{{ url_for('shared.dives_shared_with_me') }}">Shared with Me</a></li>
                     <li class="user-menu">
                         <a href="#" id="user-dropdown-toggle">{{ current_user.username }} ▼</a>
                         <ul class="dropdown-menu" id="user-dropdown-menu">
