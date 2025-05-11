@@ -9,6 +9,7 @@ from flask_login import current_user, login_required
 
 # Create a share link for a dive
 @shared_bp.route('/dives/<int:dive_id>/share', methods=['POST'])
+@login_required
 def create_share_link(dive_id):
     try:
         # Check CSRF token
@@ -21,6 +22,11 @@ def create_share_link(dive_id):
                 return jsonify({"error": "Invalid or missing CSRF token"}), 400
                 
         dive = Dive.query.get_or_404(dive_id)
+        
+        # Ensure dive belongs to current user
+        if dive.user_id != current_user.id:
+            return jsonify({"error": "You can only share your own dives"}), 403
+            
         token = secrets.token_urlsafe(32)
         
         # Get expiration setting from request
@@ -35,7 +41,7 @@ def create_share_link(dive_id):
         # Create new share
         share = Share(
             dive_id=dive.id,
-            creator_user_id=dive.user_id,
+            creator_user_id=current_user.id,
             token=token,
             visibility='public',
             expiration_time=expiration_time
@@ -60,21 +66,31 @@ def create_share_link(dive_id):
 
 
 # Access a shared dive record
-@shared_bp.route('/dives/<string:token>', methods=['GET'])
+@shared_bp.route('/dive/<string:token>', methods=['GET'])
 def get_shared_dive(token):
     try:
         share = Share.query.filter_by(token=token).first_or_404()
 
         if share.expiration_time and datetime.utcnow() > share.expiration_time:
-            return jsonify({"error": "Share link expired."}), 410
+            flash("This share link has expired.", "warning")
+            return redirect(url_for('main.index'))
 
         dive = Dive.query.get_or_404(share.dive_id)
-
-        # Return a more complete version of the dive
-        return jsonify(dive.to_dict()), 200
+        owner = User.query.get_or_404(share.creator_user_id)
+        
+        # Construct owner name
+        owner_name = f"{owner.firstname} {owner.lastname}" if owner.firstname and owner.lastname else owner.username
+        
+        # Render the dive details template with shared context
+        return render_template('dive_details.html', 
+                              dive=dive, 
+                              is_shared=True, 
+                              shared_by=owner_name,
+                              shared_by_username=owner.username)
     except Exception as e:
         current_app.logger.error(f"Error accessing shared dive: {str(e)}", exc_info=True)
-        return jsonify({"error": str(e)}), 500
+        flash("An error occurred while retrieving the shared dive.", "danger")
+        return redirect(url_for('main.index'))
 
 
 # Update share visibility for a dive
@@ -210,3 +226,9 @@ def dives_shared_with_me():
         current_app.logger.error(f"Error getting shared dives: {str(e)}", exc_info=True)
         flash("An error occurred while retrieving shared dives.", "danger")
         return redirect(url_for('main.index'))
+
+# Second route to handle direct access to /shared-with-me
+@shared_bp.route('/shared-with-me', methods=['GET'], endpoint='shared_with_me')
+@login_required
+def shared_with_me():
+    return dives_shared_with_me()

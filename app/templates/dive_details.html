@@ -10,6 +10,14 @@
         padding: 1rem;
     }
     
+    .shared-info-banner {
+        background-color: #e3f2fd;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #2196f3;
+    }
+    
     .dive-header {
         display: flex;
         justify-content: space-between;
@@ -244,12 +252,9 @@
 {% block content %}
 <div class="dive-details-container">
     {% if is_shared %}
-    <div class="shared-banner">
-        <div class="shared-banner-icon">🔗</div>
-        <div class="shared-banner-text">
-            <h3>Shared Dive Log</h3>
-            <p>This dive log was shared with you by {{ owner.username }}</p>
-        </div>
+    <div class="shared-info-banner">
+        <h4>Shared Dive Log</h4>
+        <p>This dive log was shared with you by {{ shared_by_username }}</p>
     </div>
     {% endif %}
 
@@ -549,7 +554,7 @@
                     const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                     
                     // Make API request to create share link
-                    const response = await fetch('/api/shared/dives/{{ dive.id }}/share', {
+                    const response = await fetch('/shared/dives/{{ dive.id }}/share', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -593,7 +598,7 @@
                     const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                     
                     // Make API request to share with user
-                    const response = await fetch('/api/shared/dives/{{ dive.id }}/share-with-user', {
+                    const response = await fetch('/shared/dives/{{ dive.id }}/share-with-user', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
