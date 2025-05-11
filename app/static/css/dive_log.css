@@ -321,4 +321,70 @@ input:not(:checked) + .slider + .toggle-label .private {
     .form-actions button {
         width: 100%;
     }
+}
+
+/* CSV Format Information */
+.csv-format-info {
+    margin-top: 12px;
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px 15px;
+}
+
+.csv-format-info h5 {
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.csv-format-info ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.csv-format-info li {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 4px;
+}
+
+/* Form Help Text */
+.form-help-text {
+    font-size: 13px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.form-help-text a {
+    color: #1a73e8;
+    text-decoration: none;
+}
+
+.form-help-text a:hover {
+    text-decoration: underline;
+}
+
+/* CSV Example */
+.csv-example {
+    margin-top: 12px;
+    background-color: #f1f8ff;
+    border: 1px solid #c8e1ff;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.csv-example p {
+    margin: 0 0 5px 0;
+    font-size: 13px;
+}
+
+.csv-example pre {
+    margin: 0;
+    padding: 8px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 4px;
+    font-size: 12px;
+    color: #333;
+    overflow-x: auto;
 } 
