@@ -17,14 +17,15 @@ def dashboard():
     return render_template('dashboard.html', title='Dashboard')
 
 @bp.route('/new-log')
+@login_required
 def new_log():
     return render_template('new_log.html', title='Add New Dive Log')
 
 @bp.route('/my-logs')
-# @login_required - Commented out for testing
+@login_required
 def my_logs():
-    # For testing, set user_id to 1
-    user_id = 1
+    # Use the current authenticated user's ID
+    user_id = current_user.id
     
     # Check for success message
     success_message = None
