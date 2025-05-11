@@ -150,7 +150,6 @@ async function handleFormSubmit(e) {
     const endTimeISOString = `${dateInput}T${endTimeInput}:00`;
     
     // Required fields from our dive model
-    diveData.user_id = 1; // This would normally come from the logged-in user session
     diveData.location = formData.get('location');
     diveData.start_time = startTimeISOString;
     diveData.end_time = endTimeISOString;
@@ -206,27 +205,13 @@ async function handleFormSubmit(e) {
             
             try {
                 console.log(`Sending CSV upload request to /api/dives/${diveId}/upload-csv`);
-                const csvUploadResponse = await fetch(`/api/dives/${diveId}/upload-csv`, {
-                    method: 'POST',
-                    body: csvFormData,
-                    // Do not include any custom headers that might trigger preflight CORS requests
-                });
                 
-                console.log("CSV upload response status:", csvUploadResponse.status);
+                // Use the centralized file upload function that handles CSRF tokens
+                const csvUploadResult = await uploadFile(`/api/dives/${diveId}/upload-csv`, csvFormData);
                 
-                if (csvUploadResponse.ok) {
-                    console.log('CSV data uploaded successfully');
-                    // Redirect to my-logs with success message
-                    window.location.href = '/my-logs?success=dive_created_with_profile';
-                } else {
-                    // Handle error
-                    const errorText = await csvUploadResponse.text();
-                    console.warn('CSV upload failed:', errorText);
-                    
-                    // Show alert but still redirect to logs page
-                    alert('The dive log was created, but there was an issue with the CSV profile data. You can try adding it later.');
-                    window.location.href = '/my-logs?success=dive_created';
-                }
+                console.log('CSV data upload success:', csvUploadResult);
+                // Redirect to my-logs with success message
+                window.location.href = '/my-logs?success=dive_created_with_profile';
             } catch (error) {
                 console.error('CSV upload error:', error);
                 // Still redirect to logs page
