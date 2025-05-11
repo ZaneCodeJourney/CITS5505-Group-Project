@@ -1,7 +1,7 @@
 # Main routes
-from flask import render_template, current_app, request
+from flask import render_template, current_app, request, abort, redirect, url_for
 from app.main import bp
-from app.models import Dive, User
+from app.models import Dive, User, Share
 from flask_login import current_user, login_required
 from sqlalchemy import func
 from datetime import datetime
@@ -117,4 +117,52 @@ def my_logs():
     locations = [location[0] for location in locations]
     
     return render_template('my_logs.html', title='My Dive Logs', dives=dives, 
-                          stats=stats, locations=locations, success_message=success_message) 
+                          stats=stats, locations=locations, success_message=success_message)
+
+@bp.route('/dive/<int:dive_id>')
+def dive_details(dive_id):
+    # For testing, set user_id to 1
+    user_id = 1
+    
+    # Get the dive
+    dive = Dive.query.get_or_404(dive_id)
+    
+    # Check access permissions
+    if dive.user_id != user_id and not current_user.is_authenticated:
+        abort(403)  # Forbidden
+    
+    # Get dive owner information
+    dive_owner = User.query.get(dive.user_id)
+    
+    # Get existing shares for the dive
+    shares = Share.query.filter_by(dive_id=dive_id).all()
+    
+    return render_template('dive_details.html', 
+                          title=f'Dive at {dive.location}', 
+                          dive=dive, 
+                          owner=dive_owner,
+                          shares=shares)
+
+@bp.route('/shared/dive/<string:token>')
+def shared_dive(token):
+    # Get the share by token
+    share = Share.query.filter_by(token=token).first_or_404()
+    
+    # Check if share is expired
+    if share.expiration_time and datetime.utcnow() > share.expiration_time:
+        return render_template('errors/410.html', 
+                             message="This shared dive link has expired."), 410
+    
+    # Get the dive
+    dive = Dive.query.get_or_404(share.dive_id)
+    
+    # Get dive owner information
+    dive_owner = User.query.get(dive.user_id)
+    
+    # Render the shared dive template
+    return render_template('dive_details.html', 
+                          title=f'Shared Dive at {dive.location}', 
+                          dive=dive, 
+                          owner=dive_owner,
+                          is_shared=True,
+                          share=share) 
