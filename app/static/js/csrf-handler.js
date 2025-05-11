@@ -16,6 +16,14 @@ async function getCsrfToken() {
     }
     
     try {
+        // First try to get the token from the meta tag (works in both production and debug)
+        const metaToken = document.querySelector('meta[name="csrf-token"]');
+        if (metaToken) {
+            csrfToken = metaToken.getAttribute('content');
+            return csrfToken;
+        }
+        
+        // Fallback to the dev endpoint if meta tag is not available
         const response = await fetch('/dev/get-csrf-token', {
             method: 'GET',
             credentials: 'include'
