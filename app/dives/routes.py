@@ -46,8 +46,12 @@ def allowed_file(filename):
 # GET /api/dives/ - Retrieve all diving records
 @dives_bp.route('/', methods=['GET'])
 def get_dives():
-    dives = Dive.query.all()
-    return jsonify([dive_to_dict(dive) for dive in dives]), 200
+    try:
+        dives = Dive.query.all()
+        return jsonify([dive_to_dict(dive) for dive in dives]), 200
+    except Exception as e:
+        current_app.logger.error(f"Error fetching dives: {str(e)}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
 
 @dives_bp.route('/', methods=['POST'])
 def create_dive():
@@ -124,50 +128,91 @@ def create_dive():
 # GET /api/dives/<dive_id> - Retrieve a single dive record
 @dives_bp.route('/<int:dive_id>', methods=['GET'])
 def get_dive(dive_id):
-    dive = Dive.query.get_or_404(dive_id)
-    return jsonify(dive_to_dict(dive)), 200
+    try:
+        dive = Dive.query.get_or_404(dive_id)
+        return jsonify(dive_to_dict(dive)), 200
+    except Exception as e:
+        current_app.logger.error(f"Error fetching dive {dive_id}: {str(e)}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
 
 # PUT /api/dives/<dive_id> - Update a dive record
 @dives_bp.route('/<int:dive_id>', methods=['PUT'])
 def update_dive(dive_id):
-    dive = Dive.query.get_or_404(dive_id)
-    data = request.get_json()
+    try:
+        # Check CSRF token
+        if current_app.config.get("WTF_CSRF_ENABLED", True):
+            token = request.headers.get("X-CSRFToken")
+            try:
+                validate_csrf(token)
+            except CSRFError as e:
+                current_app.logger.warning(f"CSRF token validation failed: {str(e)}")
+                return jsonify({"error": "Invalid or missing CSRF token"}), 400
+        
+        dive = Dive.query.get_or_404(dive_id)
+        data = request.get_json()
 
-    dive.dive_number = data.get('dive_number', dive.dive_number)
-    dive.start_time = datetime.fromisoformat(data['start_time']) if 'start_time' in data else dive.start_time
-    dive.end_time = datetime.fromisoformat(data['end_time']) if 'end_time' in data else dive.end_time
-    dive.max_depth = data.get('max_depth', dive.max_depth)
-    dive.weight_belt = data.get('weight_belt', dive.weight_belt)
-    dive.visibility = data.get('visibility', dive.visibility)
-    dive.weather = data.get('weather', dive.weather)
-    dive.location = data.get('location', dive.location)
-    dive.dive_partner = data.get('dive_partner', dive.dive_partner)
-    dive.notes = data.get('notes', dive.notes)
-    dive.media = data.get('media', dive.media)
-    dive.location_thumbnail = data.get('location_thumbnail', dive.location_thumbnail)
-    dive.suit_type = data.get('suit_type', dive.suit_type)
-    dive.suit_thickness = data.get('suit_thickness', dive.suit_thickness)
-    dive.weight = data.get('weight', dive.weight)
-    dive.tank_type = data.get('tank_type', dive.tank_type)
-    dive.tank_size = data.get('tank_size', dive.tank_size)
-    dive.gas_mix = data.get('gas_mix', dive.gas_mix)
-    dive.o2_percentage = data.get('o2_percentage', dive.o2_percentage)
+        dive.dive_number = data.get('dive_number', dive.dive_number)
+        dive.start_time = datetime.fromisoformat(data['start_time']) if 'start_time' in data else dive.start_time
+        dive.end_time = datetime.fromisoformat(data['end_time']) if 'end_time' in data else dive.end_time
+        dive.max_depth = data.get('max_depth', dive.max_depth)
+        dive.weight_belt = data.get('weight_belt', dive.weight_belt)
+        dive.visibility = data.get('visibility', dive.visibility)
+        dive.weather = data.get('weather', dive.weather)
+        dive.location = data.get('location', dive.location)
+        dive.dive_partner = data.get('dive_partner', dive.dive_partner)
+        dive.notes = data.get('notes', dive.notes)
+        dive.media = data.get('media', dive.media)
+        dive.location_thumbnail = data.get('location_thumbnail', dive.location_thumbnail)
+        dive.suit_type = data.get('suit_type', dive.suit_type)
+        dive.suit_thickness = data.get('suit_thickness', dive.suit_thickness)
+        dive.weight = data.get('weight', dive.weight)
+        dive.tank_type = data.get('tank_type', dive.tank_type)
+        dive.tank_size = data.get('tank_size', dive.tank_size)
+        dive.gas_mix = data.get('gas_mix', dive.gas_mix)
+        dive.o2_percentage = data.get('o2_percentage', dive.o2_percentage)
 
-    db.session.commit()
-    return jsonify(dive_to_dict(dive)), 200
+        db.session.commit()
+        return jsonify(dive_to_dict(dive)), 200
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error updating dive {dive_id}: {str(e)}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
 
 # DELETE /api/dives/<dive_id> - Delete a dive record
 @dives_bp.route('/<int:dive_id>', methods=['DELETE'])
 def delete_dive(dive_id):
-    dive = Dive.query.get_or_404(dive_id)
-    db.session.delete(dive)
-    db.session.commit()
-    return '', 204
+    try:
+        # Check CSRF token
+        if current_app.config.get("WTF_CSRF_ENABLED", True):
+            token = request.headers.get("X-CSRFToken")
+            try:
+                validate_csrf(token)
+            except CSRFError as e:
+                current_app.logger.warning(f"CSRF token validation failed: {str(e)}")
+                return jsonify({"error": "Invalid or missing CSRF token"}), 400
+        
+        dive = Dive.query.get_or_404(dive_id)
+        db.session.delete(dive)
+        db.session.commit()
+        return '', 204
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error deleting dive {dive_id}: {str(e)}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
 
 # POST /api/dives/<dive_id>/upload - Upload media for a dive
 @dives_bp.route('/<int:dive_id>/upload', methods=['POST'])
 def upload_dive_media(dive_id):
     try:
+        # Check CSRF token
+        if current_app.config.get("WTF_CSRF_ENABLED", True):
+            token = request.headers.get("X-CSRFToken")
+            try:
+                validate_csrf(token)
+            except CSRFError as e:
+                current_app.logger.warning(f"CSRF token validation failed: {str(e)}")
+                return jsonify({"error": "Invalid or missing CSRF token"}), 400
+                
         dive = Dive.query.get_or_404(dive_id)
         
         if 'media' not in request.files:
