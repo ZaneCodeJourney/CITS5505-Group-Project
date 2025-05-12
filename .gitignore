@@ -17,3 +17,5 @@ __pycache__/
 
 # Create database files
 create_db.py
+
+prototype/

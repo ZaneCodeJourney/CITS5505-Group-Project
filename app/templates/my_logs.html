@@ -392,7 +392,7 @@ function initMap() {
             const diveDetails = Array.from(card.querySelectorAll('.detail-item')).map(item => {
                 const label = item.querySelector('.detail-label').textContent;
                 const value = item.querySelector('.detail-value').textContent;
-                return `<div><strong>${label}</strong> ${value}</div>`;
+                return `<div class="popup-detail"><strong>${label}</strong> ${value}</div>`;
             }).join('');
             
             const popupContent = `
