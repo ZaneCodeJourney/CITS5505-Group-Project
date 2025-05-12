@@ -142,16 +142,26 @@ def share_with_user(dive_id):
             return jsonify({"error": "You can only share your own dives"}), 403
             
         data = request.get_json()
-        shared_with_username = data.get('username')
+        recipient = data.get('username')
         
-        if not shared_with_username:
-            return jsonify({"error": "Username is required"}), 400
+        if not recipient:
+            return jsonify({"error": "Username or email is required"}), 400
             
+        # Check if input is email or username
+        is_email = '@' in recipient
+        
         # Find user to share with
-        shared_with_user = User.query.filter_by(username=shared_with_username).first()
+        if is_email:
+            shared_with_user = User.query.filter_by(email=recipient).first()
+            current_app.logger.info(f"Searching for user by email: {recipient}, found: {shared_with_user is not None}")
+        else:
+            shared_with_user = User.query.filter_by(username=recipient).first()
+            current_app.logger.info(f"Searching for user by username: {recipient}, found: {shared_with_user is not None}")
         
         if not shared_with_user:
-            return jsonify({"error": f"User {shared_with_username} not found"}), 404
+            # Return a specific 404 response for user not found
+            current_app.logger.warning(f"User not found: {recipient}")
+            return jsonify({"error": f"User with {'email' if is_email else 'username'} {recipient} not found"}), 404
             
         # Check if already shared with this user
         existing_share = Share.query.filter_by(
@@ -161,7 +171,7 @@ def share_with_user(dive_id):
         ).first()
         
         if existing_share:
-            return jsonify({"message": f"Dive already shared with {shared_with_username}"}), 200
+            return jsonify({"message": f"Dive already shared with {shared_with_user.username}"}), 200
         
         # Create share token
         token = secrets.token_urlsafe(32)
@@ -184,7 +194,7 @@ def share_with_user(dive_id):
 
         return jsonify({
             "success": True,
-            "message": f"Dive shared with {shared_with_username}",
+            "message": f"Dive shared with {shared_with_user.username}",
             "shared_with_id": shared_with_user.id,
             "created_at": share.created_at.isoformat()
         }), 201

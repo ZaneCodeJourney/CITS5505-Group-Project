@@ -1,4 +1,4 @@
-from flask import jsonify, request
+from flask import jsonify, request, g, current_app
 from flask_login import login_required, current_user
 from app import db
 from app.api import bp
@@ -6,6 +6,7 @@ from app.models import User
 from datetime import datetime
 from functools import wraps
 import re
+from sqlalchemy import or_
 
 # Decorator to ensure the request has JSON content
 def require_json(f):
@@ -109,4 +110,40 @@ def deactivate_account():
         return jsonify({"message": "Account deactivated successfully"}), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 500 
+        return jsonify({"error": str(e)}), 500
+
+@bp.route('/users/search', methods=['GET'])
+@login_required
+def search_users():
+    """Search for users by username or email (partial match)"""
+    query = request.args.get('q', '')
+    
+    if not query or len(query) < 2:
+        return jsonify({
+            'users': [],
+            'message': 'Please enter at least 2 characters to search'
+        }), 200
+    
+    # Search for users matching the query in username or email
+    users = User.query.filter(
+        or_(
+            User.username.ilike(f'%{query}%'),
+            User.email.ilike(f'%{query}%')
+        )
+    ).limit(10).all()
+    
+    # Format the results
+    results = []
+    for user in users:
+        # Don't include the current user in results
+        if user.id != current_user.id:
+            results.append({
+                'id': user.id,
+                'username': user.username,
+                'email': user.email
+            })
+    
+    return jsonify({
+        'users': results,
+        'query': query
+    }), 200 
