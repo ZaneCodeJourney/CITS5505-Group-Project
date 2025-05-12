@@ -138,6 +138,99 @@
     #copy-invite-link:hover {
         background-color: #5a6268;
     }
+    
+    /* Edit modal styling */
+    .edit-modal {
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.6);
+        display: none;
+    }
+    
+    .edit-modal-content {
+        background-color: #fff;
+        margin: 2% auto;
+        padding: 20px;
+        border-radius: 5px;
+        width: 80%;
+        max-width: 900px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    
+    .edit-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .edit-modal-header h3 {
+        margin: 0;
+    }
+    
+    .edit-form-section {
+        margin-bottom: 20px;
+    }
+    
+    .edit-form-section h4 {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .edit-form-row {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 0 -10px;
+    }
+    
+    .edit-form-group {
+        flex: 1;
+        min-width: 200px;
+        padding: 0 10px;
+        margin-bottom: 15px;
+    }
+    
+    .edit-form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+    }
+    
+    .edit-form-group input,
+    .edit-form-group select,
+    .edit-form-group textarea {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    
+    .edit-form-group textarea {
+        min-height: 80px;
+        resize: vertical;
+    }
+    
+    .edit-modal-footer {
+        border-top: 1px solid #eee;
+        padding-top: 15px;
+        margin-top: 20px;
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+    .edit-modal-footer button {
+        margin-left: 10px;
+    }
 </style>
 {% endblock %}
 
@@ -419,6 +512,101 @@
         </div>
     </div>
 </div>
+
+<!-- Edit Dive Log Modal -->
+<div class="modal edit-modal" id="edit-modal">
+    <div class="modal-content edit-modal-content">
+        <div class="modal-header edit-modal-header">
+            <h3>Edit Dive Log</h3>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div id="edit-loading" class="loading">Loading dive data...</div>
+            <form id="edit-dive-form" style="display: none;">
+                <input type="hidden" id="edit-dive-id" name="id">
+                
+                <div class="edit-form-section">
+                    <h4>Dive Information</h4>
+                    <div class="edit-form-row">
+                        <div class="edit-form-group">
+                            <label for="edit-location">Dive Site Name*</label>
+                            <input type="text" id="edit-location" name="location" required>
+                        </div>
+                        <div class="edit-form-group">
+                            <label for="edit-start-time">Start Date & Time*</label>
+                            <input type="datetime-local" id="edit-start-time" name="start_time" required>
+                        </div>
+                        <div class="edit-form-group">
+                            <label for="edit-end-time">End Date & Time*</label>
+                            <input type="datetime-local" id="edit-end-time" name="end_time" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="edit-form-section">
+                    <h4>Dive Details</h4>
+                    <div class="edit-form-row">
+                        <div class="edit-form-group">
+                            <label for="edit-max-depth">Max Depth (meters)*</label>
+                            <input type="number" id="edit-max-depth" name="max_depth" min="0" max="100" step="0.1" required>
+                        </div>
+                        <div class="edit-form-group">
+                            <label for="edit-visibility">Visibility</label>
+                            <input type="text" id="edit-visibility" name="visibility">
+                        </div>
+                        <div class="edit-form-group">
+                            <label for="edit-weather">Weather Conditions</label>
+                            <select id="edit-weather" name="weather">
+                                <option value="sunny">Sunny</option>
+                                <option value="cloudy">Cloudy</option>
+                                <option value="rainy">Rainy</option>
+                                <option value="stormy">Stormy</option>
+                                <option value="windy">Windy</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="edit-form-section">
+                    <h4>Equipment</h4>
+                    <div class="edit-form-row">
+                        <div class="edit-form-group">
+                            <label for="edit-weight-belt">Weight (kg)</label>
+                            <input type="number" id="edit-weight-belt" name="weight_belt" min="0" max="20" step="0.5">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="edit-form-section">
+                    <h4>Dive Buddies</h4>
+                    <div class="edit-form-row">
+                        <div class="edit-form-group">
+                            <label for="edit-dive-partner">Dive Buddy/Partner</label>
+                            <input type="text" id="edit-dive-partner" name="dive_partner">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="edit-form-section">
+                    <h4>Notes</h4>
+                    <div class="edit-form-row">
+                        <div class="edit-form-group">
+                            <label for="edit-notes">Dive Notes</label>
+                            <textarea id="edit-notes" name="notes" rows="4"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div id="edit-error" class="alert alert-danger" style="display: none;"></div>
+        </div>
+        <div class="modal-footer edit-modal-footer">
+            <div id="edit-feedback"></div>
+            <button class="btn btn-secondary close-edit-btn">Cancel</button>
+            <button class="btn btn-primary save-dive-btn">Save Changes</button>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -444,6 +632,52 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 5000);
     }
 });
+
+// Helper function for API requests
+async function apiRequest(url, method = 'GET', data = null) {
+    // Get CSRF token
+    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    const options = {
+        method: method,
+        headers: {
+            'X-CSRFToken': token
+        }
+    };
+    
+    if (data) {
+        options.headers['Content-Type'] = 'application/json';
+        options.body = JSON.stringify(data);
+    }
+    
+    const response = await fetch(url, options);
+    
+    if (!response.ok) {
+        const errorText = await response.text();
+        try {
+            const errorJson = JSON.parse(errorText);
+            throw new Error(errorJson.error || `HTTP error ${response.status}`);
+        } catch (e) {
+            if (e instanceof SyntaxError) {
+                throw new Error(`HTTP error ${response.status}: ${errorText}`);
+            } else {
+                throw e;
+            }
+        }
+    }
+    
+    // For DELETE requests, just return success, no data
+    if (method === 'DELETE') {
+        return { success: true };
+    }
+    
+    // For GET, POST, PUT requests, return the parsed JSON response
+    try {
+        return await response.json();
+    } catch (e) {
+        return { success: true }; // For endpoints that don't return JSON
+    }
+}
 
 function initMap() {
     // Check if map container exists
@@ -625,9 +859,8 @@ function setupEventListeners() {
         button.addEventListener('click', function(e) {
             e.preventDefault();
             const diveId = this.dataset.id;
-            // Redirect to edit page
-            // window.location.href = `/edit-dive/${diveId}`;
-            alert('Edit functionality to be implemented');
+            // Open edit modal with dive data
+            openEditModal(diveId);
         });
     });
     
@@ -664,6 +897,75 @@ function setupEventListeners() {
             document.getElementById('share-modal').style.display = 'block';
         });
     });
+}
+
+// Function to fetch dive data and open edit modal
+async function openEditModal(diveId) {
+    try {
+        // Show loading state
+        const editModal = document.getElementById('edit-modal');
+        const loadingEl = document.getElementById('edit-loading');
+        const formEl = document.getElementById('edit-dive-form');
+        const errorEl = document.getElementById('edit-error');
+        
+        // Reset state
+        loadingEl.style.display = 'block';
+        formEl.style.display = 'none';
+        errorEl.style.display = 'none';
+        
+        // Show modal
+        editModal.style.display = 'block';
+        
+        try {
+            // Fetch dive data
+            const dive = await apiRequest(`/api/dives/${diveId}`);
+            
+            // Populate form fields with dive data
+            formEl.querySelector('#edit-dive-id').value = dive.id;
+            formEl.querySelector('#edit-location').value = dive.location || '';
+            
+            // Format datetime-local inputs
+            if (dive.start_time) {
+                const startTime = new Date(dive.start_time);
+                formEl.querySelector('#edit-start-time').value = formatDateTimeLocalInput(startTime);
+            }
+            
+            if (dive.end_time) {
+                const endTime = new Date(dive.end_time);
+                formEl.querySelector('#edit-end-time').value = formatDateTimeLocalInput(endTime);
+            }
+            
+            formEl.querySelector('#edit-max-depth').value = dive.max_depth || '';
+            formEl.querySelector('#edit-visibility').value = dive.visibility || '';
+            formEl.querySelector('#edit-weather').value = dive.weather || 'sunny';
+            formEl.querySelector('#edit-weight-belt').value = dive.weight_belt || '';
+            formEl.querySelector('#edit-dive-partner').value = dive.dive_partner || '';
+            formEl.querySelector('#edit-notes').value = dive.notes || '';
+            
+            // Hide loading, show form
+            loadingEl.style.display = 'none';
+            formEl.style.display = 'block';
+        } catch (error) {
+            console.error('Error fetching dive data:', error);
+            loadingEl.style.display = 'none';
+            errorEl.textContent = 'Error loading dive data: ' + error.message;
+            errorEl.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('General error in openEditModal:', error);
+        alert('Error opening edit form: ' + error.message);
+    }
+}
+
+// Helper function to format date for datetime-local input
+function formatDateTimeLocalInput(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
 function setupModals() {
@@ -912,8 +1214,92 @@ function setupModals() {
         });
     }
     
+    // Setup Edit Modal
+    const editModal = document.getElementById('edit-modal');
+    const editCloseBtn = editModal.querySelector('.close-modal');
+    const editCancelBtn = editModal.querySelector('.close-edit-btn');
+    const editSaveBtn = editModal.querySelector('.save-dive-btn');
+    
+    if (editCloseBtn) {
+        editCloseBtn.addEventListener('click', function() {
+            editModal.style.display = 'none';
+        });
+    }
+    
+    if (editCancelBtn) {
+        editCancelBtn.addEventListener('click', function() {
+            editModal.style.display = 'none';
+        });
+    }
+    
+    if (editSaveBtn) {
+        editSaveBtn.addEventListener('click', async function() {
+            // Get form data
+            const form = document.getElementById('edit-dive-form');
+            const diveId = form.querySelector('#edit-dive-id').value;
+            const feedbackEl = document.getElementById('edit-feedback');
+            
+            try {
+                // Show loading state
+                editSaveBtn.disabled = true;
+                editSaveBtn.textContent = 'Saving...';
+                
+                // Prepare data
+                const formData = {
+                    location: form.querySelector('#edit-location').value,
+                    start_time: form.querySelector('#edit-start-time').value,
+                    end_time: form.querySelector('#edit-end-time').value,
+                    max_depth: parseFloat(form.querySelector('#edit-max-depth').value),
+                    visibility: form.querySelector('#edit-visibility').value,
+                    weather: form.querySelector('#edit-weather').value,
+                    weight_belt: parseFloat(form.querySelector('#edit-weight-belt').value) || null,
+                    dive_partner: form.querySelector('#edit-dive-partner').value,
+                    notes: form.querySelector('#edit-notes').value
+                };
+                
+                // Send update request
+                await apiRequest(`/api/dives/${diveId}`, 'PUT', formData);
+                
+                // Hide modal
+                editModal.style.display = 'none';
+                
+                // Show success message
+                const messageEl = document.getElementById('js-success-message');
+                const textEl = document.getElementById('js-success-text');
+                textEl.textContent = 'Dive log updated successfully!';
+                messageEl.style.display = 'block';
+                
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    messageEl.style.display = 'none';
+                }, 5000);
+                
+                // Reload page to show updated data
+                window.location.reload();
+            } catch (error) {
+                console.error('Error updating dive log:', error);
+                
+                // Show error feedback
+                feedbackEl.innerHTML = `<div class="alert alert-danger">${error.message || 'Error updating dive log'}</div>`;
+                
+                // Auto-hide error after 5 seconds
+                setTimeout(() => {
+                    feedbackEl.innerHTML = '';
+                }, 5000);
+            } finally {
+                // Reset button state
+                editSaveBtn.disabled = false;
+                editSaveBtn.textContent = 'Save Changes';
+            }
+        });
+    }
+    
     // Close modals when clicking outside
     window.addEventListener('click', function(e) {
+        if (e.target === editModal) {
+            editModal.style.display = 'none';
+        }
+        
         if (e.target === shareModal) {
             shareModal.style.display = 'none';
         }
