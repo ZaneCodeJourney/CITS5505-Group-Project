@@ -705,8 +705,8 @@
                             
                             // Select user when clicked
                             item.addEventListener('click', function() {
-                                // Use email for emails, username for usernames
-                                shareRecipient.value = user.email.includes('@') ? user.email : user.username;
+                                // Always use username for sharing
+                                shareRecipient.value = user.username;
                                 userSuggestions.style.display = 'none';
                             });
                             
