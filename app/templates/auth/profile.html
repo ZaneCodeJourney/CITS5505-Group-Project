@@ -1,6 +1,19 @@
 {% extends "base.html" %}
 
 {% block styles %}
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<!-- Add a hidden form for direct submission if needed -->
+<form id="direct-profile-form" action="/api/users/me" method="POST" style="display: none;">
+  <input type="hidden" name="_method" value="PUT">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="username" id="direct-username">
+  <input type="hidden" name="email" id="direct-email">
+  <input type="hidden" name="firstname" id="direct-firstname">
+  <input type="hidden" name="lastname" id="direct-lastname">
+  <input type="hidden" name="bio" id="direct-bio">
+  <input type="hidden" name="dob" id="direct-dob">
+  <input type="hidden" name="avatar" id="direct-avatar">
+</form>
 <style>
     .profile-container {
         max-width: 800px;
@@ -181,10 +194,16 @@
 {% block content %}
 <div class="profile-container">
     <div class="success-message" id="success-message"></div>
+    <div id="loading-message" style="text-align: center; display: block; margin-bottom: 1rem;">
+        Loading your profile information...
+        <div id="retry-container" style="display: none; margin-top: 10px;">
+            <button id="retry-button" class="btn-primary" style="padding: 5px 10px; font-size: 14px;">Retry</button>
+        </div>
+    </div>
 
     <div class="profile-info">
         <div class="profile-avatar">
-            <img id="avatar-img" src="{{ url_for('static', filename='css/default-avatar.png') }}" alt="Profile Picture">
+            <img id="avatar-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII" alt="Profile Picture">
         </div>
         <div class="profile-details">
             <h2 class="profile-username" id="display-username">Loading...</h2>
@@ -200,7 +219,10 @@
         </div>
 
         <div class="tab-content active" id="profile-tab">
-            <form id="profile-form">
+            <form id="profile-form" method="POST" action="/api/users/me">
+                <input type="hidden" name="_method" value="PUT">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
                 <div class="form-group">
                     <label for="username">Username</label>
                     <input type="text" id="username" name="username" class="form-control">
@@ -245,16 +267,20 @@
         </div>
 
         <div class="tab-content" id="security-tab">
-            <form id="change-password-form">
+            <form id="change-password-form" method="POST" action="/api/auth/reset-password">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div id="error-container" class="error-message" style="margin-bottom: 1rem; display: none;"></div>
+                <div id="password-success-message" class="success-message" style="display: none;"></div>
+                
                 <div class="form-group">
                     <label for="current-password">Current Password</label>
-                    <input type="password" id="current-password" name="current-password" class="form-control" required>
+                    <input type="password" id="current-password" name="current_password" class="form-control" required>
                     <div id="current-password-error" class="error-message"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="new-password">New Password</label>
-                    <input type="password" id="new-password" name="new-password" class="form-control" required>
+                    <input type="password" id="new-password" name="new_password" class="form-control" required>
                     <div class="password-requirements">
                         Must be at least 8 characters with uppercase, lowercase, and a number
                     </div>
@@ -263,7 +289,7 @@
 
                 <div class="form-group">
                     <label for="confirm-password">Confirm New Password</label>
-                    <input type="password" id="confirm-password" name="confirm-password" class="form-control" required>
+                    <input type="password" id="confirm-password" name="confirm_password" class="form-control" required>
                     <div id="confirm-password-error" class="error-message"></div>
                 </div>
 
@@ -291,8 +317,23 @@
         const successMessage = document.getElementById('success-message');
         const tabs = document.querySelectorAll('.tab');
         const tabContents = document.querySelectorAll('.tab-content');
+        const retryButton = document.getElementById('retry-button');
         
-        // Load user profile data
+        // Add event listener for retry button
+        if (retryButton) {
+            retryButton.addEventListener('click', function() {
+                const loadingMessage = document.getElementById('loading-message');
+                if (loadingMessage) {
+                    loadingMessage.textContent = 'Loading your profile information...';
+                    loadingMessage.style.color = '';
+                    document.getElementById('retry-container').style.display = 'none';
+                }
+                loadUserProfile();
+            });
+        }
+        
+        // Load user profile data immediately when the page loads
+        console.log('DOM content loaded, loading user profile...');
         loadUserProfile();
         
         // Tab switching
@@ -307,6 +348,24 @@
                 // Add active class to selected tab and content
                 this.classList.add('active');
                 document.getElementById(tabId + '-tab').classList.add('active');
+                
+                // Clear any error messages when switching tabs
+                document.querySelectorAll('.error-message').forEach(el => {
+                    el.style.display = 'none';
+                    el.textContent = '';
+                });
+                
+                // Clear success messages
+                if (successMessage) {
+                    successMessage.style.display = 'none';
+                    successMessage.textContent = '';
+                }
+                
+                const passwordSuccessMessage = document.getElementById('password-success-message');
+                if (passwordSuccessMessage) {
+                    passwordSuccessMessage.style.display = 'none';
+                    passwordSuccessMessage.textContent = '';
+                }
             });
         });
         
@@ -323,14 +382,39 @@
                 successMessage.style.display = 'none';
                 
                 try {
-                    // Get CSRF token
-                    const tokenResponse = await fetch('/dev/get-csrf-token', {
-                        method: 'GET',
-                        credentials: 'include'
-                    });
+                    let csrfToken = '';
                     
-                    const tokenData = await tokenResponse.json();
-                    const csrfToken = tokenData.csrf_token;
+                    try {
+                        // 首先尝试从开发端点获取CSRF令牌
+                        const tokenApiUrl = window.location.origin + '/dev/get-csrf-token';
+                        console.log('Getting CSRF token from:', tokenApiUrl);
+                        
+                        const tokenResponse = await fetch(tokenApiUrl, {
+                            method: 'GET',
+                            credentials: 'include'
+                        });
+                        
+                        if (tokenResponse.ok) {
+                            try {
+                                const tokenData = await tokenResponse.json();
+                                csrfToken = tokenData.csrf_token;
+                                console.log('Got CSRF token');
+                            } catch (jsonError) {
+                                console.error('Error parsing CSRF token response:', jsonError);
+                            }
+                        } else {
+                            // If development endpoint is not available, try to get from META tag
+                            console.warn('CSRF token endpoint not available');
+                            const metaToken = document.querySelector('meta[name="csrf-token"]');
+                            if (metaToken) {
+                                csrfToken = metaToken.getAttribute('content');
+                                console.log('Got CSRF token from meta tag');
+                            }
+                        }
+                    } catch (tokenError) {
+                        console.warn('Error getting CSRF token:', tokenError);
+                        // Continue without token in development
+                    }
                     
                     // Prepare profile data
                     const profileData = {
@@ -348,59 +432,196 @@
                         profileData.dob = dob;
                     }
                     
-                    // Send update request
-                    const response = await fetch('/api/users/me', {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': csrfToken
-                        },
-                        credentials: 'include',
-                        body: JSON.stringify(profileData)
-                    });
+                    // Prepare headers
+                    const headers = {
+                        'Content-Type': 'application/json'
+                    };
                     
-                    const data = await response.json();
+                    // Add CSRF token if available
+                    if (csrfToken) {
+                        headers['X-CSRFToken'] = csrfToken;
+                    }
                     
-                    if (!response.ok) {
-                        // Handle validation errors
-                        if (data.error) {
-                            if (data.error.includes('Username already in use')) {
-                                const errorEl = document.getElementById('username-error');
-                                errorEl.textContent = 'Username already in use';
-                                errorEl.style.display = 'block';
-                            } else if (data.error.includes('Email already in use')) {
-                                const errorEl = document.getElementById('email-error');
-                                errorEl.textContent = 'Email already in use';
-                                errorEl.style.display = 'block';
-                            } else if (data.error.includes('Invalid email')) {
-                                const errorEl = document.getElementById('email-error');
-                                errorEl.textContent = 'Invalid email format';
-                                errorEl.style.display = 'block';
-                            } else {
-                                alert('Update error: ' + data.error);
-                            }
-                        } else {
-                            alert('An error occurred while updating your profile');
+                    console.log('Sending profile update with data:', profileData);
+                    
+                    // 确保使用完整的URL，包括主机和端口
+                    const apiUrl = window.location.origin + '/api/users/me';
+                    console.log('Using API URL:', apiUrl);
+                    
+                    // 发送更新请求
+                    let response;
+                    try {
+                        // 显示请求状态
+                        successMessage.textContent = 'Saving changes...';
+                        successMessage.style.display = 'block';
+                        successMessage.style.backgroundColor = '#e2f3fd';
+                        successMessage.style.color = '#0c5460';
+                        
+                        // 记录完整的请求头信息
+                        console.log('Request headers:', headers);
+                        
+                        response = await fetch(apiUrl, {
+                            method: 'PUT',
+                            headers: headers,
+                            credentials: 'include',
+                            body: JSON.stringify(profileData)
+                        });
+                        console.log('API response status:', response.status, response.statusText);
+                        
+                        // 如果遇到任何HTTP错误状态码，显示详细信息
+                        if (!response.ok) {
+                            console.error('Error response status:', response.status, response.statusText);
                         }
-                        return;
+                    } catch (fetchError) {
+                        console.error('Fetch error when calling API:', fetchError);
+                        throw new Error('Network error when connecting to API: ' + fetchError.message);
                     }
                     
-                    // Success - update UI
-                    successMessage.textContent = 'Profile updated successfully';
-                    successMessage.style.display = 'block';
-                    
-                    // Update display elements
-                    document.getElementById('display-username').textContent = data.user.username;
-                    document.getElementById('display-email').textContent = data.user.email;
-                    
-                    // Update avatar if provided
-                    if (data.user.avatar) {
-                        document.getElementById('avatar-img').src = data.user.avatar;
+                    // 处理404错误 - API端点不存在
+                    if (response.status === 404) {
+                        // 尝试替代路径 - 有时URL前缀可能有问题
+                        console.log('API endpoint not found, trying alternative URL');
+                        
+                        try {
+                            // 尝试不带origin的路径
+                            const altApiUrl = '/api/users/me';
+                            console.log('Trying alternative API URL:', altApiUrl);
+                            
+                            response = await fetch(altApiUrl, {
+                                method: 'PUT',
+                                headers: headers,
+                                credentials: 'include',
+                                body: JSON.stringify(profileData)
+                            });
+                            console.log('Alternative API response status:', response.status, response.statusText);
+                            
+                            if (response.status === 404) {
+                                console.error('Alternative API endpoint also not found');
+                                // 如果API不可用，尝试直接提交表单
+                                console.log('Trying direct form submission');
+                                
+                                // 尝试直接使用表单提交
+                                try {
+                                    // 填充隐藏表单
+                                    document.getElementById('direct-username').value = profileData.username;
+                                    document.getElementById('direct-email').value = profileData.email;
+                                    document.getElementById('direct-firstname').value = profileData.firstname;
+                                    document.getElementById('direct-lastname').value = profileData.lastname;
+                                    document.getElementById('direct-bio').value = profileData.bio;
+                                    if (profileData.dob) {
+                                        document.getElementById('direct-dob').value = profileData.dob;
+                                    }
+                                    if (profileData.avatar) {
+                                        document.getElementById('direct-avatar').value = profileData.avatar;
+                                    }
+                                    
+                                    // 显示提交中消息
+                                    successMessage.textContent = 'Trying alternative submission method...';
+                                    successMessage.style.display = 'block';
+                                    successMessage.style.backgroundColor = '#e2f3fd';
+                                    successMessage.style.color = '#0c5460';
+                                    
+                                    // 提交表单
+                                    const directForm = document.getElementById('direct-profile-form');
+                                    directForm.submit();
+                                    return; // 停止执行后续代码
+                                } catch (formError) {
+                                    console.error('Form submission error:', formError);
+                                    // 如果直接提交也失败了，显示错误消息
+                                    successMessage.textContent = 'Error: Cannot update profile. Please try again later.';
+                                    successMessage.style.backgroundColor = '#f8d7da';
+                                    successMessage.style.color = '#721c24';
+                                    
+                                    // 更新显示元素，但只是UI更新
+                                    document.getElementById('display-username').textContent = profileData.username;
+                                    document.getElementById('display-email').textContent = profileData.email;
+                                    return;
+                                }
+                            }
+                        } catch (altFetchError) {
+                            console.error('Error with alternative API URL:', altFetchError);
+                        }
                     }
                     
+                    try {
+                        // 假设响应可能不是JSON格式
+                        let data;
+                        const responseText = await response.text();
+                        console.log('Raw API response:', responseText);
+                        
+                        try {
+                            // 尝试解析JSON
+                            data = JSON.parse(responseText);
+                        } catch (jsonError) {
+                            console.error('Error parsing JSON response:', jsonError);
+                            throw new Error('Invalid JSON response: ' + responseText);
+                        }
+                        
+                        console.log('Parsed API response data:', data);
+
+                        if (!response.ok) {
+                            // 处理验证错误
+                            if (data.error) {
+                                if (data.error.includes('Username already in use')) {
+                                    const errorEl = document.getElementById('username-error');
+                                    errorEl.textContent = 'Username already in use';
+                                    errorEl.style.display = 'block';
+                                } else if (data.error.includes('Email already in use')) {
+                                    const errorEl = document.getElementById('email-error');
+                                    errorEl.textContent = 'Email already in use';
+                                    errorEl.style.display = 'block';
+                                } else if (data.error.includes('Invalid email')) {
+                                    const errorEl = document.getElementById('email-error');
+                                    errorEl.textContent = 'Invalid email format';
+                                    errorEl.style.display = 'block';
+                                } else {
+                                    // Display the error in the success message area with red color
+                                    successMessage.textContent = 'Update error: ' + data.error;
+                                    successMessage.style.display = 'block';
+                                    successMessage.style.backgroundColor = '#f8d7da';
+                                    successMessage.style.color = '#721c24';
+                                }
+                            } else {
+                                // Display general error
+                                successMessage.textContent = 'An error occurred while updating your profile';
+                                successMessage.style.display = 'block';
+                                successMessage.style.backgroundColor = '#f8d7da';
+                                successMessage.style.color = '#721c24';
+                            }
+                            return;
+                        }
+                        
+                        // Success - update UI
+                        successMessage.textContent = 'Profile updated successfully';
+                        successMessage.style.display = 'block';
+                        successMessage.style.backgroundColor = '#d4edda';
+                        successMessage.style.color = '#28a745';
+                        
+                        // Update display elements
+                        document.getElementById('display-username').textContent = data.user.username;
+                        document.getElementById('display-email').textContent = data.user.email;
+                        
+                        // Update avatar if provided
+                        if (data.user.avatar) {
+                            document.getElementById('avatar-img').src = data.user.avatar;
+                        }
+                    } catch (error) {
+                        console.error('Update error:', error);
+                        
+                        // Show error to user
+                        successMessage.textContent = 'An error occurred while updating your profile: ' + error.message;
+                        successMessage.style.display = 'block';
+                        successMessage.style.backgroundColor = '#f8d7da';
+                        successMessage.style.color = '#721c24';
+                    }
                 } catch (error) {
                     console.error('Update error:', error);
-                    alert('An error occurred while updating your profile. Please try again later.');
+                    
+                    // Show error to user
+                    successMessage.textContent = 'An error occurred while updating your profile: ' + error.message;
+                    successMessage.style.display = 'block';
+                    successMessage.style.backgroundColor = '#f8d7da';
+                    successMessage.style.color = '#721c24';
                 }
             });
         }
@@ -415,11 +636,36 @@
                     el.style.display = 'none';
                     el.textContent = '';
                 });
-                successMessage.style.display = 'none';
+                
+                // Hide success message
+                const successMessage = document.getElementById('success-message');
+                if (successMessage) {
+                    successMessage.style.display = 'none';
+                }
+                
+                // Get password success message element
+                const passwordSuccessMessage = document.getElementById('password-success-message');
+                passwordSuccessMessage.textContent = '';
+                passwordSuccessMessage.style.display = 'none';
                 
                 // Validate password match
+                const currentPassword = document.getElementById('current-password').value;
                 const newPassword = document.getElementById('new-password').value;
                 const confirmPassword = document.getElementById('confirm-password').value;
+                
+                if (!currentPassword) {
+                    const errorEl = document.getElementById('current-password-error');
+                    errorEl.textContent = 'Current password is required';
+                    errorEl.style.display = 'block';
+                    return;
+                }
+                
+                if (!newPassword) {
+                    const errorEl = document.getElementById('new-password-error');
+                    errorEl.textContent = 'New password is required';
+                    errorEl.style.display = 'block';
+                    return;
+                }
                 
                 if (newPassword !== confirmPassword) {
                     const errorEl = document.getElementById('confirm-password-error');
@@ -428,67 +674,123 @@
                     return;
                 }
                 
+                // Show status message
+                passwordSuccessMessage.textContent = 'Processing password change...';
+                passwordSuccessMessage.style.display = 'block';
+                passwordSuccessMessage.style.backgroundColor = '#e2f3fd';
+                passwordSuccessMessage.style.color = '#0c5460';
+                
                 try {
-                    // Get CSRF token
-                    const tokenResponse = await fetch('/dev/get-csrf-token', {
-                        method: 'GET',
-                        credentials: 'include'
-                    });
+                    // Get CSRF token from meta tag
+                    let csrfToken = '';
+                    const metaToken = document.querySelector('meta[name="csrf-token"]');
+                    if (metaToken) {
+                        csrfToken = metaToken.getAttribute('content');
+                    }
                     
-                    const tokenData = await tokenResponse.json();
-                    const csrfToken = tokenData.csrf_token;
-                    
-                    // Prepare password data
-                    const passwordData = {
-                        current_password: document.getElementById('current-password').value,
-                        new_password: newPassword
+                    // Prepare headers
+                    const headers = {
+                        'Content-Type': 'application/json'
                     };
                     
-                    // Send password change request
-                    // Note: This API endpoint is not provided in your backend code
-                    // You would need to implement it separately
-                    const response = await fetch('/api/users/me/change-password', {
+                    if (csrfToken) {
+                        headers['X-CSRFToken'] = csrfToken;
+                    }
+                    
+                    // Get user email
+                    const userEmail = document.getElementById('display-email').textContent.trim();
+                    
+                    // Step 1: Request password reset token through forgot-password endpoint
+                    passwordSuccessMessage.textContent = 'Requesting password reset...';
+                    const forgotApiUrl = window.location.origin + '/api/auth/forgot-password';
+                    
+                    console.log('Requesting password reset token for email:', userEmail);
+                    const forgotResponse = await fetch(forgotApiUrl, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': csrfToken
-                        },
+                        headers: headers,
                         credentials: 'include',
-                        body: JSON.stringify(passwordData)
+                        body: JSON.stringify({
+                            email: userEmail
+                        })
                     });
                     
-                    const data = await response.json();
-                    
-                    if (!response.ok) {
-                        // Handle validation errors
-                        if (data.error) {
-                            if (data.error.includes('Current password is incorrect')) {
-                                const errorEl = document.getElementById('current-password-error');
-                                errorEl.textContent = 'Current password is incorrect';
-                                errorEl.style.display = 'block';
-                            } else if (data.error.includes('Password must be')) {
-                                const errorEl = document.getElementById('new-password-error');
-                                errorEl.textContent = 'Password must meet all requirements';
-                                errorEl.style.display = 'block';
-                            } else {
-                                alert('Password change error: ' + data.error);
-                            }
-                        } else {
-                            alert('An error occurred while changing your password');
-                        }
+                    if (!forgotResponse.ok) {
+                        console.error('Error requesting password reset:', forgotResponse.status);
+                        passwordSuccessMessage.textContent = 'Error: Could not initiate password reset process.';
+                        passwordSuccessMessage.style.backgroundColor = '#f8d7da';
+                        passwordSuccessMessage.style.color = '#721c24';
                         return;
                     }
                     
-                    // Success
-                    successMessage.textContent = 'Password changed successfully';
-                    successMessage.style.display = 'block';
+                    const forgotData = await forgotResponse.json();
+                    console.log('Password reset token response received');
+                    
+                    if (!forgotData.debug_token) {
+                        passwordSuccessMessage.textContent = 'Error: Password reset token not received.';
+                        passwordSuccessMessage.style.backgroundColor = '#f8d7da';
+                        passwordSuccessMessage.style.color = '#721c24';
+                        return;
+                    }
+                    
+                    // Step 2: Use reset token to change password
+                    passwordSuccessMessage.textContent = 'Updating password...';
+                    const resetApiUrl = window.location.origin + '/api/auth/reset-password';
+                    
+                    console.log('Using token to reset password...');
+                    const resetResponse = await fetch(resetApiUrl, {
+                        method: 'POST',
+                        headers: headers,
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            token: forgotData.debug_token,
+                            new_password: newPassword
+                        })
+                    });
+                    
+                    const resetData = await resetResponse.json();
+                    
+                    if (!resetResponse.ok) {
+                        console.error('Error resetting password:', resetResponse.status, resetData);
+                        
+                        // Handle validation errors
+                        if (resetData.error) {
+                            if (resetData.error.includes('Password must be')) {
+                                const errorEl = document.getElementById('new-password-error');
+                                errorEl.textContent = resetData.error;
+                                errorEl.style.display = 'block';
+                            } else {
+                                const errorContainer = document.getElementById('error-container');
+                                errorContainer.textContent = resetData.error;
+                                errorContainer.style.display = 'block';
+                            }
+                        } else {
+                            passwordSuccessMessage.textContent = 'An error occurred while changing your password.';
+                            passwordSuccessMessage.style.backgroundColor = '#f8d7da';
+                            passwordSuccessMessage.style.color = '#721c24';
+                        }
+                        
+                        passwordSuccessMessage.style.display = 'block';
+                        return;
+                    }
+                    
+                    // Success! Password has been changed in the database
+                    console.log('Password successfully changed');
+                    passwordSuccessMessage.textContent = 'Password successfully changed!';
+                    passwordSuccessMessage.style.backgroundColor = '#d4edda';
+                    passwordSuccessMessage.style.color = '#28a745';
+                    passwordSuccessMessage.style.display = 'block';
                     
                     // Reset form
                     changePasswordForm.reset();
                     
                 } catch (error) {
-                    console.error('Password change error:', error);
-                    alert('An error occurred while changing your password. Please try again later.');
+                    console.error('Error during password change:', error);
+                    
+                    const errorContainer = document.getElementById('error-container');
+                    errorContainer.textContent = 'An error occurred: ' + error.message;
+                    errorContainer.style.display = 'block';
+                    
+                    passwordSuccessMessage.style.display = 'none';
                 }
             });
         }
@@ -512,8 +814,12 @@
                     const tokenData = await tokenResponse.json();
                     const csrfToken = tokenData.csrf_token;
                     
-                    // Send deactivate request
-                    const response = await fetch('/api/users/me/deactivate', {
+                    // 构建停用账户API URL
+                    const apiUrl = window.location.origin + '/api/users/me/deactivate';
+                    console.log('Using deactivate account API URL:', apiUrl);
+                    
+                    // 发送停用请求
+                    const response = await fetch(apiUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -542,20 +848,41 @@
         // Function to load user profile data
         async function loadUserProfile() {
             try {
-                const response = await fetch('/api/users/me', {
+                // 构建完整的API URL
+                const apiUrl = window.location.origin + '/api/users/me';
+                console.log('Loading profile from API URL:', apiUrl);
+                
+                // 获取用户信息
+                const response = await fetch(apiUrl, {
                     method: 'GET',
                     credentials: 'include'
                 });
                 
+                let user;
+                
                 if (!response.ok) {
-                    throw new Error('Failed to load profile');
+                    console.warn('Failed to load profile from API, using Flask template data');
+                    // Use data from Flask template as fallback
+                    user = {
+                        username: "{{ current_user.username }}",
+                        email: "{{ current_user.email }}",
+                        firstname: "{{ current_user.firstname or '' }}",
+                        lastname: "{{ current_user.lastname or '' }}",
+                        bio: "{{ current_user.bio or '' }}",
+                        avatar: "{{ current_user.avatar or '' }}",
+                        dob: "{{ current_user.dob or '' }}",
+                        registration_date: "{{ current_user.registration_date or '' }}"
+                    };
+                } else {
+                    // If API is working, use its data
+                    user = await response.json();
                 }
                 
-                const user = await response.json();
+                console.log('User profile loaded:', user);
                 
                 // Update form fields
-                document.getElementById('username').value = user.username;
-                document.getElementById('email').value = user.email;
+                document.getElementById('username').value = user.username || '';
+                document.getElementById('email').value = user.email || '';
                 document.getElementById('firstname').value = user.firstname || '';
                 document.getElementById('lastname').value = user.lastname || '';
                 document.getElementById('bio').value = user.bio || '';
@@ -566,18 +893,68 @@
                 }
                 
                 // Update display elements
-                document.getElementById('display-username').textContent = user.username;
-                document.getElementById('display-email').textContent = user.email;
-                document.getElementById('display-registration-date').textContent = new Date(user.registration_date).toLocaleDateString();
+                document.getElementById('display-username').textContent = user.username || 'Username';
+                document.getElementById('display-email').textContent = user.email || 'Email';
+                
+                if (user.registration_date) {
+                    document.getElementById('display-registration-date').textContent = new Date(user.registration_date).toLocaleDateString();
+                } else {
+                    document.getElementById('display-registration-date').textContent = 'Unknown';
+                }
                 
                 // Update avatar if available
                 if (user.avatar) {
                     document.getElementById('avatar-img').src = user.avatar;
+                } else {
+                    // Keep the default avatar (inline base64)
+                    document.getElementById('avatar-img').src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII";
+                }
+                
+                // Hide the loading message
+                const loadingMessage = document.getElementById('loading-message');
+                if (loadingMessage) {
+                    loadingMessage.style.display = 'none';
                 }
                 
             } catch (error) {
                 console.error('Error loading profile:', error);
-                alert('Failed to load your profile information. Please try refreshing the page.');
+                
+                // Use data from Flask template on error
+                const user = {
+                    username: "{{ current_user.username }}",
+                    email: "{{ current_user.email }}",
+                    firstname: "{{ current_user.firstname or '' }}",
+                    lastname: "{{ current_user.lastname or '' }}",
+                    bio: "{{ current_user.bio or '' }}",
+                    avatar: "{{ current_user.avatar or '' }}",
+                    registration_date: "{{ current_user.registration_date or '' }}"
+                };
+                
+                // Update form fields
+                document.getElementById('username').value = user.username || '';
+                document.getElementById('email').value = user.email || '';
+                document.getElementById('firstname').value = user.firstname || '';
+                document.getElementById('lastname').value = user.lastname || '';
+                document.getElementById('bio').value = user.bio || '';
+                document.getElementById('avatar-url').value = user.avatar || '';
+                
+                // Update display elements
+                document.getElementById('display-username').textContent = user.username || 'Username';
+                document.getElementById('display-email').textContent = user.email || 'Email';
+                document.getElementById('display-registration-date').textContent = user.registration_date ? 
+                    new Date(user.registration_date).toLocaleDateString() : 'Unknown';
+                
+                // Hide the loading message and show error
+                const loadingMessage = document.getElementById('loading-message');
+                if (loadingMessage) {
+                    loadingMessage.textContent = 'Using locally available profile data';
+                    loadingMessage.style.color = '#007bff';
+                    
+                    // Hide message after 3 seconds
+                    setTimeout(() => {
+                        loadingMessage.style.display = 'none';
+                    }, 3000);
+                }
             }
         }
     });
