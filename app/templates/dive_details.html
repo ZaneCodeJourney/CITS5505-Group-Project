@@ -302,7 +302,7 @@
             
             <div class="meta-item">
                 <span class="meta-label">Max Depth</span>
-                <span class="meta-value">{{ dive.max_depth }} meters</span>
+                <span class="meta-value">{{ dive.max_depth|round(1) }} meters</span>
             </div>
             
             {% if dive.visibility %}
@@ -340,14 +340,14 @@
             {% if dive.suit_thickness %}
             <div class="meta-item">
                 <span class="meta-label">Suit Thickness</span>
-                <span class="meta-value">{{ dive.suit_thickness }} mm</span>
+                <span class="meta-value">{{ dive.suit_thickness|round(1) }} mm</span>
             </div>
             {% endif %}
             
             {% if dive.weight %}
             <div class="meta-item">
                 <span class="meta-label">Weight</span>
-                <span class="meta-value">{{ dive.weight }} kg</span>
+                <span class="meta-value">{{ dive.weight|round(1) }} kg</span>
             </div>
             {% endif %}
             
@@ -368,7 +368,7 @@
             {% if dive.tank_size %}
             <div class="meta-item">
                 <span class="meta-label">Tank Size</span>
-                <span class="meta-value">{{ dive.tank_size }} L</span>
+                <span class="meta-value">{{ dive.tank_size|round(1) }} L</span>
             </div>
             {% endif %}
             
@@ -382,7 +382,7 @@
             {% if dive.o2_percentage %}
             <div class="meta-item">
                 <span class="meta-label">O2 Percentage</span>
-                <span class="meta-value">{{ dive.o2_percentage }}%</span>
+                <span class="meta-value">{{ dive.o2_percentage|round(1) }}%</span>
             </div>
             {% endif %}
         </div>
