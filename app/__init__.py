@@ -47,6 +47,9 @@ def create_app(config_class=Config):
     from app.api import bp as api_bp
     app.register_blueprint(api_bp)
     
+    # Make sure API modules are imported
+    from app.api import routes, auth, users, shared_routes
+    
     # Feature Blueprints
     from app.dives import dives_bp
     app.register_blueprint(dives_bp)
