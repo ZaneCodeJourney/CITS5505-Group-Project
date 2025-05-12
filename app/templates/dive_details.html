@@ -428,42 +428,8 @@
             <span class="close-modal">&times;</span>
         </div>
         <div class="modal-body">
-            <p>Create a link to share this dive log with others.</p>
+            <p>Share this dive log with a specific user by entering their username below:</p>
             
-            {% if shares %}
-            <h4>Existing Share Links</h4>
-            {% for share in shares %}
-            <div class="existing-share">
-                <div class="link-share">
-                    <input type="text" class="form-control" value="{{ url_for('main.shared_dive', token=share.token, _external=True) }}" readonly>
-                    <button class="btn btn-secondary copy-btn" data-link="{{ url_for('main.shared_dive', token=share.token, _external=True) }}">Copy</button>
-                </div>
-                <div>
-                    {% if share.expiration_time %}
-                    <small>Expires: {{ share.expiration_time.strftime('%Y-%m-%d') }}</small>
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
-            {% endif %}
-            
-            <h4>Create New Share Link</h4>
-            <div class="expiration-options">
-                <div class="radio-option">
-                    <input type="radio" id="expire-7days" name="expiration" value="7" checked>
-                    <label for="expire-7days">Expire after 7 days</label>
-                </div>
-                <div class="radio-option">
-                    <input type="radio" id="expire-30days" name="expiration" value="30">
-                    <label for="expire-30days">Expire after 30 days</label>
-                </div>
-                <div class="radio-option">
-                    <input type="radio" id="expire-never" name="expiration" value="never">
-                    <label for="expire-never">Never expire</label>
-                </div>
-            </div>
-            
-            <h4>Share with Specific User</h4>
             <div class="share-with-user">
                 <div class="input-group">
                     <input type="text" id="share-username" class="form-control" placeholder="Enter username">
@@ -473,8 +439,7 @@
             </div>
         </div>
         <div class="modal-footer">
-            <button id="create-share-btn" class="btn btn-primary">Create Share Link</button>
-            <button class="btn btn-secondary close-btn">Cancel</button>
+            <button class="btn btn-secondary close-btn">Close</button>
         </div>
     </div>
 </div>
@@ -499,7 +464,6 @@
         const shareDiveBtn = document.getElementById('share-dive-btn');
         const closeModal = document.querySelector('.close-modal');
         const closeBtn = document.querySelector('.close-btn');
-        const createShareBtn = document.getElementById('create-share-btn');
         
         if (shareDiveBtn) {
             shareDiveBtn.addEventListener('click', function() {
@@ -525,60 +489,6 @@
                 shareModal.style.display = 'none';
             }
         });
-        
-        // Setup copy buttons
-        const copyButtons = document.querySelectorAll('.copy-btn');
-        copyButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const linkInput = this.previousElementSibling;
-                linkInput.select();
-                document.execCommand('copy');
-                
-                // Show feedback
-                const originalText = this.textContent;
-                this.textContent = 'Copied!';
-                
-                setTimeout(() => {
-                    this.textContent = originalText;
-                }, 2000);
-            });
-        });
-        
-        // Create share link functionality
-        if (createShareBtn) {
-            createShareBtn.addEventListener('click', async function() {
-                const expirationValue = document.querySelector('input[name="expiration"]:checked').value;
-                
-                try {
-                    // Get CSRF token
-                    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                    
-                    // Make API request to create share link
-                    const response = await fetch('/shared/dives/{{ dive.id }}/share', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': token
-                        },
-                        body: JSON.stringify({
-                            expiration_days: expirationValue === 'never' ? null : parseInt(expirationValue)
-                        })
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error('Failed to create share link');
-                    }
-                    
-                    const data = await response.json();
-                    
-                    // Reload the page to show the new share link
-                    window.location.reload();
-                } catch (error) {
-                    console.error('Error creating share link:', error);
-                    alert('Failed to create share link. Please try again.');
-                }
-            });
-        }
         
         // Share with specific user functionality
         const shareWithUserBtn = document.getElementById('share-with-user-btn');
