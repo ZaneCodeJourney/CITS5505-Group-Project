@@ -37,3 +37,17 @@ def profile():
     if not current_user.is_authenticated:
         return redirect(url_for('auth.login'))
     return render_template('auth/profile.html', title='My Profile')
+
+@bp.route('/sharkwarning')
+def sharkwarning():
+    # Redirect to login if not logged in
+    if not current_user.is_authenticated:
+        return redirect(url_for('auth.login'))
+    return render_template('auth/sharkwarning.html', title='Shark Warnings')
+
+@bp.route('/reportshark')
+def reportshark():
+    # Redirect to login if not logged in
+    if not current_user.is_authenticated:
+        return redirect(url_for('auth.login'))
+    return render_template('auth/reportshark.html', title='Report Shark Sighting')
