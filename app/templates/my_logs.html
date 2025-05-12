@@ -33,6 +33,7 @@
     /* Share modal styling */
     .share-with-user {
         margin-top: 15px;
+        position: relative;
     }
     
     .input-group {
@@ -70,6 +71,72 @@
     
     .share-feedback {
         margin-top: 15px;
+    }
+    
+    /* User suggestions styling */
+    .user-suggestions {
+        max-height: 150px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-top: -5px;
+        margin-bottom: 10px;
+        display: none;
+        z-index: 2000;
+        position: absolute;
+        width: 100%;
+        background-color: white;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .suggestion-item {
+        padding: 8px 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .suggestion-item:last-child {
+        border-bottom: none;
+    }
+    
+    .suggestion-item:hover {
+        background-color: #f5f5f5;
+    }
+    
+    .suggestion-username {
+        font-weight: bold;
+    }
+    
+    .suggestion-email {
+        color: #666;
+        font-size: 0.9em;
+        margin-left: 5px;
+    }
+    
+    /* Invite section styling */
+    .invite-section {
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+    }
+    
+    .invite-section h4 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        color: #555;
+    }
+    
+    .invite-section p {
+        margin-bottom: 15px;
+        color: #666;
+    }
+    
+    #copy-invite-link {
+        background-color: #6c757d;
+    }
+    
+    #copy-invite-link:hover {
+        background-color: #5a6268;
     }
 </style>
 {% endblock %}
@@ -311,13 +378,23 @@
         <div class="modal-body">
             <div class="share-with-user">
                 <div class="input-group">
-                    <input type="text" id="share-username" class="form-control" placeholder="Enter username">
+                    <input type="text" id="share-recipient" class="form-control" placeholder="Enter username or email address">
                     <button id="share-with-user-btn" class="btn btn-primary">Share</button>
                 </div>
+                <div id="user-suggestions" class="user-suggestions"></div>
                 <div class="share-instructions">
-                    <p>Enter a username of a user to share this dive log.</p>
+                    <p>Enter a username or email address to share this dive log.</p>
                 </div>
                 <div id="share-user-feedback" class="share-feedback"></div>
+                <div id="invite-section" class="invite-section" style="display: none;">
+                    <hr>
+                    <h4>Invite to Dive Logger</h4>
+                    <p>This user doesn't have an account yet. Invite them to join!</p>
+                    <div class="input-group">
+                        <input type="text" id="invite-link" class="form-control" value="" readonly>
+                        <button id="copy-invite-link" class="btn btn-secondary">Copy</button>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="modal-footer">
@@ -610,14 +687,119 @@ function setupModals() {
     // Share with specific user functionality
     const shareWithUserBtn = document.getElementById('share-with-user-btn');
     const shareUserFeedback = document.getElementById('share-user-feedback');
+    const userSuggestions = document.getElementById('user-suggestions');
+    const shareRecipient = document.getElementById('share-recipient');
+    const inviteSection = document.getElementById('invite-section');
+    const inviteLink = document.getElementById('invite-link');
+    const copyInviteBtn = document.getElementById('copy-invite-link');
+    
+    let suggestionTimeout;
+    
+    // User search functionality
+    if (shareRecipient) {
+        // Focus event - when input gets focus, show suggestions if there are any
+        shareRecipient.addEventListener('focus', function() {
+            if (userSuggestions.children.length > 0) {
+                userSuggestions.style.display = 'block';
+            }
+        });
+        
+        shareRecipient.addEventListener('input', function() {
+            const query = this.value.trim();
+            
+            // Clear previous timeout
+            if (suggestionTimeout) {
+                clearTimeout(suggestionTimeout);
+            }
+            
+            // Hide suggestions if input is empty
+            if (!query) {
+                userSuggestions.style.display = 'none';
+                return;
+            }
+            
+            // Debounce the search to avoid too many requests
+            suggestionTimeout = setTimeout(async function() {
+                if (query.length < 2) return;
+                
+                try {
+                    // Get CSRF token
+                    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    
+                    // Make API request to search users
+                    const response = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`);
+                    
+                    if (!response.ok) {
+                        console.error('Error searching users:', await response.text());
+                        return;
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Display user suggestions
+                    userSuggestions.innerHTML = '';
+                    
+                    if (data.users.length === 0) {
+                        userSuggestions.style.display = 'none';
+                        return;
+                    }
+                    
+                    // Create suggestion items
+                    data.users.forEach(user => {
+                        const item = document.createElement('div');
+                        item.className = 'suggestion-item';
+                        item.innerHTML = `
+                            <span class="suggestion-username">${user.username}</span>
+                            <span class="suggestion-email">${user.email}</span>
+                        `;
+                        
+                        // Select user when clicked
+                        item.addEventListener('click', function() {
+                            // Use email for emails, username for usernames
+                            shareRecipient.value = user.email.includes('@') ? user.email : user.username;
+                            userSuggestions.style.display = 'none';
+                        });
+                        
+                        userSuggestions.appendChild(item);
+                    });
+                    
+                    userSuggestions.style.display = 'block';
+                } catch (error) {
+                    console.error('Error searching users:', error);
+                }
+            }, 300);
+        });
+        
+        // Handle clicks outside to hide suggestions
+        document.addEventListener('click', function(e) {
+            if (!shareRecipient.contains(e.target) && !userSuggestions.contains(e.target)) {
+                userSuggestions.style.display = 'none';
+            }
+        });
+    }
+    
+    // Copy invite link functionality
+    if (copyInviteBtn) {
+        copyInviteBtn.addEventListener('click', function() {
+            inviteLink.select();
+            document.execCommand('copy');
+            
+            const originalText = this.textContent;
+            this.textContent = 'Copied!';
+            
+            setTimeout(() => {
+                this.textContent = originalText;
+            }, 2000);
+        });
+    }
     
     if (shareWithUserBtn) {
         shareWithUserBtn.addEventListener('click', async function() {
-            const username = document.getElementById('share-username').value.trim();
+            const recipient = shareRecipient.value.trim();
             const diveId = shareModal.dataset.diveId;
             
-            if (!username) {
-                shareUserFeedback.innerHTML = '<div class="alert alert-warning">Please enter a username</div>';
+            if (!recipient) {
+                shareUserFeedback.innerHTML = '<div class="alert alert-warning">Please enter a username or email address</div>';
                 return;
             }
             
@@ -629,6 +811,9 @@ function setupModals() {
                 // Get CSRF token
                 const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                 
+                // Hide invite section if previously shown
+                inviteSection.style.display = 'none';
+                
                 // Make API request to share with user
                 const response = await fetch(`/api/shared/dives/${diveId}/share-with-user`, {
                     method: 'POST',
@@ -637,11 +822,26 @@ function setupModals() {
                         'X-CSRFToken': token
                     },
                     body: JSON.stringify({
-                        username: username
+                        username: recipient
                     })
                 });
                 
                 const data = await response.json();
+                
+                if (response.status === 404) {
+                    // Handle user not found errors
+                    // Show the invite section
+                    inviteSection.style.display = 'block';
+                    
+                    // Generate invite link
+                    const signupURL = `${window.location.origin}/register`;
+                    inviteLink.value = signupURL;
+                    
+                    // Show error message
+                    const recipientType = recipient.includes('@') ? 'email address' : 'username';
+                    shareUserFeedback.innerHTML = `<div class="alert alert-warning">No user found with this ${recipientType}. You can invite them to sign up!</div>`;
+                    return;
+                }
                 
                 if (!response.ok) {
                     shareUserFeedback.innerHTML = `<div class="alert alert-danger">${data.error || 'Failed to share dive. Please try again.'}</div>`;
@@ -649,10 +849,10 @@ function setupModals() {
                 }
                 
                 // Show success message
-                shareUserFeedback.innerHTML = `<div class="alert alert-success">Dive successfully shared with ${username}</div>`;
+                shareUserFeedback.innerHTML = `<div class="alert alert-success">${data.message || 'Dive successfully shared!'}</div>`;
                 
                 // Clear input
-                document.getElementById('share-username').value = '';
+                shareRecipient.value = '';
                 
             } catch (error) {
                 console.error('Error sharing with user:', error);
