@@ -49,7 +49,7 @@
                         <div class="detail-item">
                             <span class="detail-icon">📏</span>
                             <span class="detail-label">Max Depth:</span>
-                            <span class="detail-value">{{ shared_dive.dive.max_depth }}m</span>
+                            <span class="detail-value">{{ shared_dive.dive.max_depth|round(1) }}m</span>
                         </div>
                         {% if shared_dive.dive.visibility %}
                         <div class="detail-item">
@@ -84,7 +84,7 @@
                         <div class="profile-stats">
                             <div class="stat-box">
                                 <span class="stat-label">Max Depth</span>
-                                <span class="stat-value">{{ shared_dive.dive.max_depth }} m</span>
+                                <span class="stat-value">{{ shared_dive.dive.max_depth|round(1) }} m</span>
                             </div>
                             <div class="stat-box">
                                 <span class="stat-label">Dive Time</span>
