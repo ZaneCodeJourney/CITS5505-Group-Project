@@ -27,6 +27,7 @@
                             <li><a href="#" id="logout-button">Logout</a></li>
                         </ul>
                     </li>
+                    <li><a href="{{ url_for('auth.sharkwarning') }}" class="shark-btn">🦈 Shark</a></li>
                 {% else %}
                     <li><a href="/auth/login">Login</a></li>
                     <li><a href="/auth/register">Register</a></li>
@@ -126,6 +127,23 @@
         
         .dropdown-menu a:hover {
             background-color: #f5f5f5;
+        }
+        
+        /* Shark button styling */
+        .shark-btn {
+            background-color: #ff3b30;
+            color: white !important;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        
+        .shark-btn:hover {
+            background-color: #d43b34;
+            transform: scale(1.05);
+            box-shadow: 0 2px 10px rgba(255, 59, 48, 0.4);
         }
     </style>
 </body>
