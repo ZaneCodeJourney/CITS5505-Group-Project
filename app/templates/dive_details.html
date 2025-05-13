@@ -546,7 +546,7 @@
 
     {% if not is_shared and dive.user_id == current_user.id %}
     <div class="action-buttons">
-        <a href="/edit-dive/{{ dive.id }}" class="btn btn-primary">Edit Dive</a>
+        <a href="/my-logs?edit_dive={{ dive.id }}" class="btn btn-primary">Edit Dive</a>
         <button id="share-dive-btn" class="btn btn-secondary">Share Dive</button>
         <button id="delete-dive-btn" class="btn btn-danger">Delete</button>
     </div>
