@@ -7,32 +7,6 @@
     <title>{% if title %}{{ title }} - {% endif %}DiveLogger</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     {% block styles %}{% endblock %}
-    <style>
-        /* Force override shark button style */
-        .nav-btn-danger {
-            background-color: rgba(255, 255, 255, 0.3) !important;
-            color: white !important;
-            border: 1px solid rgba(255, 255, 255, 0.5) !important;
-            box-shadow: none !important;
-        }
-        
-        .nav-btn-danger:hover {
-            background-color: rgba(255, 255, 255, 0.4) !important;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15) !important;
-        }
-        
-        .shark-icon {
-            font-size: 1.2em;
-            margin-right: 4px;
-            display: inline-block;
-            animation: gentle-bounce 2s infinite ease-in-out;
-        }
-        
-        @keyframes gentle-bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-3px); }
-        }
-    </style>
 </head>
 <body>
     <header>
@@ -53,7 +27,7 @@
                             <li><a href="#" id="logout-button">Logout</a></li>
                         </ul>
                     </li>
-                    <li><a href="{{ url_for('auth.sharkwarning') }}" class="nav-btn-danger"><span class="shark-icon">🦈</span> Shark</a></li>
+                    <li><a href="{{ url_for('auth.sharkwarning') }}" class="nav-btn-danger">🦈 Shark</a></li>
                 {% else %}
                     <li><a href="/auth/login" class="nav-btn">Login</a></li>
                     <li><a href="/auth/register" class="nav-btn-primary">Register</a></li>
@@ -116,49 +90,5 @@
     <script src="{{ url_for('static', filename='js/csrf-handler.js') }}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     {% block scripts %}{% endblock %}
-
-    <style>
-        /* Dropdown menu styling */
-        .user-menu {
-            position: relative;
-        }
-        
-        .dropdown-menu {
-            display: none;
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background-color: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            min-width: 150px;
-            z-index: 1000;
-            margin-top: 5px;
-            overflow: hidden;
-        }
-        
-        .dropdown-menu.show {
-            display: block;
-        }
-        
-        .dropdown-menu li {
-            display: block;
-            margin: 0;
-        }
-        
-        .dropdown-menu a {
-            display: block;
-            padding: 10px 15px;
-            color: #333;
-            text-decoration: none;
-            white-space: nowrap;
-            border-radius: 0;
-        }
-        
-        .dropdown-menu a:hover {
-            background-color: #f5f5f5;
-            transform: none;
-        }
-    </style>
 </body>
 </html> 
