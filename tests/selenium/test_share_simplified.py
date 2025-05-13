@@ -17,7 +17,7 @@ from flask_login import LoginManager
 from flask import session
 
 class TestConfig(Config):
-    """测试配置"""
+    """Test Configuration"""
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
@@ -25,12 +25,12 @@ class TestConfig(Config):
     SERVER_NAME = 'localhost:5050'
 
 class ShareFunctionalityTest(unittest.TestCase):
-    """结合API调用和Selenium的Share功能测试"""
+    """Combined API call and Selenium tests for the Share functionality"""
     
     @classmethod
     def setUpClass(cls):
-        """设置测试环境"""
-        # 创建Chrome浏览器
+        """Set up the test environment"""
+        # Create Chrome browser
         chrome_options = Options()
         chrome_options.add_argument('--headless')
         chrome_options.add_argument('--no-sandbox')
@@ -41,16 +41,16 @@ class ShareFunctionalityTest(unittest.TestCase):
             options=chrome_options
         )
         
-        # 创建Flask应用和测试数据库
+        # Create Flask application and test database
         cls.app = create_app(TestConfig)
         cls.app_context = cls.app.app_context()
         cls.app_context.push()
         cls.client = cls.app.test_client()
         
-        # 创建数据库
+        # Create database
         db.create_all()
         
-        # 创建测试用户
+        # Create test users
         cls.test_user = User(
             username='testuser',
             email='test@example.com',
@@ -75,7 +75,7 @@ class ShareFunctionalityTest(unittest.TestCase):
         db.session.add(cls.recipient)
         db.session.commit()
         
-        # 创建测试潜水记录
+        # Create test dive records
         cls.dive1 = Dive(
             user_id=cls.test_user.id,
             dive_number=1,
@@ -104,7 +104,7 @@ class ShareFunctionalityTest(unittest.TestCase):
         db.session.add(cls.dive2)
         db.session.commit()
     
-        # 在单独线程中启动Flask应用
+        # Start Flask application in a separate thread
         def start_flask():
             cls.app.run(host='127.0.0.1', port=5050, use_reloader=False)
         
@@ -113,79 +113,79 @@ class ShareFunctionalityTest(unittest.TestCase):
         cls.flask_thread.daemon = True
         cls.flask_thread.start()
         
-        # 等待服务器启动
+        # Wait for server to start
         time.sleep(2)
     
     @classmethod
     def tearDownClass(cls):
-        """清理测试环境"""
+        """Clean up the test environment"""
         cls.driver.quit()
         db.session.remove()
         db.drop_all()
         cls.app_context.pop()
     
     def tearDown(self):
-        """每个测试后的清理"""
-        # 清除所有分享记录（保留初始数据）
+        """Clean up after each test"""
+        # Clear all share records (retain initial data)
         Share.query.delete()
         db.session.commit()
     
     def create_session_for_user(self, user_id):
-        """创建测试用户的会话"""
+        """Create session for the test user"""
         with self.app.test_request_context():
             user = User.query.get(user_id)
             flask_login.login_user(user)
-            # 保存会话数据
+            # Save session data
             return dict(session)
     
     def login_api(self, email, password, client=None):
-        """API登录方法"""
+        """API login method"""
         if client is None:
             client = self.client
         
-        # 获取用户ID
+        # Get user ID
         user = User.query.filter_by(email=email).first()
         if not user:
-            raise ValueError(f"找不到邮箱为 {email} 的用户")
+            raise ValueError(f"User with email {email} not found")
             
         session_data = self.create_session_for_user(user.id)
         
-        # 创建一个新客户端实例，该实例有会话状态
+        # Create a new client instance with session state
         client = self.app.test_client()
         with client.session_transaction() as sess:
             for key, value in session_data.items():
                 sess[key] = value
         
-        # 测试是否正确登录
+        # Test if login was successful
         response = client.get('/my-logs')
         self.assertEqual(response.status_code, 200)
         
         return client
     
     def test_01_api_share_with_user(self):
-        """测试：API分享潜水日志给特定用户"""
-        print("\n测试：API分享潜水日志给特定用户")
+        """Test: API sharing dive log with a specific user"""
+        print("\nTest: API sharing dive log with a specific user")
         
-        # 登录测试用户
+        # Login as test user
         client = self.login_api('test@example.com', 'Password123')
         
-        # 使用API分享潜水日志
+        # Use API to share dive log
         share_response = client.post(
             f'/api/shared/dives/{self.dive1.id}/share-with-user',
             json={'username': 'recipient'},
             headers={'Content-Type': 'application/json'}
         )
         
-        # 打印响应内容以进行调试
-        print(f"API响应: {share_response.status_code}")
-        print(f"响应内容: {share_response.data.decode('utf-8')}")
+        # Print response for debugging
+        print(f"API Response: {share_response.status_code}")
+        print(f"Response Content: {share_response.data.decode('utf-8')}")
         
-        # 检查API响应
+        # Check API response
         self.assertEqual(share_response.status_code, 201)
         response_data = json.loads(share_response.data)
         self.assertIn('success', response_data)
         
-        # 验证分享记录已创建
+        # Verify share record was created
         share = Share.query.filter_by(
             dive_id=self.dive1.id,
             creator_user_id=self.test_user.id,
@@ -193,41 +193,41 @@ class ShareFunctionalityTest(unittest.TestCase):
         ).first()
         
         self.assertIsNotNone(share)
-        print("✓ API分享成功创建")
+        print("✓ API share successfully created")
         
-        # 使用Selenium查看分享界面元素
+        # Use Selenium to view the sharing interface elements
         try:
-            # 这里使用正确的端口
+            # Using the correct port
             self.driver.get('http://localhost:5050/auth/login')
             
-            # 截图登录页面
+            # Screenshot the login page
             self.driver.save_screenshot('login_page.png')
             
-            print("✓ 成功加载登录页面")
+            print("✓ Successfully loaded login page")
         except Exception as e:
-            print(f"× Selenium测试失败: {e}")
+            print(f"× Selenium test failed: {e}")
     
     def test_02_api_create_public_link(self):
-        """测试：API创建公共分享链接"""
-        print("\n测试：API创建公共分享链接")
+        """Test: API creating public share link"""
+        print("\nTest: API creating public share link")
         
-        # 登录测试用户
+        # Login as test user
         client = self.login_api('test@example.com', 'Password123')
         
-        # 使用API创建公共链接
+        # Use API to create public link
         share_response = client.post(
             f'/api/shared/dives/{self.dive2.id}/share',
             json={'expiration_days': 7},
             headers={'Content-Type': 'application/json'}
         )
         
-        # 检查API响应
+        # Check API response
         self.assertEqual(share_response.status_code, 201)
         data = json.loads(share_response.data)
         self.assertIn('share_link', data)
         self.assertIn('token', data)
         
-        # 验证分享记录已创建
+        # Verify share record was created
         share = Share.query.filter_by(
             dive_id=self.dive2.id,
             creator_user_id=self.test_user.id,
@@ -235,33 +235,33 @@ class ShareFunctionalityTest(unittest.TestCase):
         ).first()
         
         self.assertIsNotNone(share)
-        print(f"✓ 公共分享链接成功创建: {data['share_link']}")
+        print(f"✓ Public share link successfully created: {data['share_link']}")
     
     def test_03_api_share_with_nonexistent_user(self):
-        """测试：API分享给不存在的用户"""
-        print("\n测试：API分享给不存在的用户")
+        """Test: API sharing with nonexistent user"""
+        print("\nTest: API sharing with nonexistent user")
         
-        # 登录测试用户
+        # Login as test user
         client = self.login_api('test@example.com', 'Password123')
         
-        # 使用API分享给不存在的用户
+        # Use API to share with nonexistent user
         share_response = client.post(
             f'/api/shared/dives/{self.dive1.id}/share-with-user',
             json={'username': 'nonexistentuser'},
             headers={'Content-Type': 'application/json'}
         )
         
-        # 检查API响应
+        # Check API response
         self.assertEqual(share_response.status_code, 404)
         data = json.loads(share_response.data)
         self.assertIn('error', data)
-        print(f"✓ API正确返回404错误: {data['error']}")
+        print(f"✓ API correctly returned 404 error: {data['error']}")
     
     def test_04_api_recipient_view_shared(self):
-        """测试：接收者查看分享给他的潜水日志"""
-        print("\n测试：接收者查看分享给他的潜水日志")
+        """Test: Recipient viewing shared dive logs"""
+        print("\nTest: Recipient viewing shared dive logs")
         
-        # 创建分享记录
+        # Create share record
         share = Share(
             dive_id=self.dive1.id,
             creator_user_id=self.test_user.id,
@@ -273,12 +273,12 @@ class ShareFunctionalityTest(unittest.TestCase):
         db.session.add(share)
         db.session.commit()
         
-        # 登录接收者
+        # Login as recipient
         client = self.login_api('recipient@example.com', 'Password123')
         
-        # 验证数据库中的分享记录
+        # Verify share records in database
         with self.app.app_context():
-            # 查询分享给接收者的潜水记录
+            # Query dive logs shared with recipient
             shared_dives = db.session.query(Dive).\
                 join(Share, Dive.id == Share.dive_id).\
                 filter(Share.shared_with_user_id == self.recipient.id).\
@@ -288,40 +288,40 @@ class ShareFunctionalityTest(unittest.TestCase):
             self.assertEqual(shared_dives[0].id, self.dive1.id)
             self.assertEqual(shared_dives[0].location, 'Great Barrier Reef')
             
-            print(f"✓ 接收者可以看到分享给他的潜水记录: {shared_dives[0].location}")
+            print(f"✓ Recipient can see shared dive log: {shared_dives[0].location}")
             
-            # 尝试访问Shared with me页面
+            # Try to access 'Shared with me' page
             response = client.get('/api/shared/shared-with-me')
             self.assertEqual(response.status_code, 200)
-            print("✓ 接收者可以访问Shared with me页面")
+            print("✓ Recipient can access 'Shared with me' page")
     
     def test_05_api_authentication_required(self):
-        """测试：API需要认证"""
-        print("\n测试：API需要认证")
+        """Test: API requires authentication"""
+        print("\nTest: API requires authentication")
         
-        # 创建一个新的没有会话的客户端
+        # Create a new client without session
         unauthenticated_client = self.app.test_client()
         
-        # 不登录，直接尝试分享
+        # Try to share without logging in
         share_response = unauthenticated_client.post(
             f'/api/shared/dives/{self.dive1.id}/share-with-user',
             json={'username': 'recipient'},
             headers={'Content-Type': 'application/json'}
         )
         
-        # 应该返回401或302（重定向到登录页面）
+        # Should return 401 or 302 (redirect to login page)
         self.assertIn(share_response.status_code, [401, 302, 403])
-        print(f"✓ API正确阻止未认证的请求 (返回码: {share_response.status_code})")
+        print(f"✓ API correctly blocks unauthenticated requests (status code: {share_response.status_code})")
         
-        # 检查是否包含登录相关的重定向或错误消息
+        # Check if response contains login-related redirect or error message
         if share_response.status_code == 302:
             location = share_response.headers.get('Location', '')
             self.assertIn('/auth/login', location)
-            print(f"✓ 正确重定向到登录页面: {location}")
+            print(f"✓ Correctly redirected to login page: {location}")
         else:
             data = json.loads(share_response.data)
             self.assertIn('error', data)
-            print(f"✓ 返回正确的错误消息: {data['error']}")
+            print(f"✓ Returned correct error message: {data['error']}")
 
 if __name__ == '__main__':
     unittest.main() 
