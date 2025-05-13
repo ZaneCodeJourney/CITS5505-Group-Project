@@ -204,6 +204,14 @@ def delete_dive(dive_id):
                 return jsonify({"error": "Invalid or missing CSRF token"}), 400
         
         dive = check_dive_ownership(dive_id)
+        
+        # Delete associated shares first
+        from app.models import Share
+        shares = Share.query.filter_by(dive_id=dive_id).all()
+        for share in shares:
+            db.session.delete(share)
+            
+        # Now delete the dive
         db.session.delete(dive)
         db.session.commit()
         return '', 204
