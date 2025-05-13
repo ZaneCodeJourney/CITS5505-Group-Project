@@ -7,6 +7,32 @@
     <title>{% if title %}{{ title }} - {% endif %}DiveLogger</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     {% block styles %}{% endblock %}
+    <style>
+        /* Force override shark button style */
+        .nav-btn-danger {
+            background-color: rgba(255, 255, 255, 0.3) !important;
+            color: white !important;
+            border: 1px solid rgba(255, 255, 255, 0.5) !important;
+            box-shadow: none !important;
+        }
+        
+        .nav-btn-danger:hover {
+            background-color: rgba(255, 255, 255, 0.4) !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        .shark-icon {
+            font-size: 1.2em;
+            margin-right: 4px;
+            display: inline-block;
+            animation: gentle-bounce 2s infinite ease-in-out;
+        }
+        
+        @keyframes gentle-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -17,20 +43,20 @@
             <ul class="nav-links">
                 <li><a href="{{ url_for('main.index') }}">Home</a></li>
                 {% if current_user.is_authenticated %}
-                    <li><a href="{{ url_for('main.my_logs') }}">My Logs</a></li>
-                    <li><a href="{{ url_for('main.new_log') }}">New Log</a></li>
-                    <li><a href="{{ url_for('shared.dives_shared_with_me') }}">Shared with Me</a></li>
+                    <li><a href="{{ url_for('main.my_logs') }}" class="nav-btn">My Logs</a></li>
+                    <li><a href="{{ url_for('main.new_log') }}" class="nav-btn">New Log</a></li>
+                    <li><a href="{{ url_for('shared.dives_shared_with_me') }}" class="nav-btn">Shared with Me</a></li>
                     <li class="user-menu">
-                        <a href="#" id="user-dropdown-toggle">{{ current_user.username }} ▼</a>
+                        <a href="#" id="user-dropdown-toggle" class="nav-btn-primary">{{ current_user.username }} ▼</a>
                         <ul class="dropdown-menu" id="user-dropdown-menu">
                             <li><a href="/auth/profile">Profile</a></li>
                             <li><a href="#" id="logout-button">Logout</a></li>
                         </ul>
                     </li>
-                    <li><a href="{{ url_for('auth.sharkwarning') }}" class="shark-btn">🦈 Shark</a></li>
+                    <li><a href="{{ url_for('auth.sharkwarning') }}" class="nav-btn-danger"><span class="shark-icon">🦈</span> Shark</a></li>
                 {% else %}
-                    <li><a href="/auth/login">Login</a></li>
-                    <li><a href="/auth/register">Register</a></li>
+                    <li><a href="/auth/login" class="nav-btn">Login</a></li>
+                    <li><a href="/auth/register" class="nav-btn-primary">Register</a></li>
                 {% endif %}
             </ul>
         </nav>
@@ -104,9 +130,11 @@
             right: 0;
             background-color: white;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            border-radius: 4px;
+            border-radius: 8px;
             min-width: 150px;
             z-index: 1000;
+            margin-top: 5px;
+            overflow: hidden;
         }
         
         .dropdown-menu.show {
@@ -115,6 +143,7 @@
         
         .dropdown-menu li {
             display: block;
+            margin: 0;
         }
         
         .dropdown-menu a {
@@ -123,27 +152,12 @@
             color: #333;
             text-decoration: none;
             white-space: nowrap;
+            border-radius: 0;
         }
         
         .dropdown-menu a:hover {
             background-color: #f5f5f5;
-        }
-        
-        /* Shark button styling */
-        .shark-btn {
-            background-color: #ff3b30;
-            color: white !important;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            display: inline-block;
-        }
-        
-        .shark-btn:hover {
-            background-color: #d43b34;
-            transform: scale(1.05);
-            box-shadow: 0 2px 10px rgba(255, 59, 48, 0.4);
+            transform: none;
         }
     </style>
 </body>
