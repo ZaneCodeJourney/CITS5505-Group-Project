@@ -22,7 +22,7 @@ class TestConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
-    SERVER_NAME = 'localhost:5000'
+    SERVER_NAME = 'localhost:5050'
 
 
 class AuthSeleniumTestCase(unittest.TestCase):
@@ -63,7 +63,7 @@ class AuthSeleniumTestCase(unittest.TestCase):
         
         # Start Flask application
         def start_app():
-            cls.app.run(port=5000, use_reloader=False)
+            cls.app.run(host='127.0.0.1', port=5050, use_reloader=False)
         
         cls.server_thread = threading.Thread(target=start_app)
         cls.server_thread.daemon = True
@@ -100,7 +100,7 @@ class AuthSeleniumTestCase(unittest.TestCase):
     
     def test_login_page_loads(self):
         """Test that login page loads correctly"""
-        self.driver.get('http://localhost:5000/auth/login')
+        self.driver.get('http://localhost:5050/auth/login')
         WebDriverWait(self.driver, 10).until(
             EC.presence_of_element_located((By.ID, 'login-form'))
         )
@@ -114,7 +114,7 @@ class AuthSeleniumTestCase(unittest.TestCase):
     
     def test_register_page_loads(self):
         """Test that registration page loads correctly"""
-        self.driver.get('http://localhost:5000/auth/register')
+        self.driver.get('http://localhost:5050/auth/register')
         WebDriverWait(self.driver, 10).until(
             EC.presence_of_element_located((By.ID, 'registration-form'))
         )
@@ -130,7 +130,7 @@ class AuthSeleniumTestCase(unittest.TestCase):
     def test_password_mismatch_validation(self):
         """Test client-side password mismatch validation"""
         # Visit registration page
-        self.driver.get('http://localhost:5000/auth/register')
+        self.driver.get('http://localhost:5050/auth/register')
         
         # Wait for registration form to load
         WebDriverWait(self.driver, 10).until(
@@ -168,7 +168,7 @@ class AuthSeleniumTestCase(unittest.TestCase):
     def test_navigation_between_auth_pages(self):
         """Test navigation between authentication pages"""
         # Start at login page
-        self.driver.get('http://localhost:5000/auth/login')
+        self.driver.get('http://localhost:5050/auth/login')
         
         # Click register link
         self.driver.find_element(By.CSS_SELECTOR, '.register-link a').click()
@@ -189,7 +189,7 @@ class AuthSeleniumTestCase(unittest.TestCase):
     def test_forgot_password_link(self):
         """Test that forgot password link works"""
         # Visit login page
-        self.driver.get('http://localhost:5000/auth/login')
+        self.driver.get('http://localhost:5050/auth/login')
         
         # Wait for login form to load
         WebDriverWait(self.driver, 10).until(
@@ -198,7 +198,7 @@ class AuthSeleniumTestCase(unittest.TestCase):
         
         # Click forgot password link
         forgot_password_link = self.driver.find_element(By.CSS_SELECTOR, '.forgot-password a')
-        self.assertEqual(forgot_password_link.get_attribute('href'), 'http://localhost:5000/auth/forgot-password')
+        self.assertEqual(forgot_password_link.get_attribute('href'), 'http://localhost:5050/auth/forgot-password')
 
 
 if __name__ == '__main__':
