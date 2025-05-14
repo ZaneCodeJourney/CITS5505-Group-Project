@@ -290,6 +290,8 @@
                 <h3>Deactivate Account</h3>
                 <p>Warning: Deactivating your account will make your profile and data inaccessible. This action is reversible by contacting support.</p>
                 <button id="deactivate-button" class="btn-danger">Deactivate Account</button>
+                <div id="deactivate-error" class="error-message" style="margin-top: 1rem;"></div>
+                <div id="deactivate-success" class="success-message" style="margin-top: 1rem; display: none;"></div>
             </div>
         </div>
     </div>
@@ -638,7 +640,7 @@
         // Deactivate account button - keep original account deactivation functionality
         if (deactivateButton) {
             deactivateButton.addEventListener('click', function() {
-                const confirmed = confirm('Are you sure you want to deactivate your account? This will hide your profile and data.');
+                const confirmed = confirm('Are you sure you want to deactivate your account? Your profile and data will become inaccessible. This action can be reversed by contacting support.');
                 
                 if (confirmed) {
                     // Get CSRF token
@@ -649,11 +651,17 @@
                     }
                     
                     // Show processing message
-                    const successMessage = document.getElementById('success-message');
-                    successMessage.textContent = 'Deactivating account...';
-                    successMessage.style.display = 'block';
-                    successMessage.style.backgroundColor = '#e2f3fd';
-                    successMessage.style.color = '#0c5460';
+                    const deactivateSuccess = document.getElementById('deactivate-success');
+                    const deactivateError = document.getElementById('deactivate-error');
+                    deactivateError.style.display = 'none';
+                    deactivateSuccess.textContent = 'Deactivating your account...';
+                    deactivateSuccess.style.display = 'block';
+                    deactivateSuccess.style.backgroundColor = '#e2f3fd';
+                    deactivateSuccess.style.color = '#0c5460';
+                    
+                    // Disable the button while processing
+                    deactivateButton.disabled = true;
+                    deactivateButton.textContent = 'Processing...';
                     
                     // Call the deactivate account API
                     fetch('/api/users/me/deactivate', {
@@ -667,28 +675,170 @@
                     .then(response => {
                         console.log('Deactivate account response status:', response.status);
                         if (response.ok) {
-                            // Success - show message and log out
-                            alert('Your account has been deactivated. You will now be logged out.');
-                            window.location.href = '/auth/login';
+                            // Success - now logout the user
+                            deactivateSuccess.textContent = 'Account successfully deactivated. Logging out...';
+                            deactivateSuccess.style.backgroundColor = '#d4edda';
+                            deactivateSuccess.style.color = '#28a745';
+                            
+                            // Clear local storage
+                            try {
+                                localStorage.removeItem('profile_data');
+                                sessionStorage.clear();
+                            } catch(e) {
+                                console.warn('Could not clear localStorage:', e);
+                            }
+                            
+                            // Call logout API to complete the process
+                            fetch('/api/auth/logout', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': csrfToken
+                                },
+                                credentials: 'include'
+                            })
+                            .then(logoutResponse => {
+                                console.log('Logout response status:', logoutResponse.status);
+                                // Redirect to login page regardless of logout API response
+                                setTimeout(() => {
+                                    window.location.href = '/auth/login';
+                                }, 1500);
+                            })
+                            .catch(logoutError => {
+                                console.error('Error during logout:', logoutError);
+                                // Still redirect to login page even if logout API fails
+                                setTimeout(() => {
+                                    window.location.href = '/auth/login';
+                                }, 1500);
+                            });
                         } else {
+                            // Re-enable button
+                            deactivateButton.disabled = false;
+                            deactivateButton.textContent = 'Deactivate Account';
+                            
                             // Show error message
                             return response.json().then(errorData => {
-                                successMessage.textContent = errorData.error || 'Failed to deactivate account';
-                                successMessage.style.backgroundColor = '#f8d7da';
-                                successMessage.style.color = '#721c24';
+                                deactivateSuccess.style.display = 'none';
+                                deactivateError.textContent = errorData.error || 'Failed to deactivate account. Please try again.';
+                                deactivateError.style.display = 'block';
                             }).catch(() => {
-                                successMessage.textContent = 'Failed to deactivate account';
-                                successMessage.style.backgroundColor = '#f8d7da';
-                                successMessage.style.color = '#721c24';
+                                deactivateSuccess.style.display = 'none';
+                                deactivateError.textContent = 'Failed to deactivate account. Please try again.';
+                                deactivateError.style.display = 'block';
                             });
                         }
                     })
                     .catch(error => {
                         console.error('Error deactivating account:', error);
-                        successMessage.textContent = 'Network error. Please try again.';
-                        successMessage.style.backgroundColor = '#f8d7da';
-                        successMessage.style.color = '#721c24';
+                        
+                        // Re-enable button
+                        deactivateButton.disabled = false;
+                        deactivateButton.textContent = 'Deactivate Account';
+                        
+                        // Try alternative API paths
+                        tryAlternativeDeactivation(csrfToken);
                     });
+                    
+                    // Helper function to try alternative API paths
+                    function tryAlternativeDeactivation(csrfToken) {
+                        // Try alternative deactivate API path first
+                        fetch('/users/me/deactivate', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrfToken
+                            },
+                            credentials: 'include'
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                // Success with alternative deactivate path - now try logout
+                                deactivateSuccess.textContent = 'Account successfully deactivated. Logging out...';
+                                deactivateSuccess.style.backgroundColor = '#d4edda';
+                                deactivateSuccess.style.color = '#28a745';
+                                
+                                // Clear browser storage
+                                try {
+                                    localStorage.removeItem('profile_data');
+                                    sessionStorage.clear();
+                                } catch(e) {
+                                    console.warn('Could not clear storage:', e);
+                                }
+                                
+                                // Try the logout API
+                                performLogout(csrfToken);
+                            } else {
+                                // If alternative deactivate path also failed, try direct logout
+                                deactivateSuccess.style.display = 'none';
+                                deactivateError.textContent = 'Failed to deactivate account, but will still log you out.';
+                                deactivateError.style.display = 'block';
+                                
+                                // Still try to logout
+                                setTimeout(() => {
+                                    performLogout(csrfToken);
+                                }, 1500);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error with alternative deactivate path:', error);
+                            deactivateSuccess.style.display = 'none';
+                            deactivateError.textContent = 'Network error. Please check your connection and try again.';
+                            deactivateError.style.display = 'block';
+                            
+                            // Re-enable button for retry
+                            deactivateButton.disabled = false;
+                            deactivateButton.textContent = 'Deactivate Account';
+                        });
+                    }
+                    
+                    // Helper function for logout attempts
+                    function performLogout(csrfToken) {
+                        // Try main logout path
+                        fetch('/api/auth/logout', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrfToken
+                            },
+                            credentials: 'include'
+                        })
+                        .then(response => {
+                            // Regardless of response, redirect to login
+                            redirectToLogin();
+                        })
+                        .catch(error => {
+                            console.error('Error during logout:', error);
+                            // Try alternative logout path
+                            fetch('/auth/logout', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': csrfToken
+                                },
+                                credentials: 'include'
+                            })
+                            .catch(error => {
+                                console.error('Error with alternative logout path:', error);
+                            })
+                            .finally(() => {
+                                // Always redirect to login in the end
+                                redirectToLogin();
+                            });
+                        });
+                    }
+                    
+                    // Final redirect function
+                    function redirectToLogin() {
+                        // Clear any authentication cookies manually
+                        document.cookie.split(";").forEach(function(c) {
+                            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+                        });
+                        
+                        // Redirect to login page
+                        setTimeout(() => {
+                            window.location.href = '/auth/login';
+                        }, 1000);
+                    }
                 }
             });
         }
