@@ -237,6 +237,23 @@
 
   ## API Documentation
 
+  | Endpoint | Method | Description | Parameters | Response |
+  |----------|--------|-------------|------------|----------|
+  | `/api/auth/register` | POST | Register a new user | `username`, `email`, `password`, `confirm_password` | User details with JWT token |
+  | `/api/auth/login` | POST | Login user | `username/email`, `password` | User details with JWT token |
+  | `/api/auth/logout` | POST | Logout user | None | Success message |
+  | `/api/dives` | GET | Get all dives for logged in user | None | List of dive objects |
+  | `/api/dives` | POST | Create a new dive | Dive details (date, location, depth, etc.) | Created dive object |
+  | `/api/dives/<id>` | GET | Get specific dive by ID | None | Dive object |
+  | `/api/dives/<id>` | PUT | Update specific dive | Updated dive details | Updated dive object |
+  | `/api/dives/<id>` | DELETE | Delete specific dive | None | Success message |
+  | `/api/dives/<id>/share` | POST | Share dive with another user | `username` | Share details |
+  | `/api/dives/<id>/public-share` | POST | Create public share link | `expiry_date` (optional) | Public share URL |
+  | `/api/shared-dives` | GET | Get dives shared with current user | None | List of shared dive objects |
+  | `/api/dive-sites` | GET | Get all dive sites | None | List of dive site objects |
+  | `/api/sharks/report` | POST | Report shark sighting | Sighting details (site, species, size, etc.) | Created report object |
+  | `/api/sharks/warnings` | GET | Get shark warnings | `site_id` (optional), `date_range` (optional) | List of warning objects |
+
   ## References
 
   1. OpenAI. (2024). ChatGPT. Chatgpt.com. [https://chatgpt.com/](https://chatgpt.com/)
