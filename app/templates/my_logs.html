@@ -292,31 +292,15 @@
                 <button type="button" class="btn reset-btn">Reset</button>
             </form>
         </div>
-        <div class="stats-section">
-            <h3>Your Diving Stats</h3>
-            <div class="stat-item">
-                <span class="stat-label">Total Dives:</span>
-                <span class="stat-value">{{ stats.total_dives }}</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Max Depth:</span>
-                <span class="stat-value">{{ stats.max_depth|round(1) }}m</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Longest Dive:</span>
-                <span class="stat-value">{{ stats.longest_dive }} min</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Total Dive Time:</span>
-                <span class="stat-value">{{ stats.total_dive_time }} hours</span>
-            </div>
-        </div>
     </div>
 
     <div class="main-content">
         <div class="page-header">
             <h1>My Dive Logs</h1>
-            <a href="{{ url_for('main.new_log') }}" class="btn">+ Add New Log</a>
+            <div class="header-buttons">
+                <a href="{{ url_for('main.diving_stats') }}" class="btn btn-stats">📊 Diving Stats</a>
+                <a href="{{ url_for('main.new_log') }}" class="btn">+ Add New Log</a>
+            </div>
         </div>
 
         {% if success_message %}
