@@ -122,7 +122,7 @@
 
   The unittest test suite verifies the backend functionality of various components including authentication, dive log operations, user models, and CSV data handling.
 
-  #### Running Unittest Tests
+    #### Running Unittest Tests
 
   1. Make sure your virtual environment is activated:
      ```bash
@@ -134,12 +134,20 @@
      python -m tests.run_tests
      ```
 
-  3. To run a specific test file:
+  3. To run all unittest tests:
      ```bash
-     python -m unittest tests.unittest.test_auth
+     python -m unittest discover -s tests/unittest -p "test_*.py"
      ```
 
-  #### Unittest Test Coverage
+  4. To run a specific test file (examples):
+     ```bash
+     python -m unittest tests.unittest.test_auth
+     python -m unittest tests.unittest.test_user_model
+     python -m unittest tests.unittest.test_dive
+     python -m unittest tests.unittest.test_csv_upload
+     ```
+
+  ### Unittest Test Coverage
 
   The unittest suite includes the following test files:
 
@@ -148,28 +156,32 @@
      - Login functionality with valid/invalid credentials
      - Password reset flow
      - Logout functionality
+     - Run with: `python -m unittest tests.unittest.test_auth`
 
   2. **User Model Tests** (`tests/unittest/test_user_model.py`)
      - Password hashing verification
      - User representation
      - User-dive relationship
+     - Run with: `python -m unittest tests.unittest.test_user_model`
 
   3. **Dive Tests** (`tests/unittest/test_dive.py`)
      - Dive creation with required fields
      - Dive retrieval by user
      - Dive update operations
      - Dive deletion (including associated shares)
+     - Run with: `python -m unittest tests.unittest.test_dive`
 
   4. **CSV Upload Tests** (`tests/unittest/test_csv_upload.py`)
      - CSV file format validation
      - Handling various CSV formats
      - Error handling for invalid files
+     - Run with: `python -m unittest tests.unittest.test_csv_upload`
 
   ### Selenium Testing
 
   Selenium tests verify the application's frontend functionality by automating browser interactions.
 
-  #### Running Selenium Tests
+    #### Running Selenium Tests
 
   1. Make sure your virtual environment is activated:
      ```bash
@@ -181,9 +193,16 @@
      flask run
      ```
 
-  3. Run the Selenium tests:
+  3. Run all Selenium tests:
      ```bash
-     python -m unittest discover -s tests/selenium
+     python -m unittest discover -s tests/selenium -p "test_*.py"
+     ```
+     
+  4. To run specific Selenium test files:
+     ```bash
+     python -m unittest tests.selenium.test_auth_selenium
+     python -m unittest tests.selenium.test_dive_selenium
+     python -m unittest tests.selenium.test_share_selenium
      ```
 
   #### Selenium Test Coverage
@@ -195,19 +214,22 @@
      - Registration form validation (including password matching)
      - Navigation between authentication pages
      - Password reset workflow
+     - Run with: `python -m unittest tests.selenium.test_auth_selenium`
 
   2. **Dive Log Tests** (`tests/selenium/test_dive_selenium.py`)
      - Creating new dive logs with required fields
      - Form validation for dive log entries
      - Viewing created dive logs
      - Navigation through the application
+     - Run with: `python -m unittest tests.selenium.test_dive_selenium`
      
-  3. **Share Functionality Tests** (`tests/selenium/test_share_simplified.py`)
+  3. **Share Functionality Tests** (`tests/selenium/test_share_selenium.py`)
      - Sharing dive logs with specific users
      - Creating public share links
      - Error handling for sharing with nonexistent users
      - Recipient viewing shared dive logs
      - Authentication requirements for sharing functionality
+     - Run with: `python -m unittest tests.selenium.test_share_selenium`
 
   These tests ensure that both the backend functionality and user interface work correctly, providing a reliable application experience.
 
