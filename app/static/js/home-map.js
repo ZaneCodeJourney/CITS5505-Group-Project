@@ -184,6 +184,15 @@ document.addEventListener('DOMContentLoaded', function() {
             alt: site.name
         }).addTo(map);
 
+        // Add tooltip that shows on hover
+        marker.bindTooltip(site.name, {
+            direction: 'top',
+            offset: [0, -32],
+            permanent: false,
+            opacity: 0.9,
+            className: 'dive-site-tooltip'
+        });
+
         // Create popup content
         const popupContent = `
             <div class="dive-site-popup">
