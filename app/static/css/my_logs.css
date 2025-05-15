@@ -562,4 +562,21 @@
 
 .popup-link:hover {
     background-color: var(--dark-blue);
+}
+
+.header-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-stats {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: #4a89dc;
+    color: white;
+}
+
+.btn-stats:hover {
+    background-color: #3a77c2;
 } 

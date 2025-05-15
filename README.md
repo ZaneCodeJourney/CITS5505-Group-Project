@@ -1,4 +1,4 @@
-- # DiveLogger
+# DiveLogger
 
   ## TABLE OF CONTENTS
 
