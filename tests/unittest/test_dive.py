@@ -32,6 +32,16 @@ class DiveTestCase(unittest.TestCase):
         db.session.add(self.test_user)
         db.session.commit()
 
+        # Log in the test user
+        self.client.post(
+            '/api/auth/login',
+            data=json.dumps({
+                'email': 'test@example.com',
+                'password': 'Password123'
+            }),
+            content_type='application/json'
+        )
+
     def tearDown(self):
         db.session.remove()
         db.drop_all()
@@ -52,7 +62,7 @@ class DiveTestCase(unittest.TestCase):
         )
         data = json.loads(response.data)
         self.assertEqual(response.status_code, 201)
-        dive = Dive.query.get(1)
+        dive = db.session.get(Dive, 1)
         self.assertIsNotNone(dive)
         self.assertEqual(dive.location, 'Coral Garden')
 
