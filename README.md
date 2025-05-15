@@ -42,7 +42,7 @@
 
   ## Architecture Summary
 
-  ForumEdit is built using the following technologies:
+  DiveLogEdit is built using the following technologies:
 
   - **Frontend**: HTML, CSS, JavaScript
   - **Backend**: Flask
@@ -67,6 +67,27 @@
 
   ## ER Diagram
 
+  ![Entity Relationship Diagram](Images/ERD.png)
+
+  The main entities and relationships are as follows:
+
+  - **User**: Stores user account and profile information.
+  - **Dive**: Each dive log, linked to a user, with detailed fields and optional media/CSV data.
+  - **Site**: Dive site directory, with location, description, and reviews.
+  - **Review**: User reviews for dive sites.
+  - **Share**: Sharing permissions and public links for dive logs.
+  - **SharkWarning**: Shark sighting reports at dive sites.
+
+  **Simplified ER Diagram:**
+  ```
+  User 1---* Dive *---* Share
+    |         |
+    |         *---* Media/CSV
+    *---* Review
+  Site 1---* Review
+  Site 1---* SharkWarning
+  User 1---* SharkWarning
+  ```
 
   ## How to Launch the Application
 
@@ -261,3 +282,167 @@
   3. W3SCHOOLS. (2019). CSS Tutorial. W3schools.com. [https://www.w3schools.com/css/](https://www.w3schools.com/css/)
   4. W3Schools. (2018). HTML Tutorial. W3schools.com. [https://www.w3schools.com/html/](https://www.w3schools.com/html/)
   5. Reddit. (2024). Reddit. Reddit. https://www.reddit.com/
+
+## Final Project Overview
+
+DiveLogger is a full-featured web application for scuba diving enthusiasts to log, manage, and share their diving experiences. The platform supports detailed dive records, media uploads, CSV data import from dive computers, site reviews, shark warnings, and advanced sharing features. It is designed for both individual divers and diving communities, with a focus on usability, security, and extensibility.
+
+---
+
+## Key Features
+
+- **User Management**: Secure registration, login, profile management, and password reset.
+- **Dive Log Management**: Create, view, edit, and delete detailed dive logs, including equipment, conditions, and personal notes.
+- **Media Uploads**: Attach photos to dive logs for richer records.
+- **CSV Import & Visualization**: Import dive profile data (depth, temperature, etc.) from dive computers in CSV format.
+- **Dive Site Directory**: Browse and review popular dive sites, including location, difficulty, and best season.
+- **Site Reviews**: Users can rate and comment on dive sites.
+- **Shark Warnings**: Report and view shark sightings at dive sites.
+- **Advanced Sharing**: Share dive logs with specific users or via public links, with optional expiration.
+- **Responsive UI**: Modern, mobile-friendly interface using Bootstrap.
+- **Comprehensive Testing**: Automated backend (unittest) and frontend (Selenium) test suites.
+- **Demo/Test Data**: Easily populate the database with realistic demo data for testing or presentations.
+
+---
+
+## System Architecture
+
+- **Frontend**: HTML, CSS, JavaScript, Bootstrap (templates in `app/templates/`)
+- **Backend**: Flask (Python), organized with blueprints for modularity (`app/main`, `app/auth`, `app/dives`, `app/shared`, `app/sites`, `app/shark`, `app/api`)
+- **Database**: SQLite, managed via SQLAlchemy ORM (`app/models.py`)
+- **Testing**: Python `unittest` for backend, Selenium for browser-based UI tests (`tests/unittest/`, `tests/selenium/`)
+- **Configuration**: Environment variables and settings in `config.py`
+- **Data Seeding**: Use `seed.py` to populate the database with sample users, dives, sites, and reviews.
+
+---
+
+## Application Structure
+
+```
+CITS5505-Group-Project/
+│
+├── app/
+│   ├── __init__.py         # App factory, blueprint registration
+│   ├── models.py           # SQLAlchemy models
+│   ├── main/               # Main routes/views
+│   ├── auth/               # Authentication routes
+│   ├── dives/              # Dive log routes
+│   ├── shared/             # Sharing routes
+│   ├── sites/              # Dive site routes
+│   ├── shark/              # Shark warning routes
+│   ├── api/                # API endpoints (RESTful)
+│   ├── templates/          # Jinja2 HTML templates
+│   ├── static/             # Static files (CSS, JS, images)
+│   └── ...                 # Other feature modules
+│
+├── tests/
+│   ├── unittest/           # Backend unit tests
+│   ├── selenium/           # Frontend Selenium tests
+│   └── run_tests.py        # Test runner
+│
+├── requirements.txt        # Python dependencies
+├── seed.py                 # Demo/test data population script
+├── config.py               # Configuration
+├── app.py                  # Entry point (if used)
+└── README.md               # Project documentation
+```
+
+---
+
+## How to Launch the Application
+
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/ZaneCodeJourney/CITS5505-Group-Project.git
+   cd CITS5505-Group-Project
+   ```
+
+2. **Set Up the Environment**
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
+   ```
+
+3. **Set Up the Database**
+   ```bash
+   flask db upgrade
+   ```
+
+4. **(Optional) Populate Demo Data**
+   ```bash
+   python seed.py
+   ```
+
+5. **Run the Application**
+   ```bash
+   flask run
+   ```
+
+---
+
+## Testing
+
+### Backend Unit Tests
+
+- Located in `tests/unittest/`
+- Covers authentication, user models, dive log operations, CSV upload, and more.
+- Run all tests:
+  ```bash
+  python -m unittest discover -s tests/unittest -p "test_*.py"
+  ```
+
+### Frontend Selenium Tests
+
+- Located in `tests/selenium/`
+- Automates browser interactions for authentication, dive logs, and sharing.
+- Ensure the Flask app is running, then run:
+  ```bash
+  python -m unittest discover -s tests/selenium -p "test_*.py"
+  ```
+
+### Test Data
+
+- Use `seed.py` to populate the database with demo users, dives, sites, and reviews for testing or demo purposes.
+
+---
+
+## Dependencies
+
+All required Python packages are listed in `requirements.txt`. Key dependencies include:
+
+- Flask, Flask-Login, Flask-Migrate, Flask-SQLAlchemy, Flask-WTF
+- SQLAlchemy
+- Selenium (for frontend testing)
+- WTForms
+- python-dotenv
+- flask-cors
+
+Install with:
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## Contributing
+
+We welcome contributions from the community! To contribute:
+
+1. Fork the repository and create your feature branch (`git checkout -b feature/YourFeature`).
+2. Commit your changes with clear messages.
+3. Push to your fork and submit a Pull Request.
+4. Ensure your code follows the existing style and passes all tests.
+5. For major changes, please open an issue first to discuss your proposal.
+
+For questions or support, please open an issue or contact the maintainers.
+
+---
+
+## Acknowledgements
+
+Special thanks to all contributors, open-source libraries, and the diving community for their feedback and support.
+
+---
+
+**Note:** The API Documentation section will be updated by another team member.
