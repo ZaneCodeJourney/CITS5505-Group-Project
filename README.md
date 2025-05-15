@@ -19,8 +19,6 @@
       <li><a href="#references">References</a></li>
     </ol>
   </details>
-
-
   ## Description
 
   DiveLogger is a web application designed for scuba diving enthusiasts to log, manage, and share their diving experiences. Users can record detailed information about their dives, including location, conditions, equipment, and memorable moments. The platform also allows for the import of dive profile data from dive computers (via CSV) and the sharing of dive logs with fellow divers or publicly via shareable links. The goal of DiveLogger is to provide a comprehensive and user-friendly tool for divers to keep a digital record of their underwater adventures and connect with the diving community.
@@ -141,9 +139,9 @@
 
   ### Unittest Test Cases
 
-  The unittest test suite verifies the backend functionality of various components including authentication, dive log operations, user models, and CSV data handling.
+The unittest test suite verifies the backend functionality of various components including authentication, dive log operations, user models, and CSV data handling.
 
-    #### Running Unittest Tests
+    Running Unittest Tests
 
   1. Make sure your virtual environment is activated:
      ```bash
@@ -165,7 +163,6 @@
      python -m unittest tests.unittest.test_auth
      python -m unittest tests.unittest.test_user_model
      python -m unittest tests.unittest.test_dive
-     python -m unittest tests.unittest.test_csv_upload
      ```
 
   ### Unittest Test Coverage
@@ -178,25 +175,17 @@
      - Password reset flow
      - Logout functionality
      - Run with: `python -m unittest tests.unittest.test_auth`
-
   2. **User Model Tests** (`tests/unittest/test_user_model.py`)
      - Password hashing verification
      - User representation
      - User-dive relationship
      - Run with: `python -m unittest tests.unittest.test_user_model`
-
   3. **Dive Tests** (`tests/unittest/test_dive.py`)
      - Dive creation with required fields
      - Dive retrieval by user
      - Dive update operations
      - Dive deletion (including associated shares)
      - Run with: `python -m unittest tests.unittest.test_dive`
-
-  4. **CSV Upload Tests** (`tests/unittest/test_csv_upload.py`)
-     - CSV file format validation
-     - Handling various CSV formats
-     - Error handling for invalid files
-     - Run with: `python -m unittest tests.unittest.test_csv_upload`
 
   ### Selenium Testing
 
@@ -381,29 +370,108 @@ CITS5505-Group-Project/
 
 ## Testing
 
-### Backend Unit Tests
+This section outlines how to run and understand both **unittest** (backend) and **Selenium** (frontend) tests to ensure application reliability and correctness.
 
-- Located in `tests/unittest/`
-- Covers authentication, user models, dive log operations, CSV upload, and more.
-- Run all tests:
-  ```bash
-  python -m unittest discover -s tests/unittest -p "test_*.py"
-  ```
+### Unittest Testing (Backend)
 
-### Frontend Selenium Tests
+The `unittest` suite verifies backend functionality across modules like authentication, dive logs, user models, and CSV data processing.
 
-- Located in `tests/selenium/`
-- Automates browser interactions for authentication, dive logs, and sharing.
-- Ensure the Flask app is running, then run:
-  ```bash
-  python -m unittest discover -s tests/selenium -p "test_*.py"
-  ```
+#### 🔧 Running Unittest Tests
 
-### Test Data
+1. Activate your virtual environment:
 
-- Use `seed.py` to populate the database with demo users, dives, sites, and reviews for testing or demo purposes.
+   ```
+   source venv/bin/activate  # macOS/Linux
+   .\venv\Scripts\activate   # Windows
+   ```
 
----
+2. Run **all** unittest files:
+
+   ```
+   python -m unittest discover -s tests/unittest -p "test_*.py"
+   ```
+
+3. Run a **specific** unittest file:
+
+   ```
+   python -m unittest tests.unittest.test_auth
+   python -m unittest tests.unittest.test_user_model
+   python -m unittest tests.unittest.test_dive
+   python -m unittest tests.unittest.test_csv_upload
+   ```
+
+#### Unittest Test Coverage
+
+1. **Authentication Tests** (`test_auth.py`)
+   - Valid/invalid login
+   - Password reset flow
+   - Logout handling
+2. **User Model Tests** (`test_user_model.py`)
+   - Password hashing
+   - `__repr__` correctness
+   - User–Dive relationship
+3. **Dive Log Tests** (`test_dive.py`)
+   - Dive creation and validation
+   - Dive retrieval, update, and delete
+   - Cascade deletion of shares
+4. **CSV Upload Tests** (`test_csv_upload.py`)
+   - File format validation
+   - Malformed/edge-case CSV handling
+   - Error detection and messages
+
+------
+
+### Selenium Testing (Frontend)
+
+Selenium tests ensure frontend functionality through automated browser interactions.
+
+#### 🔧 Running Selenium Tests
+
+1. Activate your virtual environment:
+
+   ```
+   source venv/bin/activate  # macOS/Linux
+   .\venv\Scripts\activate   # Windows
+   ```
+
+2. Start your development server:
+
+   ```
+   flask run
+   ```
+
+3. Run **all** Selenium test files:
+
+   ```
+   python -m unittest discover -s tests/selenium -p "test_*.py"
+   ```
+
+4. Run a **specific** Selenium test:
+
+   ```
+   bashCopyEditpython -m unittest tests.selenium.test_auth_selenium
+   python -m unittest tests.selenium.test_dive_selenium
+   python -m unittest tests.selenium.test_share_selenium
+   ```
+
+#### Selenium Test Coverage
+
+1. **Authentication UI Tests** (`test_auth_selenium.py`)
+   - Registration and form validation
+   - Page navigation (login, register, reset)
+   - Password reset functionality
+2. **Dive Log UI Tests** (`test_dive_selenium.py`)
+   - Creating new dive logs
+   - Field validation for dive entries
+   - Viewing and navigating dive logs
+3. **Sharing Functionality UI Tests** (`test_share_selenium.py`)
+   - Share with existing/nonexistent users
+   - Public share link generation
+   - Access control and authentication checks
+
+------
+
+These tests ensure the reliability of both your application logic and user-facing features. Always run them before major commits or deployments.
 
 ## Dependencies
 
@@ -420,8 +488,6 @@ Install with:
 ```bash
 pip install -r requirements.txt
 ```
-
----
 
 ## Contributing
 
