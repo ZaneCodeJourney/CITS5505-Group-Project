@@ -118,7 +118,100 @@ def my_logs():
     locations = [location[0] for location in locations]
     
     return render_template('my_logs.html', title='My Dive Logs', dives=dives, 
-                          stats=stats, locations=locations, success_message=success_message)
+                          locations=locations, success_message=success_message)
+
+@bp.route('/diving-stats')
+@login_required
+def diving_stats():
+    # Use the current authenticated user's ID
+    user_id = current_user.id
+    
+    # Get all dives for this user ordered by date
+    all_dives = Dive.query.filter_by(user_id=user_id).order_by(Dive.start_time.asc()).all()
+    
+    # Calculate diving statistics
+    stats = {}
+    
+    if all_dives:
+        max_depth_dive = max(all_dives, key=lambda dive: dive.max_depth)
+        stats['total_dives'] = len(all_dives)
+        stats['max_depth'] = max_depth_dive.max_depth
+        
+        # Calculate total dive time and longest dive
+        longest_dive = None
+        total_dive_minutes = 0
+        
+        for dive in all_dives:
+            if dive.start_time and dive.end_time:
+                duration_minutes = (dive.end_time - dive.start_time).total_seconds() / 60
+                total_dive_minutes += duration_minutes
+                
+                if longest_dive is None or duration_minutes > longest_dive[1]:
+                    longest_dive = (dive, duration_minutes)
+        
+        if longest_dive:
+            stats['longest_dive'] = round(longest_dive[1])
+        else:
+            stats['longest_dive'] = 0
+            
+        stats['total_dive_time'] = round(total_dive_minutes / 60, 1)  # Convert to hours
+    else:
+        stats = {
+            'total_dives': 0,
+            'max_depth': 0,
+            'longest_dive': 0,
+            'total_dive_time': 0
+        }
+        
+    # Prepare data for charts
+    dive_data = {
+        'dates': [],
+        'depths': [],
+        'durations': [],
+        'locations': [],
+        'dives_per_location': [],
+        'months': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        'dives_per_month': [0] * 12
+    }
+    
+    if all_dives:
+        # Process data for time-series charts
+        for dive in all_dives:
+            # Format date for chart
+            if dive.start_time:
+                formatted_date = dive.start_time.strftime('%d %b %Y')
+                dive_data['dates'].append(formatted_date)
+                dive_data['depths'].append(dive.max_depth)
+                
+                # Calculate duration
+                if dive.end_time:
+                    duration = (dive.end_time - dive.start_time).total_seconds() / 60
+                    dive_data['durations'].append(round(duration))
+                else:
+                    dive_data['durations'].append(0)
+                
+                # Count dives per month
+                month_idx = dive.start_time.month - 1  # 0-based index
+                dive_data['dives_per_month'][month_idx] += 1
+        
+        # Process data for location chart
+        location_counts = {}
+        for dive in all_dives:
+            if dive.location:
+                if dive.location in location_counts:
+                    location_counts[dive.location] += 1
+                else:
+                    location_counts[dive.location] = 1
+        
+        # Sort locations by number of dives (descending)
+        sorted_locations = sorted(location_counts.items(), key=lambda x: x[1], reverse=True)
+        
+        # Take top 8 locations max to avoid crowding the chart
+        for loc, count in sorted_locations[:8]:
+            dive_data['locations'].append(loc)
+            dive_data['dives_per_location'].append(count)
+    
+    return render_template('stats.html', title='Diving Statistics', stats=stats, dive_data=dive_data)
 
 @bp.route('/dive/<int:dive_id>')
 def dive_details(dive_id):
