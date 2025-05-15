@@ -742,7 +742,7 @@
                     // Helper function to try alternative API paths
                     function tryAlternativeDeactivation(csrfToken) {
                         // Try alternative deactivate API path first
-                        fetch('/users/me/deactivate', {
+                        fetch('/api/users/me/deactivate', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -880,7 +880,7 @@
                 }
                 
                 // Use relative URL path to avoid CORS issues
-                const apiUrl = '/users/me';
+                const apiUrl = '/api/users/me';
                 console.log('Loading profile from API URL:', apiUrl);
                 
                 // Get user information
