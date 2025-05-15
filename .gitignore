@@ -22,3 +22,6 @@ create_db.py
 .vscode
 
 prototype/
+
+# macOS system files
+.DS_Store
