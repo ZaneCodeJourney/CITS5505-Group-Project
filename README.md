@@ -42,7 +42,7 @@
 
   ## Architecture Summary
 
-  DiveLogEdit is built using the following technologies:
+  DiveLogger is built using the following technologies:
 
   - **Frontend**: HTML, CSS, JavaScript
   - **Backend**: Flask
