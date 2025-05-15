@@ -102,15 +102,15 @@
 }
 
 .features .container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 30px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  max-width: 1200px;
 }
 
 .feature-item {
-  flex: 1;
-  min-width: 300px;
+  flex: 1 0 21%; /* Makes sure items take equal width */
+  min-width: 200px;
   padding: 30px;
   border-radius: 8px;
   background-color: var(--light-color);
@@ -297,6 +297,12 @@
 }
 
 /* Responsive styles */
+@media (max-width: 1000px) {
+  .features .container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .hero h1 {
     font-size: 2.5rem;
@@ -306,12 +312,10 @@
     font-size: 1.1rem;
   }
   
-  .features .container, 
-  .steps {
-    flex-direction: column;
+  .features .container {
+    grid-template-columns: 1fr;
   }
   
-  .feature-item, 
   .step {
     margin-bottom: 20px;
   }
