@@ -1,8 +1,96 @@
 {% extends "base.html" %}
 
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+{% endblock %}
+
 {% block content %}
-<div class="container">
-    <h1>Welcome to the Data Analytics Platform</h1>
-    <p>This platform allows users to upload data, analyze it, and share analysis results with other users.</p>
+<div class="landing-container">
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>DiveLogger</h1>
+            <p>Track, analyze, and share your diving experiences</p>
+            {% if not current_user.is_authenticated %}
+                <div class="cta-buttons">
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Log In</a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-secondary">Sign Up</a>
+                </div>
+            {% else %}
+                <div class="cta-buttons">
+                    <a href="{{ url_for('main.my_logs') }}" class="btn btn-primary">My Logs</a>
+                    <a href="{{ url_for('main.new_log') }}" class="btn btn-secondary">New Log</a>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+    
+    <!-- Features Overview -->
+    <section class="features">
+        <div class="container">
+            <div class="feature-item">
+                <div class="feature-icon">📊</div>
+                <h3>Track Your Dives</h3>
+                <p>Record dive details, locations, and conditions with our easy-to-use dive log.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🦈</div>
+                <h3>Shark Warnings</h3>
+                <p>Add alerts about sharks present in certain areas to warn other divers.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">📈</div>
+                <h3>Data Analysis</h3>
+                <p>Upload dive computer data and visualize your dive profiles.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🔄</div>
+                <h3>Share Selectively</h3>
+                <p>Choose which dive logs to share with friends or keep private.</p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Map Section -->
+    <section class="map-section">
+        <div class="container">
+            <h2>Explore Dive Sites</h2>
+            <p>Browse popular diving locations around the world</p>
+            <div id="map"></div>
+        </div>
+    </section>
+    
+    <!-- Getting Started -->
+    <section class="getting-started">
+        <div class="container">
+            <h2>Getting Started is Easy</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Create an Account</h3>
+                    <p>Sign up to access all DiveLogger features</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Log Your Dives</h3>
+                    <p>Record dive details or import from your dive computer</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>View & Share</h3>
+                    <p>Visualize your dive profiles and share with friends</p>
+                </div>
+            </div>
+            {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-large">Get Started Now</a>
+            {% endif %}
+        </div>
+    </section>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="{{ url_for('static', filename='js/home-map.js') }}"></script>
 {% endblock %} 
