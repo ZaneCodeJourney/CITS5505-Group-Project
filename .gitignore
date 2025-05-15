@@ -20,7 +20,7 @@ create_db.py
 
 # Local Settings
 .vscode
-
+deny_location.scpt
 prototype/
 
 # macOS system files
