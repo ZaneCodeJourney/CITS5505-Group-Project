@@ -226,7 +226,7 @@
 /* Getting started section */
 .getting-started {
   padding: 80px 0;
-  background-color: #f0f8ff;
+  background-color: var(--white);
   text-align: center;
 }
 
@@ -294,6 +294,22 @@
 
 .dive-site-details .detail {
   margin-bottom: 5px;
+}
+
+/* Tooltip styles */
+.dive-site-tooltip {
+  font-size: 14px;
+  font-weight: bold;
+  padding: 5px 8px;
+  background-color: rgba(0, 119, 182, 0.9);
+  border: none;
+  color: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  border-radius: 4px;
+}
+
+.dive-site-tooltip::before {
+  border-top-color: rgba(0, 119, 182, 0.9);
 }
 
 /* Responsive styles */
