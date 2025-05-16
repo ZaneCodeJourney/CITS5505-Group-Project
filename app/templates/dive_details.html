@@ -8,6 +8,7 @@
         max-width: 1200px;
         margin: 2rem auto;
         padding: 1rem;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     }
     
     .shared-info-banner {
@@ -29,6 +30,7 @@
     
     .dive-title {
         margin: 0;
+        color: #2a5885;
     }
     
     .dive-date {
@@ -48,14 +50,23 @@
         min-width: 250px;
         background-color: #f9f9f9;
         border-radius: 8px;
-        padding: 1rem;
+        padding: 1.2rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .dive-meta-section:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 3px 8px rgba(0,0,0,0.15);
     }
     
     .meta-section-title {
         margin-top: 0;
         margin-bottom: 1rem;
         font-size: 1.2rem;
-        color: #333;
+        color: #2a5885;
+        border-bottom: 2px solid #e1e9f1;
+        padding-bottom: 8px;
     }
     
     .meta-item {
@@ -67,24 +78,35 @@
         font-weight: bold;
         min-width: 140px;
         margin-right: 1rem;
+        color: #555;
     }
     
     .meta-value {
         flex: 1;
+        color: #333;
     }
     
-    .map-section {
+    .map-section, .profile-section, .notes-section, .species-section {
         margin-bottom: 2rem;
+        background-color: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .section-title {
+        color: #2a5885;
+        margin-top: 0;
+        margin-bottom: 1.2rem;
+        border-bottom: 2px solid #e1e9f1;
+        padding-bottom: 8px;
     }
     
     #dive-location-map {
         height: 300px;
         border-radius: 8px;
         margin-top: 1rem;
-    }
-    
-    .profile-section {
-        margin-bottom: 2rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
     .profile-chart-container {
@@ -92,10 +114,26 @@
         border-radius: 8px;
         padding: 1rem;
         height: 400px;
+        margin-top: 1rem;
     }
     
-    .notes-section {
-        margin-bottom: 2rem;
+    .multi-chart-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+        .multi-chart-container {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .chart-wrapper {
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        padding: 1rem;
+        height: 300px;
     }
     
     .notes-content {
@@ -103,6 +141,7 @@
         border-radius: 8px;
         padding: 1rem;
         white-space: pre-line;
+        line-height: 1.6;
     }
     
     .action-buttons {
@@ -118,6 +157,15 @@
         font-weight: bold;
         cursor: pointer;
         border: none;
+        transition: background-color 0.2s, transform 0.1s;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+    }
+    
+    .btn:active {
+        transform: translateY(0);
     }
     
     .btn-primary {
@@ -125,14 +173,91 @@
         color: white;
     }
     
+    .btn-primary:hover {
+        background-color: #0069d9;
+    }
+    
     .btn-secondary {
         background-color: #6c757d;
         color: white;
     }
     
+    .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+    
     .btn-danger {
         background-color: #dc3545;
         color: white;
+    }
+    
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
+    
+    .species-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .species-card {
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease;
+    }
+    
+    .species-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    }
+    
+    .species-image {
+        width: 80px;
+        height: 80px;
+        border-radius: 8px;
+        object-fit: cover;
+        background-color: #eee;
+    }
+    
+    .species-image-placeholder {
+        width: 80px;
+        height: 80px;
+        border-radius: 8px;
+        background-color: #e1e9f1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #2a5885;
+        font-size: 2rem;
+    }
+    
+    .species-info {
+        flex: 1;
+    }
+    
+    .species-name {
+        font-weight: bold;
+        color: #2a5885;
+        margin-bottom: 0.2rem;
+    }
+    
+    .species-scientific {
+        font-style: italic;
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .species-notes {
+        font-size: 0.9rem;
+        color: #555;
     }
     
     .share-modal {
@@ -638,22 +763,59 @@
     </div>
 
     <div class="map-section">
-        <h2>Location</h2>
+        <h2 class="section-title">Location</h2>
         <div id="dive-location-map" data-location="{{ dive.location }}"></div>
     </div>
 
     {% if dive.profile_csv_data %}
     <div class="profile-section">
-        <h2>Dive Profile</h2>
+        <h2 class="section-title">Dive Profile</h2>
+        
+        <!-- Combined profile chart -->
         <div class="profile-chart-container">
             <canvas id="dive-profile-chart" data-csv-data="{{ dive.profile_csv_data|e }}"></canvas>
         </div>
     </div>
     {% endif %}
 
+    <!-- Species section -->
+    {% if dive.species.count() > 0 %}
+    <div class="species-section">
+        <h2 class="section-title">Species Encountered</h2>
+        <div class="species-list">
+            {% for species in dive.species %}
+            <div class="species-card">
+                {% if species.taxon_id %}
+                <img 
+                    id="species-img-{{ species.id }}"
+                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' fill='%23e1e9f1'/%3E%3Ctext x='50%25' y='50%25' font-size='30' text-anchor='middle' dominant-baseline='middle' font-family='sans-serif' fill='%232a5885'%3E🐠%3C/text%3E%3C/svg%3E"
+                    alt="{{ species.common_name or species.scientific_name }}" 
+                    class="species-image"
+                >
+                <div class="species-image-placeholder" style="display: none;">
+                    <i class="fa">🦑</i>
+                </div>
+                {% else %}
+                <div class="species-image-placeholder">
+                    <i class="fa">🦑</i>
+                </div>
+                {% endif %}
+                <div class="species-info">
+                    <div class="species-name">{{ species.common_name or "Unknown" }}</div>
+                    <div class="species-scientific">{{ species.scientific_name }}</div>
+                    {% if species.notes %}
+                    <div class="species-notes">{{ species.notes }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
     {% if dive.notes %}
     <div class="notes-section">
-        <h2>Notes</h2>
+        <h2 class="section-title">Notes</h2>
         <div class="notes-content">
             {{ dive.notes }}
         </div>
@@ -954,8 +1116,15 @@
         // Initialize dive profile chart if data exists
         const profileChartElement = document.getElementById('dive-profile-chart');
         if (profileChartElement) {
-            initDiveProfileChart(profileChartElement);
+            initCombinedDiveProfileChart(profileChartElement);
         }
+        
+        // Load species images - similar to how the stats page does it
+        {% for species in dive.species %}
+        {% if species.taxon_id %}
+        fetchSpeciesImageForElement({{ species.taxon_id }}, 'species-img-{{ species.id }}');
+        {% endif %}
+        {% endfor %}
         
         // Setup share modal
         const shareModal = document.getElementById('share-modal');
@@ -1249,34 +1418,152 @@
         }
     }
     
-    function initDiveProfileChart(chartElement) {
-        const csvData = chartElement.dataset.csvData;
-        
-        if (!csvData) return;
+    // Helper function to parse CSV data
+    function parseCSVData(csvData) {
+        if (!csvData) return null;
         
         // Parse CSV data
         const rows = csvData.trim().split('\n');
         const headers = rows[0].split(',');
         
-        // Find index of depth and time columns
+        // Find index of columns
         const timeIndex = headers.findIndex(h => h.toLowerCase().includes('time'));
         const depthIndex = headers.findIndex(h => h.toLowerCase().includes('depth'));
+        const airIndex = headers.findIndex(h => h.toLowerCase().includes('air'));
+        const tempIndex = headers.findIndex(h => h.toLowerCase().includes('temp'));
         
         if (timeIndex === -1 || depthIndex === -1) {
             console.error('Missing required columns in CSV data');
-            return;
+            return null;
         }
         
         // Extract data
-        const timeData = [];
-        const depthData = [];
+        const data = {
+            time: [],
+            depth: [],
+            air: [],
+            temp: [],
+            hasAir: airIndex !== -1,
+            hasTemp: tempIndex !== -1
+        };
         
         for (let i = 1; i < rows.length; i++) {
             const values = rows[i].split(',');
             if (values.length > Math.max(timeIndex, depthIndex)) {
-                timeData.push(parseFloat(values[timeIndex]));
-                depthData.push(parseFloat(values[depthIndex]));
+                data.time.push(parseFloat(values[timeIndex]));
+                data.depth.push(parseFloat(values[depthIndex]));
+                
+                if (airIndex !== -1 && values.length > airIndex) {
+                    data.air.push(parseFloat(values[airIndex]));
+                }
+                
+                if (tempIndex !== -1 && values.length > tempIndex) {
+                    data.temp.push(parseFloat(values[tempIndex]));
+                }
             }
+        }
+        
+        return data;
+    }
+    
+    function initCombinedDiveProfileChart(chartElement) {
+        const csvData = chartElement.dataset.csvData;
+        const parsedData = parseCSVData(csvData);
+        
+        if (!parsedData) return;
+        
+        // Create datasets
+        const datasets = [
+            {
+                label: 'Depth (m)',
+                data: parsedData.depth,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 2,
+                yAxisID: 'y-depth',
+                fill: true
+            }
+        ];
+        
+        // Add air pressure dataset if available
+        if (parsedData.hasAir && parsedData.air.length > 0) {
+            datasets.push({
+                label: 'Air Pressure (bar)',
+                data: parsedData.air,
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 2,
+                yAxisID: 'y-air',
+                fill: false
+            });
+        }
+        
+        // Add temperature dataset if available
+        if (parsedData.hasTemp && parsedData.temp.length > 0) {
+            datasets.push({
+                label: 'Temperature (°C)',
+                data: parsedData.temp,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 2,
+                yAxisID: 'y-temp',
+                fill: false
+            });
+        }
+        
+        // Configure scales
+        const scales = {
+            x: {
+                title: {
+                    display: true,
+                    text: 'Time (minutes)'
+                },
+                grid: {
+                    color: 'rgba(200, 200, 200, 0.3)'
+                }
+            },
+            'y-depth': {
+                type: 'linear',
+                position: 'left',
+                reverse: true,
+                title: {
+                    display: true,
+                    text: 'Depth (m)'
+                },
+                grid: {
+                    color: 'rgba(54, 162, 235, 0.3)'
+                }
+            }
+        };
+        
+        // Add air pressure axis if needed
+        if (parsedData.hasAir && parsedData.air.length > 0) {
+            scales['y-air'] = {
+                type: 'linear',
+                position: 'right',
+                title: {
+                    display: true,
+                    text: 'Air Pressure (bar)'
+                },
+                grid: {
+                    display: false
+                }
+            };
+        }
+        
+        // Add temperature axis if needed
+        if (parsedData.hasTemp && parsedData.temp.length > 0) {
+            scales['y-temp'] = {
+                type: 'linear',
+                position: 'right',
+                title: {
+                    display: true,
+                    text: 'Temperature (°C)'
+                },
+                grid: {
+                    display: false
+                }
+            };
         }
         
         // Create chart
@@ -1284,47 +1571,72 @@
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: timeData,
-                datasets: [{
-                    label: 'Depth (m)',
-                    data: depthData,
-                    backgroundColor: 'rgba(0, 123, 255, 0.2)',
-                    borderColor: 'rgba(0, 123, 255, 1)',
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    fill: true
-                }]
+                labels: parsedData.time,
+                datasets: datasets
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Time (minutes)'
-                        }
-                    },
-                    y: {
-                        reverse: true,
-                        title: {
-                            display: true,
-                            text: 'Depth (meters)'
-                        }
-                    }
+                interaction: {
+                    mode: 'index',
+                    intersect: false
                 },
+                scales: scales,
                 plugins: {
                     legend: {
-                        display: true,
                         position: 'top'
                     },
                     tooltip: {
-                        mode: 'index',
-                        intersect: false
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                let value = context.parsed.y;
+                                if (label.includes('Depth')) {
+                                    return `${label}: ${value.toFixed(1)} m`;
+                                } else if (label.includes('Air')) {
+                                    return `${label}: ${value.toFixed(0)} bar`;
+                                } else if (label.includes('Temp')) {
+                                    return `${label}: ${value.toFixed(1)} °C`;
+                                }
+                                return `${label}: ${value}`;
+                            }
+                        }
                     }
                 }
             }
         });
+    }
+    
+    // Function to fetch species image from iNaturalist API - like stats page
+    function fetchSpeciesImageForElement(taxonId, elementId) {
+        fetch(`https://api.inaturalist.org/v1/taxa/${taxonId}`)
+            .then(response => response.json())
+            .then(data => {
+                const imgElement = document.getElementById(elementId);
+                if (!imgElement) return;
+                
+                const imagePlaceholder = imgElement.nextElementSibling;
+                
+                if (data && data.results && data.results.length > 0 && 
+                    data.results[0].default_photo && data.results[0].default_photo.medium_url) {
+                    
+                    // Set the image source to the medium URL from the API
+                    imgElement.src = data.results[0].default_photo.medium_url;
+                } else {
+                    // If no image is found, show the placeholder
+                    imgElement.style.display = 'none';
+                    imagePlaceholder.style.display = 'flex';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching species image:', error);
+                // Show placeholder on error
+                const imgElement = document.getElementById(elementId);
+                if (imgElement) {
+                    imgElement.style.display = 'none';
+                    imgElement.nextElementSibling.style.display = 'flex';
+                }
+            });
     }
 </script>
 {% endblock %} 
