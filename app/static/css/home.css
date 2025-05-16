@@ -1,3 +1,9 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 /* Base styles */
 :root {
   --primary-color: #0077b6;
@@ -14,6 +20,7 @@
 .landing-container {
   max-width: 100%;
   overflow: hidden;
+  margin-top: 0;
 }
 
 .container {
@@ -370,4 +377,8 @@
   .feature-item {
     min-width: 100%;
   }
+}
+
+main {
+  padding: 0 !important;
 } 
