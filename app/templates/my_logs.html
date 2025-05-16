@@ -1,9 +1,11 @@
 {% extends "base.html" %}
+{% from "components/notifications.html" import notification_styles, notification_container, notification_js, success_message %}
 
 {% block styles %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dive_log.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/my_logs.css') }}">
+{{ notification_styles() }}
 <style>
     /* Alert styling */
     .alert {
@@ -352,52 +354,10 @@
         </div>
 
         {% if success_message %}
-        <div class="success-message" id="success-message">
-            <span>{{ success_message }}</span>
-            <button type="button" onclick="this.parentElement.style.display='none';">&times;</button>
-        </div>
+        {{ success_message(success_message) }}
         {% else %}
-        <!-- Success message container for JavaScript-created messages -->
-        <div class="success-message" id="js-success-message" style="display: none;">
-            <span id="js-success-text"></span>
-            <button type="button" onclick="this.parentElement.style.display='none';">&times;</button>
-        </div>
+        {{ success_message() }}
         {% endif %}
-
-        <script>
-            // Check for success parameter in URL and display appropriate message
-            document.addEventListener('DOMContentLoaded', function() {
-                const urlParams = new URLSearchParams(window.location.search);
-                const success = urlParams.get('success');
-                const messageEl = document.getElementById('js-success-message');
-                const textEl = document.getElementById('js-success-text');
-                
-                if (success === 'dive_created') {
-                    textEl.textContent = 'Dive log created successfully!';
-                    messageEl.style.display = 'block';
-                    
-                    // Auto-hide after 5 seconds
-                    setTimeout(() => {
-                        messageEl.style.display = 'none';
-                    }, 5000);
-                    
-                    // Remove the query parameter
-                    history.replaceState(null, '', window.location.pathname);
-                }
-                else if (success === 'dive_created_with_profile') {
-                    textEl.textContent = 'Dive log created successfully with dive profile data!';
-                    messageEl.style.display = 'block';
-                    
-                    // Auto-hide after 5 seconds
-                    setTimeout(() => {
-                        messageEl.style.display = 'none';
-                    }, 5000);
-                    
-                    // Remove the query parameter
-                    history.replaceState(null, '', window.location.pathname);
-                }
-            });
-        </script>
 
         <div class="map-section">
             <h2>My Dive Map</h2>
@@ -669,6 +629,7 @@
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
 <script src="{{ url_for('static', filename='js/dive_profile_chart.js') }}"></script>
+{{ notification_js() }}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Check URL for edit_dive parameter
@@ -693,14 +654,6 @@
         
         // Setup modals
         setupModals();
-        
-        // Auto-hide success message after 5 seconds
-        const successMessage = document.getElementById('success-message');
-        if (successMessage) {
-            setTimeout(() => {
-                successMessage.style.display = 'none';
-            }, 5000);
-        }
     });
 
     // Helper function for API requests

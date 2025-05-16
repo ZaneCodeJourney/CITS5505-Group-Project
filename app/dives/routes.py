@@ -1,6 +1,6 @@
 # app/dives/routes.py
 
-from flask import request, jsonify, abort, current_app, url_for
+from flask import request, jsonify, abort, current_app, url_for, render_template
 from app.models import Dive
 from app.dives import dives_bp
 from app import db
@@ -454,91 +454,4 @@ def create_sample_dive():
 # HTML route for testing CSV uploads
 @dives_bp.route('/test_upload/<int:dive_id>', methods=['GET'])
 def test_upload_page(dive_id):
-    from flask import render_template_string
-    
-    csrf_token = generate_csrf()
-    
-    html = """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>CSV Upload Test</title>
-        <meta name="csrf-token" content="{{ csrf_token }}">
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                margin: 20px;
-                line-height: 1.6;
-            }
-            .container {
-                max-width: 800px;
-                margin: 0 auto;
-                padding: 20px;
-                border: 1px solid #ddd;
-                border-radius: 5px;
-            }
-            .form-group {
-                margin-bottom: 15px;
-            }
-            label {
-                display: block;
-                margin-bottom: 5px;
-            }
-            input[type="file"] {
-                padding: 8px 0;
-            }
-            button {
-                padding: 10px 15px;
-                background-color: #4285f4;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            .result {
-                margin-top: 20px;
-                padding: 10px;
-                border: 1px solid #ddd;
-                border-radius: 5px;
-                background-color: #f9f9f9;
-            }
-            .sample {
-                font-family: monospace;
-                white-space: pre;
-                background-color: #f5f5f5;
-                padding: 10px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                overflow-x: auto;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>Direct CSV Upload Test</h1>
-            <p>Use this form to upload a CSV file for dive #{{ dive_id }}.</p>
-            
-            <form id="uploadForm" action="/api/dives/{{ dive_id }}/upload-csv" method="post" enctype="multipart/form-data">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                <div class="form-group">
-                    <label for="csvFile">CSV File:</label>
-                    <input type="file" id="csvFile" name="profile_csv" accept=".csv" required>
-                    <p><small>The CSV file should have columns for time and depth.</small></p>
-                </div>
-                
-                <div class="form-group">
-                    <h3>Sample CSV Format:</h3>
-                    <div class="sample">Time (min),Depth (m),Temperature (°C),Air (bar)
-0,0,26,200
-3,5,25,190
-6,10,24,180</div>
-                </div>
-                
-                <button type="submit">Upload CSV</button>
-            </form>
-        </div>
-    </body>
-    </html>
-    """
-    
-    return render_template_string(html, dive_id=dive_id, csrf_token=csrf_token)
+    return render_template('dive_logs/csv_upload_test.html', dive_id=dive_id, title='CSV Upload Test')

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% from "components/dive_card.html" import dive_card %}
+{% from "components/search.html" import search_form, search_css, search_js %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dive_log.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/my_logs.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{{ search_css() }}
+<style>
+    /* Alert styling */
+    .alert {
+        padding: 12px 15px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+    }
+    
+    .alert-warning {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+    }
+    
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    /* Additional styling would be included here */
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="my-logs-container">
+    <div class="sidebar">
+        <div class="stats-section">
+            <h3>My Dive Logs</h3>
+            <div class="stat-item">
+                <span class="stat-label">Total Dives:</span>
+                <span class="stat-value">{{ dives|length }}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Total Dive Time:</span>
+                <span class="stat-value">{{ total_dive_time }} min</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Max Depth:</span>
+                <span class="stat-value">{{ max_depth|round(1) }}m</span>
+            </div>
+        </div>
+        
+        <div class="filters-section">
+            <h3>Filters</h3>
+            <!-- Filters would be included here -->
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="page-header">
+            <h1>My Dive Logs</h1>
+            <a href="{{ url_for('main.new_log') }}" class="btn btn-primary">Add New Dive</a>
+        </div>
+
+        {{ search_form(
+            placeholder="Search dive logs...", 
+            id_prefix="dive-search",
+            item_selector=".log-card", 
+            search_fields=[".log-header h3", ".log-notes p"]
+        ) }}
+
+        <div class="logs-list">
+            {% if dives %}
+                {% for dive in dives %}
+                    {{ dive_card(dive) }}
+                {% endfor %}
+            {% else %}
+                <div class="no-logs-message">
+                    <p>You haven't logged any dives yet. <a href="{{ url_for('main.new_log') }}">Create your first dive log</a>.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- The modal components would be included here -->
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<script src="{{ url_for('static', filename='js/dive_profile_chart.js') }}"></script>
+{{ search_js() }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize maps and charts
+    // Setup event listeners
+});
+</script>
+{% endblock %} 

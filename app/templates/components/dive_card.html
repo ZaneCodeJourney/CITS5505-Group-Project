@@ -1,0 +1,104 @@
+{% macro dive_card(dive, shared_by=None, token=None, shared_date=None) %}
+<div class="log-card" data-dive-id="{{ dive.id }}" data-location="{{ dive.location }}" data-latitude="{{ dive.latitude|default('') }}" data-longitude="{{ dive.longitude|default('') }}">
+    <div class="log-header">
+        <h3>{{ dive.location }}</h3>
+        <span class="date">{{ dive.start_time.strftime('%B %d, %Y') }}</span>
+        {% if dive.profile_csv_data %}
+        <span class="badge computer-data">Dive Computer Data</span>
+        {% endif %}
+    </div>
+    <div class="log-details">
+        <div class="detail-item">
+            <span class="detail-icon">⏱️</span>
+            <span class="detail-label">Duration:</span>
+            <span class="detail-value">
+                {% if dive.start_time and dive.end_time %}
+                    {{ ((dive.end_time - dive.start_time).total_seconds() / 60)|round|int }} min
+                {% else %}
+                    -
+                {% endif %}
+            </span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-icon">📏</span>
+            <span class="detail-label">Max Depth:</span>
+            <span class="detail-value">{{ dive.max_depth|round(1) }}m</span>
+        </div>
+        {% if dive.visibility %}
+        <div class="detail-item">
+            <span class="detail-icon">👁️</span>
+            <span class="detail-label">Visibility:</span>
+            <span class="detail-value">{{ dive.visibility }}</span>
+        </div>
+        {% endif %}
+        {% if dive.weather %}
+        <div class="detail-item">
+            <span class="detail-icon">☁️</span>
+            <span class="detail-label">Weather:</span>
+            <span class="detail-value">{{ dive.weather }}</span>
+        </div>
+        {% endif %}
+        {% if shared_by %}
+        <div class="detail-item">
+            <span class="detail-icon">👤</span>
+            <span class="detail-label">Shared by:</span>
+            <span class="detail-value">{{ shared_by }}</span>
+        </div>
+        {% endif %}
+        {% if shared_date %}
+        <div class="detail-item">
+            <span class="detail-icon">📅</span>
+            <span class="detail-label">Shared on:</span>
+            <span class="detail-value">{{ shared_date.strftime('%b %d, %Y') }}</span>
+        </div>
+        {% endif %}
+    </div>
+    
+    {% if dive.profile_csv_data %}
+    <!-- Dive Profile Chart Section -->
+    <div class="dive-profile-section">
+        <h4>Dive Profile</h4>
+        <div class="profile-stats">
+            <div class="stat-box">
+                <span class="stat-label">Max Depth</span>
+                <span class="stat-value">{{ dive.max_depth|round(1) }} m</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Dive Time</span>
+                <span class="stat-value">
+                    {% if dive.start_time and dive.end_time %}
+                        {{ ((dive.end_time - dive.start_time).total_seconds() / 60)|round|int }} min
+                    {% else %}
+                        -
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+        <div class="dive-profile-chart-container">
+            <canvas id="dive-profile-chart-{{ dive.id }}" data-csv-data="{{ dive.profile_csv_data|e }}"></canvas>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if dive.dive_partner %}
+    <div class="log-buddies">
+        <span class="buddy-label">Dive Buddies:</span>
+        <div class="buddy-list">
+            <span class="buddy">{{ dive.dive_partner }}</span>
+        </div>
+    </div>
+    {% endif %}
+    {% if dive.notes %}
+    <div class="log-notes">
+        <p>{{ dive.notes }}</p>
+    </div>
+    {% endif %}
+    <div class="log-actions">
+        {% if token %}
+        <a href="#" class="btn btn-small view-details" data-token="{{ token }}">View Details</a>
+        {% else %}
+        <a href="{{ url_for('main.dive_details', dive_id=dive.id) }}" class="btn btn-small view-details">View Details</a>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %} 

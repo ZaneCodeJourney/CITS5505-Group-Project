@@ -409,6 +409,9 @@
         <input type="hidden" id="user-id" value="">
         {% endif %}
         
+        <!-- Add CSRF token hidden field -->
+        <input type="hidden" name="csrf_token" id="csrf-token" value="{{ csrf_token() }}">
+        
         <div class="section-title">Dive Site Information</div>
         
         <div class="form-group">
@@ -698,6 +701,10 @@
         // Show submitting message
         showAlert('Submitting report, please wait...', 'info');
         
+        // Get CSRF token for including in JSON data
+        const csrfToken = document.getElementById('csrf-token').value || 
+                          document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
         // Prepare JSON data
         const jsonData = {
             user_id: parseInt(userId) || 0,  // Ensure user_id is always an integer, use 0 if parsing fails
@@ -705,7 +712,8 @@
             size_estimate: sizeEstimate,
             description: customSiteInfo ? customSiteInfo + description : description,
             severity: severity,
-            status: 'active'
+            status: 'active',
+            csrf_token: csrfToken // Include CSRF token in JSON data as well
         };
         
         // Add optional fields
@@ -718,23 +726,38 @@
             let response;
             
             try {
+                // Get CSRF token - try multiple methods to ensure we have a valid token
+                const metaToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                const formToken = document.getElementById('csrf-token').value;
+                const csrfToken = formToken || metaToken;
+                
+                console.log("Using CSRF token:", csrfToken ? "Found token" : "No token found");
+                
                 response = await fetch(`/api/shark-warnings/site/${siteId}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'X-CSRF-Token': csrfToken
                     },
-                    body: JSON.stringify(jsonData)
+                    body: JSON.stringify(jsonData),
+                    credentials: 'same-origin'
                 });
             } catch (error) {
-                console.log("First attempt failed, trying alternative path");
+                console.log("First attempt failed, trying alternative path", error);
+                
+                // Get CSRF token again in case there was an issue
+                const metaToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                const formToken = document.getElementById('csrf-token').value;
+                const csrfToken = formToken || metaToken;
+                
                 response = await fetch(`/shark/site/${siteId}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json', 
-                        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'X-CSRF-Token': csrfToken
                     },
-                    body: JSON.stringify(jsonData)
+                    body: JSON.stringify(jsonData),
+                    credentials: 'same-origin'
                 });
             }
             

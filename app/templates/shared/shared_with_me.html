@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% from "components/dive_card.html" import dive_card %}
+{% from "components/search.html" import search_form, search_css, search_js %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dive_log.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/my_logs.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{{ search_css() }}
+{% endblock %}
+
+{% block content %}
+<div class="my-logs-container">
+    <div class="sidebar">
+        <div class="stats-section">
+            <h3>Shared Dives</h3>
+            <div class="stat-item">
+                <span class="stat-label">Total Shared:</span>
+                <span class="stat-value">{{ shared_dives|length }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="page-header">
+            <h1>Dives Shared With Me</h1> 
+        </div>
+
+        {{ search_form(
+            placeholder="Search by user who shared with you...", 
+            id_prefix="share-search", 
+            item_selector=".log-card", 
+            search_fields=[".detail-item:nth-child(5) .detail-value"]
+        ) }}
+
+        <div class="logs-list">
+            {% if shared_dives %}
+                {% for shared_dive in shared_dives %}
+                    {{ dive_card(shared_dive.dive, shared_dive.shared_by, shared_dive.token, shared_dive.shared_date) }}
+                {% endfor %}
+            {% else %}
+                <div class="no-logs-message">
+                    <p>No dives have been shared with you yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<script src="{{ url_for('static', filename='js/dive_profile_chart.js') }}"></script>
+{{ search_js() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // The dive_profile_chart.js library will handle chart initialization 
+    // when the page loads. No need for manual initialization.
+    
+    // Setup event listeners for View Details buttons
+    setupEventListeners();
+});
+
+function setupEventListeners() {
+    // View details buttons
+    const viewDetailsButtons = document.querySelectorAll('.view-details');
+    viewDetailsButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            if (this.getAttribute('href') === '#') {
+                e.preventDefault();
+                const token = this.dataset.token;
+                // Redirect to shared dive details page
+                window.location.href = `/shared/dive/${token}`;
+            }
+        });
+    });
+}
+</script>
+{% endblock %} 
