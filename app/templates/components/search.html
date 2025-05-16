@@ -1,0 +1,24 @@
+{% macro search_form(placeholder="Search...", id_prefix="search", item_selector=".item", search_fields=[]) %}
+<div class="search-container" 
+     data-search 
+     data-search-id-prefix="{{ id_prefix }}" 
+     data-search-item-selector="{{ item_selector }}" 
+     data-search-fields="{{ search_fields|tojson|safe }}">
+    <div class="search-form">
+        <div class="search-input-wrapper">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="{{ id_prefix }}-input" class="form-control" placeholder="{{ placeholder }}">
+        </div>
+        <button id="{{ id_prefix }}-button" class="btn btn-primary">Search</button>
+        <button id="{{ id_prefix }}-reset" class="btn btn-secondary">Clear</button>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro search_css() %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/search.css') }}">
+{% endmacro %}
+
+{% macro search_js() %}
+<script src="{{ url_for('static', filename='js/search.js') }}"></script>
+{% endmacro %} 

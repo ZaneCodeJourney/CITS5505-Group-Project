@@ -1,0 +1,48 @@
+<div class="form-section">
+    <h2>Dive Information</h2>
+    
+    <div class="form-row">
+        <div class="form-group">
+            <label for="dive-site">Dive Site Name*</label>
+            <input type="text" id="dive-site" name="location" placeholder="e.g. Great Barrier Reef - Cod Hole" required>
+        </div>
+        <div class="form-group">
+            <label for="dive-date">Date*</label>
+            <input type="date" id="dive-date" name="dive-date" required>
+        </div>
+    </div>
+    
+    <div class="form-row">
+        <div class="form-group">
+            <label for="dive-location">Location</label>
+            <input type="text" id="dive-location" name="dive-location" placeholder="e.g. Queensland, Australia">
+        </div>
+        <div class="form-group">
+            <label for="dive-type">Dive Type</label>
+            <select id="dive-type" name="dive-type">
+                <option value="reef">Reef Dive</option>
+                <option value="wreck">Wreck Dive</option>
+                <option value="cave">Cave Dive</option>
+                <option value="wall">Wall Dive</option>
+                <option value="drift">Drift Dive</option>
+                <option value="night">Night Dive</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="map-form-section">
+        <label for="dive-map">Pin Dive Location on Map</label>
+        <div id="dive-location-map"></div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="latitude">Latitude</label>
+                <input type="text" id="latitude" name="latitude" placeholder="e.g. -16.6818">
+            </div>
+            <div class="form-group">
+                <label for="longitude">Longitude</label>
+                <input type="text" id="longitude" name="longitude" placeholder="e.g. 145.9919">
+            </div>
+        </div>
+    </div>
+</div> 

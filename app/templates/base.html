@@ -6,6 +6,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% if title %}{{ title }} - {% endif %}DiveLogger</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ui_utilities.css') }}">
+    {% from "components/notifications.html" import notification_styles %}
+    {{ notification_styles() }}
     {% block styles %}{% endblock %}
 </head>
 <body>
@@ -37,6 +40,8 @@
     </header>
 
     <main>
+        {% from "components/notifications.html" import notification_container, notification_js, notification_styles %}
+        {{ notification_container() }}
         {% block content %}{% endblock %}
     </main>
 
@@ -89,6 +94,7 @@
 
     <script src="{{ url_for('static', filename='js/csrf-handler.js') }}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {{ notification_js() }}
     {% block scripts %}{% endblock %}
 </body>
 </html> 

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dive_log.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="main-content wide">
+        <div class="page-header">
+            <h1>Add New Dive Log</h1>
+            <p>Log your underwater adventure with all important details</p>
+        </div>
+
+        <form class="dive-log-form" id="diveLogForm" method="POST">
+            {% include "dive_logs/partials/dive_form_information.html" %}
+            {% include "dive_logs/partials/dive_form_details.html" %}
+            {% include "dive_logs/partials/dive_form_equipment.html" %}
+            {% include "dive_logs/partials/dive_form_buddies.html" %}
+            {% include "dive_logs/partials/dive_form_species.html" %}
+            {% include "dive_logs/partials/dive_form_notes_media.html" %}
+            {% include "dive_logs/partials/dive_form_import.html" %}
+
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Dive Log</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="{{ url_for('static', filename='js/new_log.js') }}"></script>
+{% endblock %} 

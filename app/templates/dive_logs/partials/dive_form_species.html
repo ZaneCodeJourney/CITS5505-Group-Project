@@ -1,0 +1,30 @@
+<div class="form-section">
+    <h2>Species Sightings</h2>
+    
+    <div class="species-search-section">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="species-search">Search for Species</label>
+                <div class="search-input-container">
+                    <input type="text" id="species-search" placeholder="e.g. grey shark, manta ray, sea turtle">
+                    <button type="button" id="search-species-btn" class="btn btn-secondary">Search</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="species-search-results" class="species-search-results">
+            <!-- Search results will be displayed here -->
+        </div>
+        
+        <div id="selected-species-list" class="selected-species-list">
+            <h4>Species You've Seen</h4>
+            <div id="selected-species-container" class="selected-species-container">
+                <!-- No species added yet message -->
+                <div id="no-species-message" class="no-species-message">
+                    No species added yet. Search for species you saw on this dive.
+                </div>
+                <!-- Selected species will be added here -->
+            </div>
+        </div>
+    </div>
+</div> 
