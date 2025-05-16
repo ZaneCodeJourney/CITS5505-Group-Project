@@ -5,7 +5,7 @@
 | Name            | Student Number | Github Username |
 | --------------- | -------------- | --------------- |
 | Jiaao Li        | 24140443       | Jaffrey29       |
-| Kunhong Zou**** | 24257885       | KevinZ-24       |
+| Kunhong Zou     | 24257885       | KevinZ-24       |
 | Ziyang Wen      | 23995281       | ZaneCodeJourney |
 | Aadil Vagh      | 22791631       | aadilvagh       |
 
