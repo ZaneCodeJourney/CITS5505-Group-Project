@@ -1,6 +1,7 @@
 // Initialize the map
 let map;
 let marker;
+let selectedSpecies = []; // Array to store selected species
 
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize the map if the map container exists
@@ -80,6 +81,24 @@ document.addEventListener('DOMContentLoaded', function() {
     if (fileInput) {
         fileInput.addEventListener('change', handleFilePreview);
     }
+
+    // Setup species search
+    const searchButton = document.getElementById('search-species-btn');
+    const searchInput = document.getElementById('species-search');
+    
+    if (searchButton && searchInput) {
+        searchButton.addEventListener('click', function() {
+            searchSpecies(searchInput.value);
+        });
+        
+        // Also search when pressing Enter in the search field
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Prevent form submission
+                searchSpecies(searchInput.value);
+            }
+        });
+    }
 });
 
 // Add a marker to the map
@@ -145,6 +164,137 @@ function handleFilePreview(e) {
             }
         }
     }
+}
+
+// Search for species using the iNaturalist API
+async function searchSpecies(query) {
+    if (!query || query.trim().length < 2) {
+        alert('Please enter at least 2 characters to search for species.');
+        return;
+    }
+
+    const searchResults = document.getElementById('species-search-results');
+    searchResults.innerHTML = '<p>Searching...</p>';
+    searchResults.classList.add('active');
+
+    try {
+        const response = await fetch(`/api/species/search?q=${encodeURIComponent(query)}`);
+        
+        if (!response.ok) {
+            throw new Error('Species search failed');
+        }
+        
+        const data = await response.json();
+        
+        // Display results
+        searchResults.innerHTML = '';
+        
+        if (data.length === 0) {
+            searchResults.innerHTML = '<p>No species found. Try a different search term.</p>';
+            return;
+        }
+        
+        for (const species of data) {
+            const resultItem = document.createElement('div');
+            resultItem.className = 'species-result-item';
+            
+            const speciesInfo = document.createElement('div');
+            speciesInfo.className = 'species-info';
+            
+            const speciesName = document.createElement('div');
+            speciesName.className = 'species-name';
+            speciesName.textContent = species.common_name || 'Unknown common name';
+            
+            const speciesScientific = document.createElement('div');
+            speciesScientific.className = 'species-scientific';
+            speciesScientific.textContent = species.scientific_name;
+            
+            speciesInfo.appendChild(speciesName);
+            speciesInfo.appendChild(speciesScientific);
+            
+            const addButton = document.createElement('button');
+            addButton.className = 'add-species-btn';
+            addButton.textContent = 'Add';
+            addButton.type = 'button';
+            addButton.addEventListener('click', function() {
+                addSpeciesToSelection(species);
+                searchResults.classList.remove('active');
+                document.getElementById('species-search').value = '';
+            });
+            
+            resultItem.appendChild(speciesInfo);
+            resultItem.appendChild(addButton);
+            
+            searchResults.appendChild(resultItem);
+        }
+    } catch (error) {
+        console.error('Error searching for species:', error);
+        searchResults.innerHTML = '<p>Error searching for species. Please try again.</p>';
+    }
+}
+
+// Add a species to the selected species list
+function addSpeciesToSelection(species) {
+    // Check if species is already in the selection
+    if (selectedSpecies.some(s => s.taxon_id === species.taxon_id)) {
+        return;
+    }
+    
+    // Add to our selected species array
+    selectedSpecies.push(species);
+    
+    // Update the UI
+    updateSelectedSpeciesUI();
+}
+
+// Update the selected species UI
+function updateSelectedSpeciesUI() {
+    const container = document.getElementById('selected-species-container');
+    const noSpeciesMessage = document.getElementById('no-species-message');
+    
+    // Clear container (except for the no-species message)
+    const tags = container.querySelectorAll('.species-tag');
+    tags.forEach(tag => tag.remove());
+    
+    // Show/hide the "no species" message
+    if (selectedSpecies.length === 0) {
+        noSpeciesMessage.style.display = 'block';
+        return;
+    } else {
+        noSpeciesMessage.style.display = 'none';
+    }
+    
+    // Add each species as a tag
+    for (let i = 0; i < selectedSpecies.length; i++) {
+        const species = selectedSpecies[i];
+        
+        const tag = document.createElement('div');
+        tag.className = 'species-tag';
+        
+        const tagName = document.createElement('span');
+        tagName.className = 'species-tag-name';
+        tagName.textContent = species.common_name || species.scientific_name;
+        
+        const removeButton = document.createElement('button');
+        removeButton.className = 'species-tag-remove';
+        removeButton.innerHTML = '&times;';
+        removeButton.setAttribute('title', 'Remove');
+        removeButton.type = 'button'; // Prevent form submission
+        removeButton.addEventListener('click', function() {
+            removeSpeciesFromSelection(i);
+        });
+        
+        tag.appendChild(tagName);
+        tag.appendChild(removeButton);
+        
+        container.appendChild(tag);
+    }
+}
+
+// Remove a species from the selection
+function removeSpeciesFromSelection(index) {
+    selectedSpecies.splice(index, 1);
+    updateSelectedSpeciesUI();
 }
 
 // Handle form submission
@@ -230,16 +380,34 @@ async function handleFormSubmit(e) {
                 const csvUploadResult = await uploadFile(`/api/dives/${diveId}/upload-csv`, csvFormData);
                 
                 console.log('CSV data upload success:', csvUploadResult);
-                // Redirect to my-logs with success message
-                window.location.href = '/my-logs?success=dive_created_with_profile';
             } catch (error) {
                 console.error('CSV upload error:', error);
-                // Still redirect to logs page
                 alert('The dive log was created, but there was an issue uploading the CSV file. You can try adding it later.');
+            }
+        }
+        
+        // Step 4: Add selected species to the dive
+        if (selectedSpecies.length > 0) {
+            console.log('Adding species to dive:', selectedSpecies);
+            
+            try {
+                for (const species of selectedSpecies) {
+                    await apiRequest(`/api/species/dive/${diveId}/species`, 'POST', {
+                        taxon_id: species.taxon_id,
+                        scientific_name: species.scientific_name,
+                        common_name: species.common_name,
+                        rank: species.rank
+                    });
+                }
+                console.log('All species added successfully');
+                window.location.href = '/my-logs?success=dive_created_with_species';
+            } catch (error) {
+                console.error('Error adding species:', error);
+                alert('The dive log was created, but there was an issue adding some species. You can add them later.');
                 window.location.href = '/my-logs?success=dive_created';
             }
         } else {
-            // No CSV file selected, just redirect to logs page
+            // No species selected, just redirect to logs page
             window.location.href = '/my-logs?success=dive_created';
         }
     } catch (error) {
