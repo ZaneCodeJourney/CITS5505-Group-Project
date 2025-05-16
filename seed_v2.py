@@ -245,6 +245,25 @@ SPECIES_KEYWORDS = [
     "anemone fish"
 ]
 
+# Add realistic dive notes
+DIVE_NOTES = [
+    "Amazing visibility today! Spotted a group of {0} swimming near the reef wall.",
+    "Water was a bit chilly at {0}°C. Used my {1} which kept me comfortable throughout the dive.",
+    "Strong current from the north made navigation challenging. Saw several {0} and a large school of barracuda.",
+    "Perfect conditions with crystal clear water. Highlight was definitely the {0} at around {1}m depth.",
+    "Fantastic dive! {0} visibility and calm waters. My {1} performed really well.",
+    "Encountered a friendly {0} that followed us for about 5 minutes of the dive.",
+    "Some surge near the surface but beautiful at depth. Spotted a rare {0} hiding under a coral ledge.",
+    "Buddy and I explored the {0} side of the reef. Incredible diversity of marine life including {1}.",
+    "Water temp was {0}°C at the surface, dropping to {1}°C at max depth. Saw lots of reef fish and coral.",
+    "Challenging entry due to waves but worth it! Incredible {0} sighting and great viz.",
+    "My new {0} worked perfectly. Great buoyancy control throughout. Spotted several {1} during the safety stop.",
+    "First time using {0}% nitrox - definitely noticed the difference in energy levels. Beautiful {1} sightings.",
+    "Saw my first {0} today! Also practiced navigation skills and maintained good air consumption.",
+    "Excellent wall dive with dramatic drop-off. Lots of {0} in the blue and a curious {1} approached us.",
+    "Challenging conditions with low visibility ({0}m) but still managed to spot a {1} and several nudibranchs."
+]
+
 # ---------------------------------------------------------------------------
 # Main seeding logic
 # ---------------------------------------------------------------------------
@@ -331,6 +350,25 @@ def seed():
                 dive_end = dive_start + timedelta(minutes=duration)
 
                 max_depth = random.uniform(12, 35)
+                
+                # Generate more realistic dive notes for demo user too
+                temp = round(random.uniform(18, 28), 1)
+                temp_bottom = round(temp - (max_depth * 0.15), 1)
+                visibility_val = random.choice(["Excellent", "Good", "Fair"])
+                suit = random.choice(["Wetsuit", "Shorty", "Drysuit"])
+                marine_life = random.choice(["sea turtles", "reef sharks", "manta rays", "moray eels", 
+                                           "octopus", "lionfish", "clownfish", "parrotfish", "barracuda"])
+                equipment = random.choice(["regulator", "BCD", "dive computer", "camera", "fins", "mask"])
+                
+                # Format the note with actual values
+                note_template = random.choice(DIVE_NOTES)
+                format_values = [
+                    marine_life, round(max_depth, 1), suit, temp, temp_bottom, 
+                    visibility_val, equipment, random.randint(21, 36)
+                ]
+                # Use only the first two format values to avoid IndexError
+                note = note_template.format(*format_values[:2])
+                note = f"Dive at {site.name}: {note}"
 
                 dive = Dive(
                     user_id=demo_user.id,
@@ -339,12 +377,12 @@ def seed():
                     end_time=dive_end,
                     max_depth=max_depth,
                     weight_belt=f"{random.randint(8, 14)} kg",
-                    visibility=random.choice(["Excellent", "Good", "Fair"]),
+                    visibility=visibility_val,
                     weather=random.choice(["Sunny", "Partly Cloudy", "Cloudy"]),
                     location=f"{site.name} ({site.lat}, {site.lng})",
-                    notes=f"Seeded dive at {site.name}.",
+                    notes=note,
                     created_at=datetime.utcnow(),
-                    suit_type=random.choice(["Wetsuit", "Shorty", "Drysuit"]),
+                    suit_type=suit,
                     suit_thickness=random.uniform(3, 7),
                     weight=random.uniform(8, 14),
                     tank_type=random.choice(["Aluminum", "Steel"]),
@@ -380,19 +418,46 @@ def seed():
                 site = random.choice(list(site_objs.values()))
                 start = random_date(datetime.utcnow() - timedelta(days=365), datetime.utcnow())
                 end = start + timedelta(minutes=random.randint(30, 80))
+                
+                # Generate more realistic dive notes with formatting
+                max_depth_val = round(random.uniform(10, 40), 1)
+                temp = round(random.uniform(18, 28), 1)
+                temp_bottom = round(temp - (max_depth_val * 0.15), 1)
+                visibility_val = random.choice(["Excellent", "Good", "Fair"])
+                suit = random.choice(["Wetsuit", "Shorty", "Drysuit"])
+                marine_life = random.choice(["sea turtles", "reef sharks", "manta rays", "moray eels", 
+                                           "octopus", "lionfish", "clownfish", "parrotfish", "barracuda"])
+                equipment = random.choice(["regulator", "BCD", "dive computer", "camera", "fins", "mask"])
+                
+                # Format the note with actual values
+                note_template = random.choice(DIVE_NOTES)
+                format_values = [
+                    marine_life, max_depth_val, suit, temp, temp_bottom, 
+                    visibility_val, equipment, random.randint(21, 36)
+                ]
+                # Use only the first two format values to avoid IndexError
+                note = note_template.format(*format_values[:2])
+                note = f"Dive at {site.name}: {note}"
 
                 dive = Dive(
                     user_id=user.id,
                     dive_number=i + 1,
                     start_time=start,
                     end_time=end,
-                    max_depth=random.uniform(10, 40),
-                    visibility=random.choice(["Excellent", "Good", "Fair"]),
+                    max_depth=max_depth_val,
+                    visibility=visibility_val,
                     weather=random.choice(["Sunny", "Cloudy", "Rain"]),
                     location=f"{site.name} ({site.lat}, {site.lng})",
-                    notes="Seeded dive.",
+                    notes=note,
                     created_at=datetime.utcnow(),
                     profile_csv_data=generate_dive_profile_csv(),
+                    suit_type=suit,
+                    suit_thickness=random.uniform(3, 7),
+                    weight=random.uniform(8, 14),
+                    tank_type=random.choice(["Aluminum", "Steel"]),
+                    tank_size=random.choice([10, 12, 15]),
+                    gas_mix=random.choice(["Air", "Nitrox"]),
+                    o2_percentage=random.choice([21, 32, 36]) if random.random() > 0.5 else 21,
                 )
                 db.session.add(dive)
                 db.session.flush()
