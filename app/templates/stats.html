@@ -66,14 +66,28 @@
     }
 
     .map-card {
-        grid-column: 1 / -1; /* Make the map span the full width */
+        grid-column: span 2;
+    }
+    
+    /* New styles for map section layout */
+    .map-section {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 20px;
+        grid-column: 1 / -1;
+    }
+    
+    @media (max-width: 992px) {
+        .map-section {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container">
-    <h1>My Diving Statistics</h1>
+    <h1>My Diving Statistics Dashboard</h1>
     
     <div class="stats-container">
         <div class="stats-card">
@@ -95,9 +109,16 @@
     </div>
     
     <div class="charts-container">
-        <div class="chart-card map-card">
-            <h3 class="chart-title">Your Dive Locations Heatmap</h3>
-            <div id="diveMapContainer"></div>
+        <div class="map-section">
+            <div class="chart-card">
+                <h3 class="chart-title">Your Dive Locations Heatmap</h3>
+                <div id="diveMapContainer"></div>
+            </div>
+            
+            <div class="chart-card">
+                <h3 class="chart-title">Dives by Location</h3>
+                <canvas id="locationChart"></canvas>
+            </div>
         </div>
         
         <div class="chart-card">
@@ -107,10 +128,6 @@
         <div class="chart-card">
             <h3 class="chart-title">Dive Duration Over Time</h3>
             <canvas id="durationChart"></canvas>
-        </div>
-        <div class="chart-card">
-            <h3 class="chart-title">Dives by Location</h3>
-            <canvas id="locationChart"></canvas>
         </div>
         <div class="chart-card">
             <h3 class="chart-title">Monthly Dive Activity</h3>
