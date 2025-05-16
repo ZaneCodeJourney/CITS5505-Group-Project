@@ -72,6 +72,7 @@ class Dive(db.Model):
 
     # Relationships
     shares = db.relationship('Share', backref='dive', lazy='dynamic')
+    species = db.relationship('DiveSpecies', backref='dive', lazy='dynamic')
     
     def __repr__(self):
         return f"<Dive #{self.dive_number} by User {self.user_id}>"
@@ -101,6 +102,35 @@ class Dive(db.Model):
             'gas_mix': self.gas_mix,
             'o2_percentage': self.o2_percentage,
             'profile_csv_data': self.profile_csv_data,
+            'species': [species.to_dict() for species in self.species]
+        }
+
+
+class DiveSpecies(db.Model):
+    __tablename__ = 'dive_species'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    dive_id = db.Column(db.Integer, db.ForeignKey('dives.id'), nullable=False)
+    taxon_id = db.Column(db.Integer, nullable=False)  # iNaturalist taxon ID
+    scientific_name = db.Column(db.String(255), nullable=False)
+    common_name = db.Column(db.String(255))
+    rank = db.Column(db.String(50))
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f"<DiveSpecies {self.common_name or self.scientific_name} in Dive {self.dive_id}>"
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'dive_id': self.dive_id,
+            'taxon_id': self.taxon_id,
+            'scientific_name': self.scientific_name,
+            'common_name': self.common_name,
+            'rank': self.rank,
+            'notes': self.notes,
+            'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
 
