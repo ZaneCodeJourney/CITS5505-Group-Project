@@ -1,89 +1,7 @@
 {% extends "base.html" %}
 
 {% block styles %}
-<style>
-    .auth-container {
-        max-width: 500px;
-        margin: 2rem auto;
-        padding: 2rem;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        background-color: #fff;
-    }
-    
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-    
-    .form-group label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: bold;
-    }
-    
-    .form-control {
-        width: 100%;
-        padding: 0.75rem;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 16px;
-    }
-    
-    .form-control:focus {
-        border-color: #007bff;
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-    }
-    
-    .btn-primary {
-        background-color: #007bff;
-        color: white;
-        border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 16px;
-        font-weight: bold;
-        width: 100%;
-    }
-    
-    .btn-primary:hover {
-        background-color: #0069d9;
-    }
-    
-    .error-message {
-        color: #dc3545;
-        font-size: 14px;
-        margin-top: 0.5rem;
-        display: none;
-    }
-    
-    .form-title {
-        text-align: center;
-        margin-bottom: 2rem;
-        color: #343a40;
-    }
-    
-    .register-link {
-        text-align: center;
-        margin-top: 1.5rem;
-    }
-
-    .remember-me {
-        display: flex;
-        align-items: center;
-        margin-bottom: 1.5rem;
-    }
-
-    .remember-me input {
-        margin-right: 0.5rem;
-    }
-
-    .forgot-password {
-        text-align: right;
-        margin-bottom: 1.5rem;
-    }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -122,50 +40,6 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('login-form');
-        
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            // Reset previous error messages
-            document.querySelectorAll('.error-message').forEach(el => {
-                el.style.display = 'none';
-                el.textContent = '';
-            });
-            
-            try {
-                // Prepare login data
-                const loginData = {
-                    email: document.getElementById('email').value,
-                    password: document.getElementById('password').value,
-                    remember: document.getElementById('remember').checked
-                };
-                
-                // Use the centralized API request function
-                const data = await apiRequest('/api/auth/login', 'POST', loginData);
-                
-                // Success - redirect to homepage or dashboard
-                window.location.href = '/';
-                
-            } catch (error) {
-                console.error('Login error:', error);
-                
-                // Handle specific errors
-                if (error.message.includes('Invalid email or password')) {
-                    const errorEl = document.getElementById('email-error');
-                    errorEl.textContent = 'Invalid email or password';
-                    errorEl.style.display = 'block';
-                } else if (error.message.includes('Account is deactivated')) {
-                    const errorEl = document.getElementById('email-error');
-                    errorEl.textContent = 'This account has been deactivated';
-                    errorEl.style.display = 'block';
-                } else {
-                    alert('Login error: ' + error.message);
-                }
-            }
-        });
-    });
-</script>
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
 {% endblock %} 
