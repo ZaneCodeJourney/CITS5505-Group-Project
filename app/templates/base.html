@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% if title %}{{ title }} - {% endif %}DiveLogger</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='DL_Favicon_32x32.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/ui_utilities.css') }}">
     {% from "components/notifications.html" import notification_styles %}
