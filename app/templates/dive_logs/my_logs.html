@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dive_log.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/my_logs.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/my_logs_extra.css') }}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 {{ search_css() }}
 <style>
@@ -98,6 +99,7 @@
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
 <script src="{{ url_for('static', filename='js/dive_profile_chart.js') }}"></script>
+<script src="{{ url_for('static', filename='js/my_logs.js') }}"></script>
 {{ search_js() }}
 
 <script>

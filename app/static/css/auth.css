@@ -54,6 +54,23 @@
     display: none;
 }
 
+.password-requirements {
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+.form-title {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #343a40;
+}
+
+.login-link {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
 .success-message {
     color: #28a745;
     font-size: 14px;
@@ -64,12 +81,6 @@
     background-color: #d4edda;
     border-radius: 4px;
     margin-bottom: 1rem;
-}
-
-.form-title {
-    text-align: center;
-    margin-bottom: 2rem;
-    color: #343a40;
 }
 
 .back-link, .register-link {
