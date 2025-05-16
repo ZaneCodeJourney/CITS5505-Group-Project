@@ -4,6 +4,84 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dive_log.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/my_logs.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<style>
+    .search-container {
+        margin-bottom: 30px;
+        width: 100%;
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    .search-box {
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+    .search-icon {
+        position: absolute;
+        left: 15px;
+        color: #5c9ead;
+        font-size: 16px;
+    }
+    .search-box input {
+        flex: 1;
+        padding: 12px 20px 12px 45px;
+        border: 2px solid #dde1e5;
+        border-radius: 50px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        outline: none;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+    .search-box input:focus {
+        border-color: #5c9ead;
+        box-shadow: 0 2px 10px rgba(92, 158, 173, 0.15);
+    }
+    .search-box input::placeholder {
+        color: #a4a9af;
+    }
+    .search-box button {
+        margin-left: 10px;
+        padding: 12px 18px;
+        background-color: #5c9ead;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 3px 6px rgba(92, 158, 173, 0.2);
+    }
+    .search-box button:hover {
+        background-color: #4a8796;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 10px rgba(74, 135, 150, 0.25);
+    }
+    .search-box button:active {
+        transform: translateY(0);
+    }
+    .search-box button i {
+        margin-right: 6px;
+    }
+    #clear-search {
+        background-color: #e0e6e8;
+        color: #5c6670;
+    }
+    #clear-search:hover {
+        background-color: #d0d6da;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    }
+    .search-results-count {
+        margin-top: 10px;
+        font-size: 14px;
+        color: #678;
+        padding-left: 10px;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -23,10 +101,21 @@
             <h1>Dives Shared With Me</h1> 
         </div>
 
-        <div class="logs-list">
+        <!-- Search Container -->
+        <div class="search-container">
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="search-input" placeholder="Search by username who shared with you...">
+                <button id="search-button"><i class="fas fa-search"></i> Search</button>
+                <button id="clear-search"><i class="fas fa-times"></i> Clear</button>
+            </div>
+            <div class="search-results-count" id="search-results-count"></div>
+        </div>
+
+        <div class="logs-list" id="logs-list">
             {% if shared_dives %}
                 {% for shared_dive in shared_dives %}
-                <div class="log-card" data-dive-id="{{ shared_dive.dive.id }}" data-location="{{ shared_dive.dive.location }}" data-latitude="" data-longitude="">
+                <div class="log-card" data-dive-id="{{ shared_dive.dive.id }}" data-location="{{ shared_dive.dive.location }}" data-shared-by="{{ shared_dive.shared_by_username }}">
                     <div class="log-header">
                         <h3>{{ shared_dive.dive.location }}</h3>
                         <span class="date">{{ shared_dive.dive.start_time.strftime('%B %d, %Y') }}</span>
@@ -142,6 +231,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Setup event listeners for View Details buttons
     setupEventListeners();
+    
+    // Setup search functionality
+    setupSearch();
 });
 
 function setupEventListeners() {
@@ -154,6 +246,72 @@ function setupEventListeners() {
             // Redirect to shared dive details page
             window.location.href = `/shared/dive/${token}`;
         });
+    });
+}
+
+function setupSearch() {
+    const searchInput = document.getElementById('search-input');
+    const searchButton = document.getElementById('search-button');
+    const clearButton = document.getElementById('clear-search');
+    const logsList = document.getElementById('logs-list');
+    const logCards = document.querySelectorAll('.log-card');
+    const searchResultsCount = document.getElementById('search-results-count');
+    
+    // Search function
+    function performSearch() {
+        const query = searchInput.value.trim().toLowerCase();
+        let visibleCount = 0;
+        
+        // If search is empty, show all cards
+        if (!query) {
+            logCards.forEach(card => {
+                card.style.display = 'block';
+            });
+            searchResultsCount.textContent = '';
+            return;
+        }
+        
+        // Filter cards based on who shared the dive
+        logCards.forEach(card => {
+            const sharedBy = card.getAttribute('data-shared-by').toLowerCase();
+            if (sharedBy.includes(query)) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Update results count
+        searchResultsCount.textContent = `Found ${visibleCount} dive${visibleCount !== 1 ? 's' : ''} matching "${query}"`;
+    }
+    
+    // Search on button click
+    searchButton.addEventListener('click', performSearch);
+    
+    // Search on Enter key
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            performSearch();
+        }
+    });
+    
+    // Clear search
+    clearButton.addEventListener('click', function() {
+        searchInput.value = '';
+        logCards.forEach(card => {
+            card.style.display = 'block';
+        });
+        searchResultsCount.textContent = '';
+    });
+    
+    // Animation effect on input focus
+    searchInput.addEventListener('focus', function() {
+        this.parentElement.classList.add('focused');
+    });
+    
+    searchInput.addEventListener('blur', function() {
+        this.parentElement.classList.remove('focused');
     });
 }
 </script>
