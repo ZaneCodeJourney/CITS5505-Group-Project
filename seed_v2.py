@@ -235,7 +235,7 @@ SITES = [
 ]
 
 SPECIES_KEYWORDS = [
-    "grey sharkh",
+    "grey shark",
     "sea turtle",
     "white shark",
     "manta ray",
@@ -413,19 +413,33 @@ def seed():
         print(f"  → {other_dive_counter} dives for other users created")
 
         # -------------------------------------------------------------------
-        # Shares
+        # Shares  (Cap ~5 incoming shares per user)
         # -------------------------------------------------------------------
-        print("Creating shares…")
+        print("Creating limited shares (max 5 per user)…")
+
+        # Build mapping of dives by owner
+        dives_by_user = {}
+        all_dives = Dive.query.all()
+        for d in all_dives:
+            dives_by_user.setdefault(d.user_id, []).append(d)
+
         share_count = 0
-        demo_dives = Dive.query.filter_by(user_id=demo_user.id).all()
-        other_users = [u for u in user_objs.values() if u.id != demo_user.id]
-        for dive in demo_dives:
-            for u in other_users:
+
+        for target_user in user_objs.values():
+            # Exclude dives owned by the target_user
+            candidate_dives = [d for d in all_dives if d.user_id != target_user.id]
+            if not candidate_dives:
+                continue
+
+            k = min(random.randint(3, 5), len(candidate_dives))
+            sampled_dives = random.sample(candidate_dives, k)
+
+            for dive in sampled_dives:
                 db.session.add(
                     Share(
                         dive_id=dive.id,
-                        creator_user_id=demo_user.id,
-                        shared_with_user_id=u.id,
+                        creator_user_id=dive.user_id,
+                        shared_with_user_id=target_user.id,
                         token=generate_token(),
                         visibility="user_specific",
                         expiration_time=datetime.utcnow() + timedelta(days=30),
@@ -433,7 +447,12 @@ def seed():
                     )
                 )
                 share_count += 1
-            # public link
+
+        # Add a handful of public shares from demo user for demonstration (3 dives)
+        demo_dives_sample = random.sample(
+            dives_by_user.get(demo_user.id, []), k=min(3, len(dives_by_user.get(demo_user.id, [])))
+        )
+        for dive in demo_dives_sample:
             db.session.add(
                 Share(
                     dive_id=dive.id,
@@ -446,29 +465,8 @@ def seed():
             )
             share_count += 1
 
-        # other users share at least one dive each
-        for user in other_users:
-            user_dives = Dive.query.filter_by(user_id=user.id).all()
-            if not user_dives:
-                continue
-            for target in user_objs.values():
-                if target.id == user.id:
-                    continue
-                dive_to_share = random.choice(user_dives)
-                db.session.add(
-                    Share(
-                        dive_id=dive_to_share.id,
-                        creator_user_id=user.id,
-                        shared_with_user_id=target.id,
-                        token=generate_token(),
-                        visibility="user_specific",
-                        expiration_time=datetime.utcnow() + timedelta(days=15),
-                        created_at=datetime.utcnow(),
-                    )
-                )
-                share_count += 1
         db.session.commit()
-        print(f"  → {share_count} shares created")
+        print(f"  → {share_count} shares created (≈4–5 per user)")
 
         # -------------------------------------------------------------------
         # Shark warnings (2 sites, 1-2 warnings each)
@@ -509,4 +507,12 @@ if __name__ == "__main__":
     except Exception as exc:  # noqa: BLE001
         print("[ERROR] Seeding failed:", exc)
         traceback.print_exc()
-        sys.exit(1) 
+        sys.exit(1)
+
+# ---------------------------------------------------------------------------
+# Backward-compatibility alias so legacy scripts can call seed_v2.create_sample_data
+# ---------------------------------------------------------------------------
+
+def create_sample_data():  # noqa: D401 – simple alias
+    """Alias to run the full seeding routine (for reset_db_for_demo)."""
+    seed() 

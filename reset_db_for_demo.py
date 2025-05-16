@@ -24,8 +24,8 @@ def reset_database():
         print("Database reset successfully.")
         
         # Now run seed.py to populate the database
-        print("Populating database with sample data...")
-        import seed
+        print("Populating database with sample data (seed_v2)…")
+        import seed_v2 as seed
         seed.create_sample_data()
         
         print("Database has been reset and populated with demo data.")
