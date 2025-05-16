@@ -211,7 +211,6 @@ Selenium tests verify the application's frontend functionality by automating bro
   4. To run specific Selenium test files:
      ```bash
      python -m unittest tests.selenium.test_auth_selenium
-     python -m unittest tests.selenium.test_dive_selenium
      python -m unittest tests.selenium.test_share_selenium
      ```
 
@@ -225,15 +224,8 @@ The Selenium test suite includes:
      - Navigation between authentication pages
      - Password reset workflow
      - Run with: `python -m unittest tests.selenium.test_auth_selenium`
-
-  2. **Dive Log Tests** (`tests/selenium/test_dive_selenium.py`)
-     - Creating new dive logs with required fields
-     - Form validation for dive log entries
-     - Viewing created dive logs
-     - Navigation through the application
-     - Run with: `python -m unittest tests.selenium.test_dive_selenium`
      
-  3. **Share Functionality Tests** (`tests/selenium/test_share_selenium.py`)
+  2. **Share Functionality Tests** (`tests/selenium/test_share_selenium.py`)
      - Sharing dive logs with specific users
      - Creating public share links
      - Error handling for sharing with nonexistent users
