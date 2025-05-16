@@ -1,31 +1,9 @@
 # DiveLogger
+## Description
 
-  ## TABLE OF CONTENTS
+DiveLogger is a web application designed for scuba diving enthusiasts to log, manage, and share their diving experiences. Users can record detailed information about their dives, including location, conditions, equipment, and memorable moments. The platform also allows for the import of dive profile data from dive computers (via CSV) and the sharing of dive logs with fellow divers or publicly via shareable links. The goal of DiveLogger is to provide a comprehensive and user-friendly tool for divers to keep a digital record of their underwater adventures and connect with the diving community.
 
-  <details>
-    <summary>Table of Contents</summary>
-    <ol>
-      <li><a href="#description">Description</a></li>
-      <li><a href="#features">Features</a></li>
-      <li><a href="#architecture-summary">Architecture Summary</a></li>
-      <li><a href="#how-the-application-satisfies-the-requirements">How the Application Satisfies the Requirements</a></li>
-      <li><a href="#application-structure">Application Structure</a></li>
-      <li><a href="#er-diagram">ER Diagram</a></li>
-      <li><a href="#how-to-launch-the-application">How to Launch the Application</a></li>
-      <li><a href="#populate-test-data">Populate Test Data</a></li>
-      <li><a href="#instructions-to-run-tests">Instructions to Run Tests</a></li>
-      <li><a href="#deliverables">Deliverables</a></li>
-      <li><a href="#api-documentation">API Documentation</a></li>
-      <li><a href="#references">References</a></li>
-    </ol>
-  </details>
-
-
-  ## Description
-
-  DiveLogger is a web application designed for scuba diving enthusiasts to log, manage, and share their diving experiences. Users can record detailed information about their dives, including location, conditions, equipment, and memorable moments. The platform also allows for the import of dive profile data from dive computers (via CSV) and the sharing of dive logs with fellow divers or publicly via shareable links. The goal of DiveLogger is to provide a comprehensive and user-friendly tool for divers to keep a digital record of their underwater adventures and connect with the diving community.
-
-  ## Features
+## Features
 
   - **User Account Management**: Secure registration, login, and profile management.
   - **Dive Logging**: Create, view, edit, and delete detailed dive logs.
@@ -40,9 +18,9 @@
   - **Intuitive User Interface**: Easy-to-navigate design for a seamless user experience.
   - **API Endpoints**: A RESTful API for programmatic access to dive data and functionalities.
 
-  ## Architecture Summary
+## Architecture Summary
 
-  DiveLogger is built using the following technologies:
+DiveLogger is built using the following technologies:
 
   - **Frontend**: HTML, CSS, JavaScript
   - **Backend**: Flask
@@ -50,26 +28,35 @@
 
   ### Design and Use
 
-  **Engaging Design**: The application is designed with an intuitive and attractive interface using HTML, CSS, and Bootstrap to ensure users stay focused on the important elements of the application.
+**Engaging Design**: The application is designed with an intuitive and attractive interface using HTML, CSS, and Bootstrap to ensure users stay focused on the important elements of the application.
 
-  **Effective Use**: The features provided are aimed at producing value for the users by allowing them to share knowledge, get answers to their questions, and participate in meaningful discussions.
+**Effective Use**: The features provided are aimed at producing value for the users by allowing them to share knowledge, get answers to their questions, and participate in meaningful discussions.
 
-  **Intuitive Navigation**: The interface is user-friendly, making it easy for users to navigate through the application, search for threads, create posts, and interact with other users.
+**Intuitive Navigation**: The interface is user-friendly, making it easy for users to navigate through the application, search for threads, create posts, and interact with other users.
 
-  ### How the Application Satisfies the Requirements
+## API Documentation
+  | Endpoint | Method | Description | Parameters | Response |
+  |----------|--------|-------------|------------|----------|
+  | `/api/auth/register` | POST | Register a new user | `username`, `email`, `password`, `confirm_password` | User details with JWT token |
+  | `/api/auth/login` | POST | Login user | `username/email`, `password` | User details with JWT token |
+  | `/api/auth/logout` | POST | Logout user | None | Success message |
+  | `/api/dives` | GET | Get all dives for logged in user | None | List of dive objects |
+  | `/api/dives` | POST | Create a new dive | Dive details (date, location, depth, etc.) | Created dive object |
+  | `/api/dives/<id>` | GET | Get specific dive by ID | None | Dive object |
+  | `/api/dives/<id>` | PUT | Update specific dive | Updated dive details | Updated dive object |
+  | `/api/dives/<id>` | DELETE | Delete specific dive | None | Success message |
+  | `/api/dives/<id>/share` | POST | Share dive with another user | `username` | Share details |
+  | `/api/dives/<id>/public-share` | POST | Create public share link | `expiry_date` (optional) | Public share URL |
+  | `/api/shared-dives` | GET | Get dives shared with current user | None | List of shared dive objects |
+  | `/api/dive-sites` | GET | Get all dive sites | None | List of dive site objects |
+  | `/api/sharks/report` | POST | Report shark sighting | Sighting details (site, species, size, etc.) | Created report object |
+  | `/api/sharks/warnings` | GET | Get shark warnings | `site_id` (optional), `date_range` (optional) | List of warning objects |
 
-  ## Application Structure
-
-  The application structure is visually represented as follows:
-
-  The structure includes the following modules:
-
-
-  ## ER Diagram
+## ER Diagram
 
   ![Entity Relationship Diagram](Images/ERD.png)
 
-  The main entities and relationships are as follows:
+The main entities and relationships are as follows:
 
   - **User**: Stores user account and profile information.
   - **Dive**: Each dive log, linked to a user, with detailed fields and optional media/CSV data.
@@ -78,7 +65,8 @@
   - **Share**: Sharing permissions and public links for dive logs.
   - **SharkWarning**: Shark sighting reports at dive sites.
 
-  **Simplified ER Diagram:**
+**Simplified ER Diagram:**
+
   ```
   User 1---* Dive *---* Share
     |         |
@@ -89,7 +77,7 @@
   User 1---* SharkWarning
   ```
 
-  ## How to Launch the Application
+## How to Launch the Application
 
   1. **Clone the Repository**
 
@@ -135,15 +123,15 @@
 
      This command will start the Flask server on `http://127.0.0.1:5000/`.
 
-  ## Instructions to Run Tests
+## Instructions to Run Tests
 
-  To ensure the reliability and functionality of DiveLogger, we've included comprehensive test suites using both Python's unittest framework and Selenium for browser-based testing.
+To ensure the reliability and functionality of DiveLogger, we've included comprehensive test suites using both Python's unittest framework and Selenium for browser-based testing.
 
   ### Unittest Test Cases
 
-  The unittest test suite verifies the backend functionality of various components including authentication, dive log operations, user models, and CSV data handling.
+The unittest test suite verifies the backend functionality of various components including authentication, dive log operations, user models, and CSV data handling.
 
-    #### Running Unittest Tests
+    Running Unittest Tests
 
   1. Make sure your virtual environment is activated:
      ```bash
@@ -165,12 +153,11 @@
      python -m unittest tests.unittest.test_auth
      python -m unittest tests.unittest.test_user_model
      python -m unittest tests.unittest.test_dive
-     python -m unittest tests.unittest.test_csv_upload
      ```
 
   ### Unittest Test Coverage
 
-  The unittest suite includes the following test files:
+The unittest suite includes the following test files:
 
   1. **Authentication Tests** (`tests/unittest/test_auth.py`)
      - User registration validation (username, email, password)
@@ -178,13 +165,11 @@
      - Password reset flow
      - Logout functionality
      - Run with: `python -m unittest tests.unittest.test_auth`
-
   2. **User Model Tests** (`tests/unittest/test_user_model.py`)
      - Password hashing verification
      - User representation
      - User-dive relationship
      - Run with: `python -m unittest tests.unittest.test_user_model`
-
   3. **Dive Tests** (`tests/unittest/test_dive.py`)
      - Dive creation with required fields
      - Dive retrieval by user
@@ -192,15 +177,9 @@
      - Dive deletion (including associated shares)
      - Run with: `python -m unittest tests.unittest.test_dive`
 
-  4. **CSV Upload Tests** (`tests/unittest/test_csv_upload.py`)
-     - CSV file format validation
-     - Handling various CSV formats
-     - Error handling for invalid files
-     - Run with: `python -m unittest tests.unittest.test_csv_upload`
-
   ### Selenium Testing
 
-  Selenium tests verify the application's frontend functionality by automating browser interactions.
+Selenium tests verify the application's frontend functionality by automating browser interactions.
 
     #### Running Selenium Tests
 
@@ -228,7 +207,7 @@
 
   #### Selenium Test Coverage
 
-  The Selenium test suite includes:
+The Selenium test suite includes:
 
   1. **Authentication Tests** (`tests/selenium/test_auth_selenium.py`)
      - Login page loading and form validation
@@ -252,28 +231,9 @@
      - Authentication requirements for sharing functionality
      - Run with: `python -m unittest tests.selenium.test_share_selenium`
 
-  These tests ensure that both the backend functionality and user interface work correctly, providing a reliable application experience.
+These tests ensure that both the backend functionality and user interface work correctly, providing a reliable application experience.
 
-  ## Deliverables
-
-  ## API Documentation
-  | Endpoint | Method | Description | Parameters | Response |
-  |----------|--------|-------------|------------|----------|
-  | `/api/auth/register` | POST | Register a new user | `username`, `email`, `password`, `confirm_password` | User details with JWT token |
-  | `/api/auth/login` | POST | Login user | `username/email`, `password` | User details with JWT token |
-  | `/api/auth/logout` | POST | Logout user | None | Success message |
-  | `/api/dives` | GET | Get all dives for logged in user | None | List of dive objects |
-  | `/api/dives` | POST | Create a new dive | Dive details (date, location, depth, etc.) | Created dive object |
-  | `/api/dives/<id>` | GET | Get specific dive by ID | None | Dive object |
-  | `/api/dives/<id>` | PUT | Update specific dive | Updated dive details | Updated dive object |
-  | `/api/dives/<id>` | DELETE | Delete specific dive | None | Success message |
-  | `/api/dives/<id>/share` | POST | Share dive with another user | `username` | Share details |
-  | `/api/dives/<id>/public-share` | POST | Create public share link | `expiry_date` (optional) | Public share URL |
-  | `/api/shared-dives` | GET | Get dives shared with current user | None | List of shared dive objects |
-  | `/api/dive-sites` | GET | Get all dive sites | None | List of dive site objects |
-  | `/api/sharks/report` | POST | Report shark sighting | Sighting details (site, species, size, etc.) | Created report object |
-  | `/api/sharks/warnings` | GET | Get shark warnings | `site_id` (optional), `date_range` (optional) | List of warning objects |
-  ## References
+## References
 
   1. OpenAI. (2024). ChatGPT. Chatgpt.com. [https://chatgpt.com/](https://chatgpt.com/)
   2. SQLite Tutorial - An Easy Way to Master SQLite Fast. (n.d.). SQLite Tutorial. [https://www.sqlitetutorial.net/](https://www.sqlitetutorial.net/)
@@ -281,166 +241,7 @@
   4. W3Schools. (2018). HTML Tutorial. W3schools.com. [https://www.w3schools.com/html/](https://www.w3schools.com/html/)
   5. Reddit. (2024). Reddit. Reddit. https://www.reddit.com/
 
-## Final Project Overview
-
-DiveLogger is a full-featured web application for scuba diving enthusiasts to log, manage, and share their diving experiences. The platform supports detailed dive records, media uploads, CSV data import from dive computers, site reviews, shark warnings, and advanced sharing features. It is designed for both individual divers and diving communities, with a focus on usability, security, and extensibility.
-
----
-
-## Key Features
-
-- **User Management**: Secure registration, login, profile management, and password reset.
-- **Dive Log Management**: Create, view, edit, and delete detailed dive logs, including equipment, conditions, and personal notes.
-- **Media Uploads**: Attach photos to dive logs for richer records.
-- **CSV Import & Visualization**: Import dive profile data (depth, temperature, etc.) from dive computers in CSV format.
-- **Dive Site Directory**: Browse and review popular dive sites, including location, difficulty, and best season.
-- **Site Reviews**: Users can rate and comment on dive sites.
-- **Shark Warnings**: Report and view shark sightings at dive sites.
-- **Advanced Sharing**: Share dive logs with specific users or via public links, with optional expiration.
-- **Responsive UI**: Modern, mobile-friendly interface using Bootstrap.
-- **Comprehensive Testing**: Automated backend (unittest) and frontend (Selenium) test suites.
-- **Demo/Test Data**: Easily populate the database with realistic demo data for testing or presentations.
-
----
-
-## System Architecture
-
-- **Frontend**: HTML, CSS, JavaScript, Bootstrap (templates in `app/templates/`)
-- **Backend**: Flask (Python), organized with blueprints for modularity (`app/main`, `app/auth`, `app/dives`, `app/shared`, `app/sites`, `app/shark`, `app/api`)
-- **Database**: SQLite, managed via SQLAlchemy ORM (`app/models.py`)
-- **Testing**: Python `unittest` for backend, Selenium for browser-based UI tests (`tests/unittest/`, `tests/selenium/`)
-- **Configuration**: Environment variables and settings in `config.py`
-- **Data Seeding**: Use `seed.py` to populate the database with sample users, dives, sites, and reviews.
-
----
-
-## Application Structure
-
-```
-CITS5505-Group-Project/
-│
-├── app/
-│   ├── __init__.py         # App factory, blueprint registration
-│   ├── models.py           # SQLAlchemy models
-│   ├── main/               # Main routes/views
-│   ├── auth/               # Authentication routes
-│   ├── dives/              # Dive log routes
-│   ├── shared/             # Sharing routes
-│   ├── sites/              # Dive site routes
-│   ├── shark/              # Shark warning routes
-│   ├── api/                # API endpoints (RESTful)
-│   ├── templates/          # Jinja2 HTML templates
-│   ├── static/             # Static files (CSS, JS, images)
-│   └── ...                 # Other feature modules
-│
-├── tests/
-│   ├── unittest/           # Backend unit tests
-│   ├── selenium/           # Frontend Selenium tests
-│   └── run_tests.py        # Test runner
-│
-├── requirements.txt        # Python dependencies
-├── seed.py                 # Demo/test data population script
-├── config.py               # Configuration
-├── app.py                  # Entry point (if used)
-└── README.md               # Project documentation
-```
-
----
-
-## How to Launch the Application
-
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/ZaneCodeJourney/CITS5505-Group-Project.git
-   cd CITS5505-Group-Project
-   ```
-
-2. **Set Up the Environment**
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
-   ```
-
-3. **Set Up the Database**
-   ```bash
-   flask db upgrade
-   ```
-
-4. **(Optional) Populate Demo Data**
-   ```bash
-   python seed.py
-   ```
-
-5. **Run the Application**
-   ```bash
-   flask run
-   ```
-
----
-
-## Testing
-
-### Backend Unit Tests
-
-- Located in `tests/unittest/`
-- Covers authentication, user models, dive log operations, CSV upload, and more.
-- Run all tests:
-  ```bash
-  python -m unittest discover -s tests/unittest -p "test_*.py"
-  ```
-
-### Frontend Selenium Tests
-
-- Located in `tests/selenium/`
-- Automates browser interactions for authentication, dive logs, and sharing.
-- Ensure the Flask app is running, then run:
-  ```bash
-  python -m unittest discover -s tests/selenium -p "test_*.py"
-  ```
-
-### Test Data
-
-- Use `seed.py` to populate the database with demo users, dives, sites, and reviews for testing or demo purposes.
-
----
-
-## Dependencies
-
-All required Python packages are listed in `requirements.txt`. Key dependencies include:
-
-- Flask, Flask-Login, Flask-Migrate, Flask-SQLAlchemy, Flask-WTF
-- SQLAlchemy
-- Selenium (for frontend testing)
-- WTForms
-- python-dotenv
-- flask-cors
-
-Install with:
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## Contributing
-
-We welcome contributions from the community! To contribute:
-
-1. Fork the repository and create your feature branch (`git checkout -b feature/YourFeature`).
-2. Commit your changes with clear messages.
-3. Push to your fork and submit a Pull Request.
-4. Ensure your code follows the existing style and passes all tests.
-5. For major changes, please open an issue first to discuss your proposal.
-
-For questions or support, please open an issue or contact the maintainers.
-
----
 
 ## Acknowledgements
 
 Special thanks to all contributors, open-source libraries, and the diving community for their feedback and support.
-
----
-
-**Note:** The API Documentation section will be updated by another team member.
