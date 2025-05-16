@@ -175,7 +175,10 @@ def diving_stats():
         'dives_per_month': [0] * 12,
         'coordinates': [],  # For heatmap
         'location_names': [],  # Names for markers
-        'dives_count': []  # Count of dives per location for markers
+        'dives_count': [],  # Count of dives per location for markers
+        'species_names': [],  # For species pie chart
+        'species_counts': [],  # Count of each species
+        'top_species': []  # Top species with details
     }
     
     if all_dives:
@@ -248,6 +251,70 @@ def diving_stats():
             dive_data['coordinates'].append([coords[0], coords[1]])
             dive_data['location_names'].append(loc)
             dive_data['dives_count'].append(location_counts[loc])
+            
+        # NEW: Collect species data from all dives
+        from app.models import DiveSpecies
+        species_counts = {}
+        
+        # Query all species related to the user's dives
+        dive_ids = [dive.id for dive in all_dives]
+        all_species = DiveSpecies.query.filter(DiveSpecies.dive_id.in_(dive_ids)).all()
+        
+        for species in all_species:
+            # Use the common name as key if available, otherwise scientific name
+            species_name = species.common_name if species.common_name else species.scientific_name
+            
+            if species_name in species_counts:
+                species_counts[species_name]['count'] += 1
+                species_counts[species_name]['instances'].append(species)
+            else:
+                species_counts[species_name] = {
+                    'count': 1,
+                    'scientific_name': species.scientific_name,
+                    'taxon_id': species.taxon_id,
+                    'instances': [species]
+                }
+        
+        # Sort species by observation count (descending)
+        sorted_species = sorted(species_counts.items(), key=lambda x: x[1]['count'], reverse=True)
+        
+        # Prepare data for the species pie chart
+        for name, data in sorted_species:
+            dive_data['species_names'].append(name)
+            dive_data['species_counts'].append(data['count'])
+            
+        # NEW: Get top 3 species with images from iNaturalist API
+        import requests
+        
+        top_species = []
+        for name, data in sorted_species[:3]:  # Top 3 species
+            species_detail = {
+                'common_name': name,
+                'scientific_name': data['scientific_name'],
+                'count': data['count'],
+                'image_url': None
+            }
+            
+            # Get image URL from iNaturalist API
+            try:
+                # Use taxon ID to get details from API
+                taxon_id = data['taxon_id']
+                api_url = f"https://api.inaturalist.org/v1/taxa/{taxon_id}"
+                response = requests.get(api_url, timeout=5)
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    if 'results' in result and len(result['results']) > 0:
+                        taxon = result['results'][0]
+                        # Try to get default photo
+                        if taxon.get('default_photo') and taxon['default_photo'].get('medium_url'):
+                            species_detail['image_url'] = taxon['default_photo']['medium_url']
+            except Exception as e:
+                current_app.logger.error(f"Error fetching image for species {name}: {str(e)}")
+                
+            top_species.append(species_detail)
+            
+        dive_data['top_species'] = top_species
     
     return render_template('stats.html', title='Diving Statistics', stats=stats, dive_data=dive_data)
 
