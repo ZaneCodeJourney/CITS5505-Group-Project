@@ -77,8 +77,54 @@
         grid-column: 1 / -1;
     }
     
+    /* New styles for species section */
+    .species-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        grid-column: 1 / -1;
+    }
+    
+    .species-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .species-table th, .species-table td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .species-table th {
+        background-color: #f5f5f5;
+    }
+    
+    .species-table img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+    
+    .species-table .species-name {
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .species-table .species-scientific {
+        font-style: italic;
+        font-size: 0.9rem;
+        color: #666;
+    }
+    
+    .species-table .species-count {
+        font-weight: 500;
+        color: #4a89dc;
+    }
+    
     @media (max-width: 992px) {
-        .map-section {
+        .map-section, .species-section {
             grid-template-columns: 1fr;
         }
     }
@@ -118,6 +164,53 @@
             <div class="chart-card">
                 <h3 class="chart-title">Dives by Location</h3>
                 <canvas id="locationChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- New Species Statistics Section -->
+        <div class="species-section">
+            <div class="chart-card">
+                <h3 class="chart-title">Species You've Observed</h3>
+                <canvas id="speciesChart"></canvas>
+            </div>
+            
+            <div class="chart-card">
+                <h3 class="chart-title">Top Species Encountered</h3>
+                {% if dive_data.top_species and dive_data.top_species|length > 0 %}
+                <table class="species-table">
+                    <thead>
+                        <tr>
+                            <th>Species</th>
+                            <th>Image</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for species in dive_data.top_species %}
+                        <tr>
+                            <td>
+                                <div class="species-name">{{ species.common_name }}</div>
+                                <div class="species-scientific">{{ species.scientific_name }}</div>
+                            </td>
+                            <td>
+                                {% if species.image_url %}
+                                <img src="{{ species.image_url }}" alt="{{ species.common_name }}">
+                                {% else %}
+                                <div style="width: 60px; height: 60px; background-color: #f5f5f5; border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+                                    <span style="color: #999;">No image</span>
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td class="species-count">{{ species.count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p style="text-align: center; color: #666; padding: 30px 0;">
+                    No species data available. Add species to your dive logs to see statistics.
+                </p>
+                {% endif %}
             </div>
         </div>
         
@@ -186,6 +279,58 @@
             noDataDiv.style.padding = '20px';
             noDataDiv.style.color = '#666';
             document.getElementById('diveMapContainer').appendChild(noDataDiv);
+        }
+        
+        // NEW: Species Pie Chart
+        if (diveData.species_names && diveData.species_names.length > 0) {
+            const speciesCtx = document.getElementById('speciesChart').getContext('2d');
+            new Chart(speciesCtx, {
+                type: 'pie',
+                data: {
+                    labels: diveData.species_names,
+                    datasets: [{
+                        data: diveData.species_counts,
+                        backgroundColor: [
+                            '#4a89dc', '#50c878', '#ff6b6b', '#ffd166', 
+                            '#8a2be2', '#20b2aa', '#ff7f50', '#6a5acd',
+                            '#9370db', '#3cb371', '#f08080', '#ffa07a',
+                            '#66cdaa', '#9932cc', '#e9967a', '#8fbc8f'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 15,
+                                padding: 15
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((acc, val) => acc + val, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            const speciesCanvas = document.getElementById('speciesChart');
+            if (speciesCanvas) {
+                const ctx = speciesCanvas.getContext('2d');
+                ctx.font = '14px Arial';
+                ctx.fillStyle = '#666';
+                ctx.textAlign = 'center';
+                ctx.fillText('No species data available', speciesCanvas.width / 2, speciesCanvas.height / 2);
+            }
         }
         
         // Depth Chart
