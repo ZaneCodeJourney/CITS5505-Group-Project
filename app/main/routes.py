@@ -364,7 +364,8 @@ def shared_dive(token):
                           dive=dive, 
                           owner=dive_owner,
                           is_shared=True,
-                          share=share)
+                          share=share,
+                          shared_by_username=dive_owner.username if dive_owner else "Unknown User")
 
 @bp.route('/test-coordinates')
 def test_coordinates():
