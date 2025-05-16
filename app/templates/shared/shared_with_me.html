@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dive_log.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/my_logs.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/my_logs_extra.css') }}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 {{ search_css() }}
 {% endblock %}
@@ -53,29 +54,6 @@
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
 <script src="{{ url_for('static', filename='js/dive_profile_chart.js') }}"></script>
+<script src="{{ url_for('static', filename='js/shared_with_me.js') }}"></script>
 {{ search_js() }}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // The dive_profile_chart.js library will handle chart initialization 
-    // when the page loads. No need for manual initialization.
-    
-    // Setup event listeners for View Details buttons
-    setupEventListeners();
-});
-
-function setupEventListeners() {
-    // View details buttons
-    const viewDetailsButtons = document.querySelectorAll('.view-details');
-    viewDetailsButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            if (this.getAttribute('href') === '#') {
-                e.preventDefault();
-                const token = this.dataset.token;
-                // Redirect to shared dive details page
-                window.location.href = `/shared/dive/${token}`;
-            }
-        });
-    });
-}
-</script>
 {% endblock %} 
