@@ -1,11 +1,12 @@
 # Main routes
-from flask import render_template, current_app, request, abort, redirect, url_for
+from flask import render_template, current_app, request, abort, redirect, url_for, jsonify
 from app.main import bp
 from app.models import Dive, User, Share
 from flask_login import current_user, login_required
 from sqlalchemy import func
 from datetime import datetime
 from app import db
+import re
 
 @bp.route('/')
 @bp.route('/index')
@@ -171,7 +172,13 @@ def diving_stats():
         'locations': [],
         'dives_per_location': [],
         'months': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        'dives_per_month': [0] * 12
+        'dives_per_month': [0] * 12,
+        'coordinates': [],  # For heatmap
+        'location_names': [],  # Names for markers
+        'dives_count': [],  # Count of dives per location for markers
+        'species_names': [],  # For species pie chart
+        'species_counts': [],  # Count of each species
+        'top_species': []  # Top species with details
     }
     
     if all_dives:
@@ -194,14 +201,42 @@ def diving_stats():
                 month_idx = dive.start_time.month - 1  # 0-based index
                 dive_data['dives_per_month'][month_idx] += 1
         
-        # Process data for location chart
+        # Process data for location chart and map
         location_counts = {}
+        location_coordinates = {}  # Store coordinates for each location
+        
         for dive in all_dives:
             if dive.location:
-                if dive.location in location_counts:
-                    location_counts[dive.location] += 1
+                # Extract coordinates from location string if available
+                # Common format: "Location Name (lat, lng)"
+                coords_match = re.search(r'\((-?\d+\.?\d*),\s*(-?\d+\.?\d*)\)', dive.location)
+                
+                if coords_match:
+                    try:
+                        lat = float(coords_match.group(1))
+                        lng = float(coords_match.group(2))
+                        
+                        # Extract the location name (everything before the coordinates)
+                        location_name = dive.location.split('(')[0].strip()
+                        
+                        # Count dives per location
+                        if location_name in location_counts:
+                            location_counts[location_name] += 1
+                        else:
+                            location_counts[location_name] = 1
+                            location_coordinates[location_name] = (lat, lng)
+                    except ValueError:
+                        # If conversion fails, just use the full location name
+                        if dive.location in location_counts:
+                            location_counts[dive.location] += 1
+                        else:
+                            location_counts[dive.location] = 1
                 else:
-                    location_counts[dive.location] = 1
+                    # No coordinates in string, just use the full location
+                    if dive.location in location_counts:
+                        location_counts[dive.location] += 1
+                    else:
+                        location_counts[dive.location] = 1
         
         # Sort locations by number of dives (descending)
         sorted_locations = sorted(location_counts.items(), key=lambda x: x[1], reverse=True)
@@ -210,6 +245,76 @@ def diving_stats():
         for loc, count in sorted_locations[:8]:
             dive_data['locations'].append(loc)
             dive_data['dives_per_location'].append(count)
+        
+        # Prepare data for the map
+        for loc, coords in location_coordinates.items():
+            dive_data['coordinates'].append([coords[0], coords[1]])
+            dive_data['location_names'].append(loc)
+            dive_data['dives_count'].append(location_counts[loc])
+            
+        # NEW: Collect species data from all dives
+        from app.models import DiveSpecies
+        species_counts = {}
+        
+        # Query all species related to the user's dives
+        dive_ids = [dive.id for dive in all_dives]
+        all_species = DiveSpecies.query.filter(DiveSpecies.dive_id.in_(dive_ids)).all()
+        
+        for species in all_species:
+            # Use the common name as key if available, otherwise scientific name
+            species_name = species.common_name if species.common_name else species.scientific_name
+            
+            if species_name in species_counts:
+                species_counts[species_name]['count'] += 1
+                species_counts[species_name]['instances'].append(species)
+            else:
+                species_counts[species_name] = {
+                    'count': 1,
+                    'scientific_name': species.scientific_name,
+                    'taxon_id': species.taxon_id,
+                    'instances': [species]
+                }
+        
+        # Sort species by observation count (descending)
+        sorted_species = sorted(species_counts.items(), key=lambda x: x[1]['count'], reverse=True)
+        
+        # Prepare data for the species pie chart
+        for name, data in sorted_species:
+            dive_data['species_names'].append(name)
+            dive_data['species_counts'].append(data['count'])
+            
+        # NEW: Get top 3 species with images from iNaturalist API
+        import requests
+        
+        top_species = []
+        for name, data in sorted_species[:3]:  # Top 3 species
+            species_detail = {
+                'common_name': name,
+                'scientific_name': data['scientific_name'],
+                'count': data['count'],
+                'image_url': None
+            }
+            
+            # Get image URL from iNaturalist API
+            try:
+                # Use taxon ID to get details from API
+                taxon_id = data['taxon_id']
+                api_url = f"https://api.inaturalist.org/v1/taxa/{taxon_id}"
+                response = requests.get(api_url, timeout=5)
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    if 'results' in result and len(result['results']) > 0:
+                        taxon = result['results'][0]
+                        # Try to get default photo
+                        if taxon.get('default_photo') and taxon['default_photo'].get('medium_url'):
+                            species_detail['image_url'] = taxon['default_photo']['medium_url']
+            except Exception as e:
+                current_app.logger.error(f"Error fetching image for species {name}: {str(e)}")
+                
+            top_species.append(species_detail)
+            
+        dive_data['top_species'] = top_species
     
     return render_template('stats.html', title='Diving Statistics', stats=stats, dive_data=dive_data)
 
@@ -259,4 +364,40 @@ def shared_dive(token):
                           dive=dive, 
                           owner=dive_owner,
                           is_shared=True,
-                          share=share) 
+                          share=share)
+
+@bp.route('/test-coordinates')
+def test_coordinates():
+    """Test route to verify coordinate extraction logic"""
+    # Test location strings
+    test_locations = [
+        "Great Barrier Reef (-16.6818, 145.9919)",
+        "Tubbataha Reef (-16.6818,145.9919)",
+        "Blue Hole, Belize (17.3164, -87.5339)",
+        "Raja Ampat",
+        "Maldives (3.2028, 73.2207)",
+        "Sipadan Island (4.1148, 118.6289)"
+    ]
+    
+    results = []
+    
+    for location in test_locations:
+        coords_match = re.search(r'\((-?\d+\.?\d*),\s*(-?\d+\.?\d*)\)', location)
+        result = {'location': location, 'has_coords': False}
+        
+        if coords_match:
+            try:
+                lat = float(coords_match.group(1))
+                lng = float(coords_match.group(2))
+                location_name = location.split('(')[0].strip()
+                
+                result['has_coords'] = True
+                result['lat'] = lat
+                result['lng'] = lng
+                result['name'] = location_name
+            except ValueError:
+                pass
+        
+        results.append(result)
+    
+    return jsonify(results) 
