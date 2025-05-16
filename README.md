@@ -1,4 +1,13 @@
 # DiveLogger
+
+## Team Member
+
+| Ziyang Wen      | 23995281     | ZaneCodeJourney |
+| --------------- | ------------ | --------------- |
+| **Jiaao Li**    | **24140443** | **Jaffrey29**   |
+| Kunhong Zou**** | **24257885** | **KevinZ-24**   |
+| **Aadil Vagh**  | **22791631** | **aadilvagh**   |
+
 ## Description
 
 DiveLogger is a web application designed for scuba diving enthusiasts to log, manage, and share their diving experiences. Users can record detailed information about their dives, including location, conditions, equipment, and memorable moments. The platform also allows for the import of dive profile data from dive computers (via CSV) and the sharing of dive logs with fellow divers or publicly via shareable links. The goal of DiveLogger is to provide a comprehensive and user-friendly tool for divers to keep a digital record of their underwater adventures and connect with the diving community.
