@@ -2,6 +2,7 @@
 
 {% block styles %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 <style>
     .stats-container {
         display: flex;
@@ -58,6 +59,16 @@
         font-size: 1.2rem;
         color: #333;
     }
+
+    #diveMapContainer {
+        height: 500px;
+        width: 100%;
+        margin-bottom: 30px;
+    }
+
+    .map-card {
+        grid-column: 1 / -1; /* Make the map span the full width */
+    }
 </style>
 {% endblock %}
 
@@ -85,6 +96,11 @@
     </div>
     
     <div class="charts-container">
+        <div class="chart-card map-card">
+            <h3 class="chart-title">Your Dive Locations Heatmap</h3>
+            <div id="diveMapContainer"></div>
+        </div>
+        
         <div class="chart-card">
             <h3 class="chart-title">Dive Depths Over Time</h3>
             <canvas id="depthChart"></canvas>
@@ -107,10 +123,54 @@
 
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Chart data from backend
         const diveData = {{ dive_data|tojson }};
+        
+        // Initialize the map
+        const map = L.map('diveMapContainer').setView([20, 0], 2);
+        
+        // Add the tile layer (OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // Add heat map layer if we have coordinates
+        if (diveData.coordinates && diveData.coordinates.length > 0) {
+            // Format data for heatmap: [lat, lng, intensity]
+            const heatPoints = diveData.coordinates.map((coord, index) => {
+                // Increase base intensity and use dive count as a multiplier
+                const intensity = diveData.dives_count && diveData.dives_count[index] ? diveData.dives_count[index] * 3 : 3;
+                return [coord[0], coord[1], intensity];
+            });
+            
+            // Create and add the heatmap layer with much larger spots for demo
+            L.heatLayer(heatPoints, {
+                radius: 30,  // Much larger radius
+                blur: 30,    // More blur for softer edges
+                maxZoom: 10,
+                minOpacity: 0.6,  // Ensure spots are visible even with few points
+                max: 10,  // Lower max value to make spots appear more intense
+                gradient: {0.4: 'blue', 0.6: 'lime', 0.8: 'yellow', 1: 'red'}
+            }).addTo(map);
+            
+            // If we have points, fit the map to show all points
+            if (diveData.coordinates.length > 0) {
+                const bounds = L.latLngBounds(diveData.coordinates);
+                map.fitBounds(bounds, { padding: [100, 100] });  // More padding
+            }
+        } else {
+            // Display a message if no coordinates are available
+            const noDataDiv = document.createElement('div');
+            noDataDiv.innerHTML = 'No dive locations with GPS coordinates available. Add latitude and longitude to your dive logs to see them on the map.';
+            noDataDiv.style.textAlign = 'center';
+            noDataDiv.style.padding = '20px';
+            noDataDiv.style.color = '#666';
+            document.getElementById('diveMapContainer').appendChild(noDataDiv);
+        }
         
         // Depth Chart
         const depthCtx = document.getElementById('depthChart').getContext('2d');

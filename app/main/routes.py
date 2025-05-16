@@ -1,11 +1,12 @@
 # Main routes
-from flask import render_template, current_app, request, abort, redirect, url_for
+from flask import render_template, current_app, request, abort, redirect, url_for, jsonify
 from app.main import bp
 from app.models import Dive, User, Share
 from flask_login import current_user, login_required
 from sqlalchemy import func
 from datetime import datetime
 from app import db
+import re
 
 @bp.route('/')
 @bp.route('/index')
@@ -171,7 +172,10 @@ def diving_stats():
         'locations': [],
         'dives_per_location': [],
         'months': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        'dives_per_month': [0] * 12
+        'dives_per_month': [0] * 12,
+        'coordinates': [],  # For heatmap
+        'location_names': [],  # Names for markers
+        'dives_count': []  # Count of dives per location for markers
     }
     
     if all_dives:
@@ -194,14 +198,42 @@ def diving_stats():
                 month_idx = dive.start_time.month - 1  # 0-based index
                 dive_data['dives_per_month'][month_idx] += 1
         
-        # Process data for location chart
+        # Process data for location chart and map
         location_counts = {}
+        location_coordinates = {}  # Store coordinates for each location
+        
         for dive in all_dives:
             if dive.location:
-                if dive.location in location_counts:
-                    location_counts[dive.location] += 1
+                # Extract coordinates from location string if available
+                # Common format: "Location Name (lat, lng)"
+                coords_match = re.search(r'\((-?\d+\.?\d*),\s*(-?\d+\.?\d*)\)', dive.location)
+                
+                if coords_match:
+                    try:
+                        lat = float(coords_match.group(1))
+                        lng = float(coords_match.group(2))
+                        
+                        # Extract the location name (everything before the coordinates)
+                        location_name = dive.location.split('(')[0].strip()
+                        
+                        # Count dives per location
+                        if location_name in location_counts:
+                            location_counts[location_name] += 1
+                        else:
+                            location_counts[location_name] = 1
+                            location_coordinates[location_name] = (lat, lng)
+                    except ValueError:
+                        # If conversion fails, just use the full location name
+                        if dive.location in location_counts:
+                            location_counts[dive.location] += 1
+                        else:
+                            location_counts[dive.location] = 1
                 else:
-                    location_counts[dive.location] = 1
+                    # No coordinates in string, just use the full location
+                    if dive.location in location_counts:
+                        location_counts[dive.location] += 1
+                    else:
+                        location_counts[dive.location] = 1
         
         # Sort locations by number of dives (descending)
         sorted_locations = sorted(location_counts.items(), key=lambda x: x[1], reverse=True)
@@ -210,6 +242,12 @@ def diving_stats():
         for loc, count in sorted_locations[:8]:
             dive_data['locations'].append(loc)
             dive_data['dives_per_location'].append(count)
+        
+        # Prepare data for the map
+        for loc, coords in location_coordinates.items():
+            dive_data['coordinates'].append([coords[0], coords[1]])
+            dive_data['location_names'].append(loc)
+            dive_data['dives_count'].append(location_counts[loc])
     
     return render_template('stats.html', title='Diving Statistics', stats=stats, dive_data=dive_data)
 
@@ -259,4 +297,40 @@ def shared_dive(token):
                           dive=dive, 
                           owner=dive_owner,
                           is_shared=True,
-                          share=share) 
+                          share=share)
+
+@bp.route('/test-coordinates')
+def test_coordinates():
+    """Test route to verify coordinate extraction logic"""
+    # Test location strings
+    test_locations = [
+        "Great Barrier Reef (-16.6818, 145.9919)",
+        "Tubbataha Reef (-16.6818,145.9919)",
+        "Blue Hole, Belize (17.3164, -87.5339)",
+        "Raja Ampat",
+        "Maldives (3.2028, 73.2207)",
+        "Sipadan Island (4.1148, 118.6289)"
+    ]
+    
+    results = []
+    
+    for location in test_locations:
+        coords_match = re.search(r'\((-?\d+\.?\d*),\s*(-?\d+\.?\d*)\)', location)
+        result = {'location': location, 'has_coords': False}
+        
+        if coords_match:
+            try:
+                lat = float(coords_match.group(1))
+                lng = float(coords_match.group(2))
+                location_name = location.split('(')[0].strip()
+                
+                result['has_coords'] = True
+                result['lat'] = lat
+                result['lng'] = lng
+                result['name'] = location_name
+            except ValueError:
+                pass
+        
+        results.append(result)
+    
+    return jsonify(results) 
