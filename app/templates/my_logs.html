@@ -254,6 +254,54 @@
     #edit-loading, #edit-error {
         flex-shrink: 0;
     }
+
+    /* Add smooth scrolling behavior */
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    /* Add highlight animation for when scrolling to a dive */
+    @keyframes highlight-dive {
+        0% { background-color: #cfe9ff; }
+        80% { background-color: #cfe9ff; } /* keep colour for most of the duration */
+        100% { background-color: transparent; }
+    }
+    
+    .log-card:target,
+    .highlight-dive {
+        animation: highlight-dive 8s ease-out;
+    }
+    
+    /* Add styling for the popup links */
+    .popup-actions {
+        margin-top: 10px;
+        display: flex;
+        gap: 10px;
+    }
+    
+    .popup-link {
+        background-color: #006994;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.9em;
+        display: inline-block;
+    }
+    
+    .popup-link:hover {
+        background-color: #005580;
+        text-decoration: none;
+        color: white;
+    }
+
+    /* Note below the map */
+    .map-note {
+        text-align: center;
+        font-size: 0.9em;
+        color: #555;
+        margin-top: 6px;
+    }
 </style>
 {% endblock %}
 
@@ -354,12 +402,13 @@
         <div class="map-section">
             <h2>My Dive Map</h2>
             <div id="my-dive-map"></div>
+            <p class="map-note">Click a marker to jump to its dive log below.</p>
         </div>
 
         <div class="logs-list">
             {% if dives %}
                 {% for dive in dives %}
-                <div class="log-card" data-dive-id="{{ dive.id }}" data-location="{{ dive.location }}" data-latitude="" data-longitude="">
+                <div class="log-card" id="dive-{{ dive.id }}" data-dive-id="{{ dive.id }}" data-location="{{ dive.location }}" data-latitude="" data-longitude="">
                     <div class="log-header">
                         <h3>{{ dive.location }}</h3>
                         <span class="date">{{ dive.start_time.strftime('%B %d, %Y') }}</span>
@@ -631,6 +680,11 @@
             openEditModal(editDiveId);
         }
         
+        // Check if we have a hash in the URL (for directly jumping to a dive log)
+        if (window.location.hash && window.location.hash.startsWith('#dive-')) {
+            setTimeout(() => highlightDiveLog(window.location.hash.substring(1)), 500);
+        }
+        
         // Initialize the map
         initMap();
         
@@ -784,31 +838,10 @@
                     alt: location
                 }).addTo(map);
                 
-                // Create popup content
-                const diveId = card.dataset.diveId;
-                const diveDate = card.querySelector('.date').textContent;
-                const diveDetails = Array.from(card.querySelectorAll('.detail-item')).map(item => {
-                    const label = item.querySelector('.detail-label').textContent;
-                    const value = item.querySelector('.detail-value').textContent;
-                    return `<div class="popup-detail"><strong>${label}</strong> ${value}</div>`;
-                }).join('');
-                
-                const popupContent = `
-                    <div class="dive-log-popup">
-                        <h3>${location}</h3>
-                        <div class="dive-date">${diveDate}</div>
-                        <div class="dive-log-details">
-                            ${diveDetails}
-                        </div>
-                        <div class="popup-actions">
-                            <a href="#" class="popup-link view-details" data-id="${diveId}">View Details</a>
-                        </div>
-                    </div>
-                `;
-                
-                // Bind popup to marker
-                marker.bindPopup(popupContent, {
-                    maxWidth: 300
+                // No popup content, we only use marker click to jump to log
+                marker.on('click', function() {
+                    highlightDiveLog(`dive-${card.dataset.diveId}`);
+                    history.pushState(null, null, `#dive-${card.dataset.diveId}`);
                 });
                 
                 // Add this location to bounds
@@ -823,6 +856,20 @@
                 maxZoom: 10
             });
         }
+
+        // Inside initMap(), after map is created and before markers created
+        // Add a single click listener to the map container for popup links
+        map.getContainer().addEventListener('click', function(e) {
+            const link = e.target.closest('.popup-link');
+            if (!link) return;
+            const href = link.getAttribute('href');
+            if (href && href.startsWith('#dive-')) {
+                e.preventDefault();
+                const diveId = href.substring(1); // remove '#'
+                highlightDiveLog(diveId);
+                history.pushState(null, null, href);
+            }
+        });
     }
 
     function setupEventListeners() {
@@ -1324,6 +1371,37 @@
                 deleteModal.style.display = 'none';
             }
         });
+    }
+
+    // Helper function to animate scroll
+    function smoothScrollTo(targetY, duration = 800) {
+        const startY = window.scrollY || window.pageYOffset;
+        const distance = targetY - startY;
+        let startTime = null;
+
+        function step(timestamp) {
+            if (!startTime) startTime = timestamp;
+            const progress = timestamp - startTime;
+            const percent = Math.min(progress / duration, 1);
+            window.scrollTo(0, startY + distance * percent);
+            if (progress < duration) {
+                requestAnimationFrame(step);
+            }
+        }
+        requestAnimationFrame(step);
+    }
+
+    function highlightDiveLog(diveElementId) {
+        const diveElement = document.getElementById(diveElementId);
+        if (!diveElement) return;
+        
+        // Scroll with custom duration (1s)
+        smoothScrollTo(diveElement.offsetTop - 20, 1000);
+        
+        // Add highlight animation (reset if already applied)
+        diveElement.classList.remove('highlight-dive');
+        void diveElement.offsetWidth; // force reflow to restart animation
+        diveElement.classList.add('highlight-dive');
     }
 </script>
 {% endblock %} 
