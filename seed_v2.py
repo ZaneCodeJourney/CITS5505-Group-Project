@@ -279,6 +279,10 @@ def seed():
         user_objs = {}
         print("Creating users…")
         for username, firstname, lastname, email in USERS:
+            # Assign a random avatar (1-4)
+            avatar_number = random.randint(1, 4)
+            avatar_path = f"/static/images/avatars/avatar_{avatar_number}.jpg"
+            
             user = User(
                 username=username,
                 firstname=firstname,
@@ -289,11 +293,12 @@ def seed():
                 password_hash=generate_password_hash("Password123!"),
                 registration_date=datetime.utcnow(),
                 status="active",
+                avatar=avatar_path,  # Set the avatar path
             )
             db.session.add(user)
             user_objs[username] = user
         db.session.commit()
-        print(f"  → {len(user_objs)} users created")
+        print(f"  → {len(user_objs)} users created with avatars")
 
         # -------------------------------------------------------------------
         # Sites
