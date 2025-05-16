@@ -330,6 +330,16 @@ def seed():
         print(f"  → {len(species_catalogue)} species fetched")
         if not species_catalogue:
             print("  ⚠ No species fetched – charts may be empty.")
+            
+        # -------------------------------------------------------------------
+        # Assign a subset of species to each user (max 10 per user)
+        # -------------------------------------------------------------------
+        user_species = {}
+        for username, user in user_objs.items():
+            # Each user gets a maximum of 10 unique species
+            species_count = min(10, len(species_catalogue))
+            user_species[user.id] = random.sample(species_catalogue, species_count)
+            print(f"  → Assigned {species_count} species to {username}")
 
         # -------------------------------------------------------------------
         # Generate dives
@@ -394,8 +404,10 @@ def seed():
                 db.session.add(dive)
                 db.session.flush()  # to get dive.id
 
-                # Attach species observations
-                for sp in random.sample(species_catalogue, k=min(4, len(species_catalogue))):
+                # Attach species observations - sample from user's assigned species pool
+                user_species_pool = user_species[demo_user.id]
+                species_for_dive = random.sample(user_species_pool, k=min(4, len(user_species_pool)))
+                for sp in species_for_dive:
                     ds = DiveSpecies(
                         dive_id=dive.id,
                         taxon_id=sp["taxon_id"],
@@ -462,8 +474,10 @@ def seed():
                 db.session.add(dive)
                 db.session.flush()
 
-                # species
-                for sp in random.sample(species_catalogue, k=random.randint(2, 5)):
+                # Sample from this user's species pool (limited to 10)
+                user_species_pool = user_species[user.id]
+                species_for_dive = random.sample(user_species_pool, k=min(random.randint(2, 4), len(user_species_pool)))
+                for sp in species_for_dive:
                     db.session.add(
                         DiveSpecies(
                             dive_id=dive.id,
